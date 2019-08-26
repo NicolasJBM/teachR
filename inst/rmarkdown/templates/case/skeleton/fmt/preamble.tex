@@ -1,0 +1,209 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Text
+\usepackage[urw-garamond]{}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{lettrine}
+\usepackage{indentfirst}
+
+
+% Format titles
+\titleformat{\chapter}[display]
+{\bfseries\Large} %
+{\begin{tabularx}{\linewidth}{@{}Xl@{}}
+\raisebox{3ex}{\rule[-1.8ex]{\linewidth}{1pt}}%\vspace{1.5ex}%
+ & \textsuperscript{\fontsize{20}{40}\selectfont{Chapter}}%
+{\fontsize{40}{50}\selectfont\thechapter}\end{tabularx}} %
+{10 pt}%
+{\bfseries\raggedleft\fontsize{25}{20}\selectfont}%
+\titlespacing*{\chapter}{3pt}{-0.7ex}{10ex}
+
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\itshape\nouppercase{\rightmark}}
+\fancyhead[RE]{\itshape\nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0pt}
+
+\titleformat{\section}
+  {\normalfont\bfseries}{\thesection\hspace{0.5cm}}{0em}{}
+\titleformat{\subsection}
+  {\normalfont\bfseries}{\thesubsection\hspace{0.5cm}}{0em}{}
+\titleformat{\subsubsection}[runin]
+ {\normalfont\itshape\bfseries}{\thesubsubsection}{0em}{}
+\setcounter{subsubsection}{0}
+\renewcommand{\thesubsubsection}{}
+
+% Proper paragraph indenting
+\parindent=3em
+\parskip=0.5em
+
+% No hyphenation
+\hyphenchar\font=-1
+
+% Solves the problem of tigthlists
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Format citations in text
+\setcitestyle{aysep={,}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tables
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{adjustbox}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{dcolumn}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{pdflscape}
+\usepackage{booktabs}
+\usepackage{geometry}
+
+% Captions on top
+\floatstyle{plaintop}
+%\restylefloat{table}
+\restylefloat{figure} 
+
+% New environment to generalize threepart tables
+\newenvironment{tablet}
+  {\begin{center} \begin{threeparttable}}
+  {\end{threeparttable} \end{center} \vspace{15pt}}
+
+% Increment subtables
+\captionsetup[subtable]{labelformat=simple, labelsep=colon}
+\renewcommand{\thesubtable}{Panel~\Alph{subtable}}
+\usepackage[figuresright]{rotating}
+
+% Format captions
+\captionsetup{figurename=Figure}
+\captionsetup{tablename=Table}
+\captionsetup[figure]{labelfont=bf, labelsep=period, justification=raggedright, singlelinecheck=false}
+\captionsetup[table]{labelfont=bf, labelsep=period, justification=raggedright, singlelinecheck=false}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Environments
+\usepackage{ntheorem}
+\usepackage{imakeidx}
+
+% Committee
+\newenvironment{committee}{
+	\noindent \singlespace \raggedright}
+	
+% Acknwoledgements
+\newenvironment{acknowledgements}{
+	\leftskip=\parindent \rightskip=\parindent
+	\noindent\ignorespaces}
+
+% Abstract	
+\newenvironment{fmtabstract}{
+	\leftskip3em\rightskip\leftskip}
+
+% Common parameters for questions, theorems, hypotheses, and propositions
+\theoremseparator{:}
+\theoremindent1\parindent
+\theoremrightindent1\parindent
+\theoremheaderfont{\normalfont\bfseries}
+\makeatletter
+\newtheoremstyle{spaceless}
+  {\item[\hskip\labelsep \theorem@headerfont ##1##2\theorem@separator]}
+  {\item[\hskip\labelsep \theorem@headerfont ##1##2\ (##3)\theorem@separator]}
+\makeatother
+\theoremstyle{spaceless}
+
+% Questions
+\newtheorem{question}{RQ}[chapter]
+\makeatletter
+\newcounter{quest}
+\newenvironment{gpquestion}
+ {
+  \refstepcounter{question}
+  \protected@edef\theprop{\thequestion}
+  \setcounter{quest}{\value{question}}
+  \setcounter{question}{0}
+  \def\thequestion{\theprop\alph{question}}
+  \ignorespaces
+}{
+  \setcounter{question}{\value{quest}}
+  \ignorespacesafterend
+}
+\makeatother
+
+% Hypotheses
+\newtheorem{hypothesis}{H}
+\makeatletter
+\newcounter{hyp}
+\newenvironment{gphypothesis}
+ {
+  \refstepcounter{hypothesis}
+  \protected@edef\thehyp{\thehypothesis}
+  \setcounter{hyp}{\value{hypothesis}}
+  \setcounter{hypothesis}{0}
+  \def\thehypothesis{\thehyp\alph{hypothesis}}
+  \ignorespaces
+}{
+  \setcounter{hypothesis}{\value{hyp}}
+  \ignorespacesafterend
+}
+\makeatother
+
+% Propositions
+\newtheorem{proposition}{P}
+\makeatletter
+\newcounter{prop}
+\newenvironment{gpproposition}
+ {
+  \refstepcounter{proposition}
+  \protected@edef\theprop{\theproposition}
+  \setcounter{prop}{\value{proposition}}
+  \setcounter{proposition}{0}
+  \def\theproposition{\theprop\alph{proposition}}
+  \ignorespaces
+}{
+  \setcounter{proposition}{\value{prop}}
+  \ignorespacesafterend
+}
+\makeatother
+
+% Equations
+\makeatletter
+\g@addto@macro\normalsize{
+  \setlength\abovedisplayskip{0pt}
+  \setlength\belowdisplayskip{10pt}
+  \setlength\abovedisplayshortskip{0pt}
+  \setlength\belowdisplayshortskip{10pt}
+}
+\makeatother
+  
+% Quotes
+\makeatletter
+\renewcommand{\@chapapp}{}
+\newenvironment{quotep}[2][2em]
+  {\noindent\setlength{\@tempdima}{#1}%
+   \def\quotep@author{#2}%
+   \parshape 1 \@tempdima \dimexpr\textwidth-2\@tempdima\relax\itshape\ignorespaces}
+  {\par\normalfont\hfill--\ \quotep@author\hspace*{\@tempdima}\par\bigskip}
+\makeatother
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Content
+
+% Thumbs
+\usepackage[topthumbmargin = 1.6in, height = 1in, distance = 0.5in]{thumbs}
+
+% Index
+\makeindex
+
+% Start the document
+\frontmatter

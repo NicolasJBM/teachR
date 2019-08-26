@@ -1,0 +1,7 @@
+
+
+# Part II: Adding Indexed Elements {-}
+
+\addthumb{Third chapter}{\Huge{\textbf{3}}}{white}{gray}
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{B}ESIDES questions, propositions, hypotheses, and equations, other elements have to be numeroted and referenced: tables and figures referenced in lists of tables and figures, and terms placed at the en in the index.  

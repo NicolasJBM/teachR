@@ -1,0 +1,54 @@
+---
+title: "Title of the book"
+subtitle: "Subtitle"
+author:
+- "Author"
+- "Affiliation"
+- "Address"
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_book:
+    includes:
+      in_header: fmt/preamble.tex
+      before_body: fmt/start.tex
+      after_body: fmt/end.tex
+    keep_tex: yes
+    latex_engine: xelatex
+    citation_package: natbib
+papersize: a4
+fontsize: 12pt
+linestretch: 1.5
+subparagraph: yes
+toc-depth: 2
+secnumdepth: 3
+lof: True
+lot: True
+site: bookdown::bookdown_site
+documentclass: book
+biblio-style: apalike
+bibliography: ref.bib
+link-citations: yes
+geometry: "left=4cm, right=3cm, top=2.5cm, bottom=2.5cm"
+---
+
+
+```{r global_options, include=FALSE}
+# Load packages
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+library(writer)
+library(knitr)
+library(kableExtra)
+library(tidygraph)
+library(ggraph)
+library(DiagrammeR)
+# Set global options
+Sys.setlocale("LC_ALL","English")
+options(
+  scipen=999,
+  knitr.kable.NA = ''
+)
+set.seed(105)
+```

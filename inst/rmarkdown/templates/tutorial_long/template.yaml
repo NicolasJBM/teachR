@@ -1,0 +1,4 @@
+name: Tutorial
+description: Template for creating R tutorials.
+create_dir: true
+

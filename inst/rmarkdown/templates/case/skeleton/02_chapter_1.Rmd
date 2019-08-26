@@ -1,0 +1,23 @@
+
+
+# Title Levels
+
+
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{H}ASHTAGS indicate the level of the title. Each level has a distinct numbering and format. To send subsequent developments on a next page, insert a pagebreak.
+
+\pagebreak
+
+
+## Second level
+
+For the second level.
+
+### Third level
+
+For the third level.
+
+#### Fourth level.
+
+For the Fourth level which should be an unnumbered runin. The styles of subsequent title levels are not defined because because more than four levels becomes difficult to read.  
+

@@ -1,0 +1,42 @@
+Package: teachR
+Title: Teaching and Evaluation
+Version: 1.1
+Date: 2019-08-26
+Authors@R: 
+    person(given = "Nicolas",
+           family = "Mangin",
+           role = c("aut", "cre"),
+           email = "nicolas.jb.mangin@gmail.com",
+           comment = c(ORCID = "0000-0002-1597-9376"))
+Description: Functions and interfaces to support teaching and evaluating with R.
+Encoding: UTF-8
+LazyData: true
+License: GPL-3 | file LICENSE
+Depends: R (>= 3.6)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
+Imports:
+    dplyr,
+    miniUI,
+    shiny,
+    tidyr,
+    exams,
+    tth,
+    tibble,
+    purrr,
+    readr,
+    readxl,
+    WriteXLS,
+    stats,
+    utils,
+    webshot,
+    ggplot2,
+    psych,
+    png,
+    gmailr,
+    rmarkdown,
+    stringr
+Suggests:
+    bibliogR,
+    writR

@@ -1,0 +1,227 @@
+
+
+# Tables and Figures
+
+\addthumb{Fourth chapter}{\Huge{\textbf{4}}}{white}{gray}
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{S}PECIAL Latex environments define specific formating for research questions, hypotheses, propositions, equations, and quotes. Except for the latter, they are all numbered and automatically incremented.   
+
+\pagebreak
+
+
+## Diagram
+
+```{r fig1, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.cap="Model", fig.align='center', fig.width=8, fig.asp=0.67}
+nodes <- DiagrammeR::create_node_df(
+  3,
+  shape = rep("ellipse", 3),
+  label = c("cause","mediator","effect"),
+  color = rep("black", 3),
+  fillcolor = rep("white", 3),
+  fontcolor = rep("black", 3),
+  fontsize = rep(6, 3),
+  x = c(1,2,3),
+  y = c(0,1,0),
+  width = c(1,1,1)
+)
+
+edges <- DiagrammeR::create_edge_df(
+  from = c(1,1,2),
+  to =   c(2,3,3),
+  rel = "leading_to",
+  x = c(1, 3, 5),
+  y = c(1, 3, 1),
+  color = "black",
+  fontcolor = "black",
+  width = 2,
+  label = c("first stage","direct effect","second stage"),
+  fontsize = rep(4, 3)
+)
+
+attributes <- data.frame(
+  attr = c("layout", "rankdir", "fontname", "style"),
+  value = c("dot",   "LR",         "Helvetica", "filled"),
+  attr_type = c("graph", "graph", "node", "node")
+)
+
+graph <- DiagrammeR::create_graph(
+  nodes_df = nodes,
+  edges_df = edges,
+  attr_theme = "default"
+)
+
+DiagrammeR::render_graph(graph, width="100%", height = "100%")
+```
+
+
+## Chart
+
+```{r fig2, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.cap="Barchart", fig.align='center', out.width='100%', fig.asp=0.67}
+library(dplyr)
+library(ggplot2)
+tibble::tibble(
+  year = c("1995","2000","2005","2010","2015"),
+  value = c(1,3,6,12,15)
+) %>%
+  ggplot(aes(x = year, y = value)) +
+  geom_bar(stat = "identity")
+
+```
+
+## Tables
+
+
+### Longtables
+
+```{r intextref1, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, tidy=FALSE, results='asis'}
+modestim::mm_edwards2007[1:30,] %>%
+  knitr::kable(
+      caption = 'Database from Edwards and Lambert (2007).',
+      format = "latex",
+      longtable = TRUE,
+      booktabs = TRUE) %>%
+  kableExtra::row_spec(0, angle = 75) %>%
+  kableExtra::column_spec(1, width = "1in") %>%
+  kableExtra::kable_styling(
+    latex_options = c("repeat_header", "striped"),
+    font_size = 10,
+    repeat_header_method = "replace",
+    position = "left") %>%
+  kableExtra::landscape()
+```
+
+
+### Univariate statistics
+
+```{r intextref2, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results='asis' }
+modestim::mm_edwards2007 %>%
+  dplyr::select(comc, fbkc, satc, cenc) %>%
+  writer::univariate() %>%
+  knitr::kable(
+    caption = 'Univariate statistics.',
+    row.names = FALSE,
+    format = "latex",
+    booktabs = TRUE,
+    align = "l",
+    table.env = "tablet"
+  ) %>%
+  kableExtra::column_spec(1, width = "1in", border_right = TRUE) %>%
+  kableExtra::kable_styling(latex_options = "striped", font_size = 10)
+```
+
+
+### Correlations with rotation
+
+```{r intextref3, tidy=FALSE, echo=FALSE}
+modestim::mm_edwards2007 %>%
+  dplyr::select(comc, fbkc, satc, cenc) %>%
+  writer::bivariate() %>%
+  knitr::kable(
+      caption = 'Bivariate statistics.',
+      row.names = FALSE,
+      format = "latex",
+      booktabs = TRUE,
+      align = "l",
+      linesep = "",
+      table.env = "tablet") %>%
+  kableExtra::column_spec(1, width = "1.5in", border_right = TRUE) %>%
+  kableExtra::kable_styling(latex_options = c("striped"), font_size = 10)
+```
+
+
+### Regression
+
+```{r intextref4, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results='asis' }
+model1 <- glm(satc ~ fbkc        + gen + cenc, data = modestim::mm_edwards2007)
+model2 <- glm(comc ~ fbkc        + gen + cenc, data = modestim::mm_edwards2007)
+model3 <- glm(comc ~ fbkc + satc + gen + cenc, data = modestim::mm_edwards2007)
+model4 <- glm(comc ~ fbkc + satc + gen + fbkc*gen + cenc, data = modestim::mm_edwards2007)
+
+beta1 <- summary(model1)$coefficients["fbkc","Estimate"] %>% writer::dbl()
+pval1 <- summary(model1)$coefficients["fbkc","Pr(>|t|)"] %>% writer::dbl()
+
+writer::fit_stargazer(model1, model2, model3, model4,
+                      
+                      align = TRUE, no.space = TRUE, type = "latex",
+                      float = FALSE, header = FALSE,
+                      notes = c("Comments about how the table was constructed."),
+                      
+                      table_caption = "Title of the model",
+                      table_label = "intextref",
+                      env = "sidewaystable",
+                      adjwidth = 0.7,
+                      adjheight = 0.7,
+                      space_before = "20pt")
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='asis'}
+library(dplyr)
+
+univariate <- modestim::mm_edwards2007 %>%
+  dplyr::select(comc, fbkc, satc, cenc) %>%
+  writer::univariate() %>%
+  knitr::kable(
+    row.names = FALSE,
+    format = "latex",
+    booktabs = TRUE,
+    align = "c"
+  ) %>%
+  capture.output()
+
+bivariate <- modestim::mm_edwards2007 %>%
+  dplyr::select(comc, fbkc, satc, cenc) %>%
+  writer::bivariate() %>%
+  knitr::kable(
+    row.names = FALSE,
+    format = "latex",
+    booktabs = TRUE,
+    align = "c"
+  ) %>%
+  capture.output()
+
+model1 <- glm(satc ~ fbkc        + gen + cenc, data = modestim::mm_edwards2007)
+model2 <- glm(comc ~ fbkc        + gen + cenc, data = modestim::mm_edwards2007)
+model3 <- glm(comc ~ fbkc + satc + gen + cenc, data = modestim::mm_edwards2007)
+model4 <- glm(comc ~ fbkc + satc + gen + fbkc*gen + cenc, data = modestim::mm_edwards2007)
+
+inferential <- capture.output(
+  stargazer::stargazer(
+    model1, model2, model3, model4,
+    align = TRUE, no.space = TRUE, type = "latex",
+    float = FALSE, header = FALSE,
+    notes = c("Comments about how the table was constructed.")
+    )
+  )
+```
+
+
+
+### Panels (one after the other)
+
+
+```{r pressure1, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results='asis'}
+writer::insert_panels(
+  x = list(bivariate, bivariate, bivariate),
+  subcaptions = c("Subtitle 1","Subtitle 2","Subtitle 3"),
+  maincaption = "Main title",
+  label = "trial",
+  orientation = "portrait",
+  tab_width = c(0.5),
+  font_size = "normalsize"
+)
+```
+
+
+```{r pressure2, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results='asis'}
+writer::insert_panels(
+  x = list(bivariate, bivariate, bivariate),
+  subcaptions = c("Subtitle 1","Subtitle 2","Subtitle 3"),
+  maincaption = "Main title",
+  label = "trial2",
+  orientation = "landscape",
+  tab_width = c(0.4,0.4,0.4),
+  end_line = c(0,1,0),
+  font_size = "normalsize"
+)
+```

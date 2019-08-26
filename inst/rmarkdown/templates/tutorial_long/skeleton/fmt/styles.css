@@ -1,0 +1,503 @@
+@import url(https://fonts.googleapis.com/css?family=EB+Garamond);
+@import url(https://fonts.googleapis.com/css?family=Indie+Flower);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Tangerine);
+
+/* colors */
+/* timing */
+/* sizes */
+body, button, input, textarea, .topic, h2, h3 {
+  background-color: #fff;
+  width: 100%;
+  display: block;
+  position: relative;
+  overflow: visible;
+  font-family: "Open Sans";
+  font-size: 16px;
+  text-align:justify;
+  line-height: 1.5;
+}
+
+/* content */
+h1, h2, h3, h4, h5, h6 {
+  padding-top: 50px;
+  margin-bottom: 10px;
+  color:#000;
+  font-weight: 300;
+}
+
+h1 {
+  font-weight:bold;
+  font-style:italic;
+  font-size: 125%;
+  color: #000060;
+  line-height: 40px;
+  border-bottom: 2px solid #000060;
+}
+
+h1.title{
+  font-weight:bold;
+  font-style:normal;
+  font-size:135%;
+  color: #000060;
+  border-bottom: 5px double #000060;
+}
+
+h2 {
+  font-style:italic;
+  font-weight:bold;
+  font-size: 110%;
+  color: #007799;
+  border-bottom: 1px solid #007799;
+}
+
+h3 {
+  font-style:italic;
+  font-size: 105%;
+}
+
+h4 {
+  margin-left: 8px;
+  font-style:italic;
+  font-size: 105%;
+}
+
+h5, h6 {
+  font-style:italic;
+  font-size: 105%;
+}
+
+p {
+  margin: 0.5em 0;
+}
+
+ul {
+  line-height: 2em;
+  list-style: disc outside none;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 3px;
+}
+
+.btn-xs, .btn-group-xs > .btn {
+  padding: 1px 5px;
+  font-size: 0.9em;
+  line-height: 1.6em;
+}
+
+.btn-default {
+  background-color: #e0e0e0;
+  background-image: none;
+  border: none; }
+  .btn-default:hover {
+    background-color: #c8c8c8; }
+  .btn-default:focus {
+    background-color: #e0e0e0; }
+
+.btn-primary, .btn-success, .btn-info {
+  background-color: #55DDFF;
+  background-image: none;
+  border: none; }
+  .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary:focus:active, .btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success:focus:active, .btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info:focus:active {
+    background-color: #00BBDD; }
+  .btn-primary:focus:hover, .btn-primary:active:hover, .btn-primary:focus:active:hover, .btn-success:focus:hover, .btn-success:active:hover, .btn-success:focus:active:hover, .btn-info:focus:hover, .btn-info:active:hover, .btn-info:focus:active:hover {
+    background-color: #00AACC; }
+  .btn-primary.disabled, .btn-primary:disabled, .btn-primary.disabled:hover, .btn-primary:disabled:hover, .btn-success.disabled, .btn-success:disabled, .btn-success.disabled:hover, .btn-success:disabled:hover, .btn-info.disabled, .btn-info:disabled, .btn-info.disabled:hover, .btn-info:disabled:hover {
+    background-color: #55DDFF; }
+
+.panel, pre {
+  border-radius: 0;
+  border-color: #e0e0e0; }
+
+
+
+.pageContent {
+}
+
+.band {
+  padding-left: 5%;
+  padding-right: 5%;
+  position: relative;
+}
+
+.bandContent {
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+.bandContent.page {
+  display: flex;
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: -webkit-flex;
+
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+
+  flex-direction: row-reverse;
+  -webkit-flex-direction: row-reverse;
+}
+
+.topics {
+  width: 75%;
+  overflow-x: auto;
+  padding-bottom: 600px;
+}
+
+.topics .tutorialTitle {
+  display: none;
+  border-bottom: 3px dotted #f0f0f0;
+}
+
+.topics .section.level2 {
+  display: none;
+  margin-bottom: 40px;
+}
+
+.topics .section.level2.current {
+  display: block;
+}
+
+.topicsContainer {
+  width: 23%;
+  min-width: 270px;
+  margin-right: 2%;
+  z-index: 100;
+}
+
+.topicsPositioner {
+  position: fixed;
+  left: 0px;
+  width: 100%;
+  height: 0px;
+  background-color: pink;
+}
+
+.topicsList {
+  float: left;
+  position: relative;
+  width: 23%;
+  min-width: 270px;
+  overflow: auto;
+  height: auto;
+  scroll-behavior: smooth;
+  transform: translateZ(0); /* force repaint to work on older browser used in the IDE */
+}
+
+.topicsHeader {
+  display: flex;
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: -webkit-flex;
+
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+}
+
+.topicsFooter {
+  margin-top: 10px;
+  padding-bottom: 20px;
+}
+
+.topicsFooter .resetButton {
+  padding-left: 10px;
+  font-size: .66em;
+  cursor: pointer;
+  opacity: .7;
+}
+
+.topicsFooter .resetButton:hover {
+  opacity: 1;
+}
+
+.topicsList .topic {
+  line-height: 40px;
+  font-size: 15px;
+  padding-left: 10px;
+  cursor: pointer;
+
+  background-repeat: no-repeat;
+  background-size: 2px 80px;
+  background-position: left 100%;
+  background-image: url(../images/topicProgress.png);
+  border-bottom: 1px solid #f8f8f8;
+
+  -webkit-transition-property: background-position;
+  transition-property: background-position;
+  -webkit-transition-duration: 0.25s;
+  transition-duration: 0.25s;
+}
+
+.topicsList .topic:hover {
+  background-color: #fcfcfc;
+}
+
+.topicsList .topic.current {
+  background-color: #f8f8f8;
+}
+
+.section.level3 {
+  margin-bottom: 40px;
+}
+
+.paneCloser {
+  display: none;
+  height: 30px;
+  width: 30px;
+  background: url(../images/close.svg) no-repeat center center;
+  background-size: 30px 30px;
+  border-radius: 15px;
+  position: relative;
+  top: 8px;
+}
+
+.paneCloser:hover {
+  background-color: rgba( 0, 0, 0, .05);
+}
+
+.section.level3.hide {
+  display: none;
+}
+
+.section.level3.done h3 {
+  padding-left: 25px;
+  background-image: url(../images/exerciseDone.svg);
+  background-size: 20px 20px;
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+.exerciseActions {
+  margin: 20px 0;
+}
+
+.skip {
+  display: none;
+}
+
+.showSkip .skip {
+  display: inline-block;
+}
+
+.topicActions {
+  margin-top: 20px;
+}
+
+.topicActions button {
+  margin-right: 10px;
+}
+
+.section.level2.hideActions .topicActions {
+  display: none;
+}
+
+#doc-metadata {
+  margin-bottom: 10px;
+  line-height: 1.6em;
+}
+
+#doc-metadata h3 {
+  margin: 0;
+  font-size: 1.2em;
+  line-height: 2em;
+}
+
+#doc-metadata h4 {
+  margin: 0;
+  font-size: 1em;
+  line-height: 1.6em;
+}
+
+#doc-metadata em {
+  font-style: normal;
+}
+
+@media screen and (max-width: 767px) {
+  .topics {
+    width: 99%;
+  }
+
+  .topics .tutorialTitle {
+    display: block;
+    cursor: pointer;
+  }
+
+  .topicsContainer {
+    width: 1%;
+    min-width: 1px;
+    margin-right: 0;
+  }
+
+  .topicsList {
+    padding: 0px 10px 20px 1%;
+    background-color: rgba(255, 255, 255, 0.98);
+
+    box-shadow: 0 5px 25px 0px rgba(0, 0, 0, 0.15);
+    -webkit-box-shadow: 0 5px 25px 0px rgba(0, 0, 0, 0.15);
+  }
+
+  .topicsList.hideFloating {
+    display: none;
+  }
+
+  .paneCloser {
+    display: inline-block;
+  }
+}
+
+
+/*********************************************
+ * ADDED
+ *********************************************/
+
+
+.column2-left{
+  float: left;
+  width: 50%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+.column2-right{
+  float: right;
+  width: 50%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+
+
+
+.column2-small_left{
+  float: left;
+  width: 33%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+.column2-large_right{
+  float: right;
+  width: 66%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+
+
+
+.column2-large_left{
+  float: left;
+  width: 66%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+.column2-small_right{
+  float: right;
+  width: 33%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+
+
+
+.column3-left{
+  float: left;
+  width: 33%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+.column3-center{
+  display: inline-block;
+  width: 33%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+.column3-right{
+  float: right;
+  width: 33%;
+  text-align:left;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+}
+
+
+
+.small_block{
+  float: left;
+  width: 25%;
+  text-align: center;
+  background-color: DCF0FF;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+  margin: 0px !important;
+}
+.large_block{
+  float: right;
+  width: 75%;
+  text-align: justify;
+  background-color: DCF0FF;
+  padding-left: 2% !important;
+  padding-right: 2% !important;
+  margin: 0px !important;
+}
+
+
+.light_bg			{background-color:#00DDFF !important;
+					color: #FFF !important;
+					width: 100% !important;
+					padding: 30px !important;
+					margin-right: 0px !important;
+					margin-left: 0px !important;
+					margin-top: 30px !important;
+					margin-bottom: 30px !important;
+					text-align: center !important;
+					font-size: 20px !important;
+					font-family:"open sans";}
+
+.medium_bg			{background-color:#00AACC !important;
+					color: #FFF !important;
+					width: 100% !important;
+					padding: 30px !important;
+					margin-right: 0px !important;
+					margin-left: 0px !important;
+					margin-top: 30px !important;
+					margin-bottom: 30px !important;
+					text-align: center !important;
+					font-size: 20px !important;
+					font-family:"open sans";}
+
+.dark_bg			{background-color:#007799 !important;
+					color: #FFF !important;
+					width: 100% !important;
+					padding: 30px !important;
+					margin-right: 0px !important;
+					margin-left: 0px !important;
+					margin-top: 30px !important;
+					margin-bottom: 30px !important;
+					text-align: center !important;
+					font-size: 20px !important;
+					font-family:"open sans";}
+					
+.container			{display:inline-block;
+					position:relative;
+					display: flex !important;
+					justify-content: center;
+					align-items: center;
+					margin-top: 30px !important;
+					margin-bottom: 30px !important;
+					width:inherit;}
+
+img:not(.icon) {
+  background-color: #FFFFFF;
+  box-shadow: inset 0 0 1em rgba(0, 0, 0, .1), 0 0 1em grey;
+}
+					
+.icon {padding: 20px !important;}

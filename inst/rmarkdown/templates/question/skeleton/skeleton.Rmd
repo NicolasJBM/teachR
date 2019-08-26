@@ -1,0 +1,80 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+##############################################################################
+# Packages
+library(exams)
+library(writer)
+library(knitr)
+library(dplyr)
+
+
+##############################################################################
+# Initialization
+question_id <- "EN00000XXX"
+wdir <- getwd()
+parameters <- genexam::param_quest(wdir, question_id)
+for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
+options(xtable.comment = FALSE, xtable.floating = FALSE, xtable.timestamp = "")
+set.seed(seed)
+
+
+##############################################################################
+# Data
+
+
+
+##############################################################################
+# Answers
+questions <- c(
+  right1 = "right",
+  wrong1 = "wrong",
+  wrong2 = "wrong",
+  wrong3 = "wrong",
+  wrong4 = "wrong"
+)
+
+solutions <- c(TRUE,FALSE,FALSE,FALSE,FALSE)
+
+explanations <- c(
+  "",
+  "",
+  "",
+  "",
+  ""
+)
+
+
+##############################################################################
+# Randomize order (do not edit)
+alea <- sample(c(1, sample(2:length(questions), (alternatives-1))), alternatives)
+questions <- questions[alea]
+solutions <- solutions[alea]
+explanations <- explanations[alea]
+```
+
+
+
+Question
+========
+`r txt_question_id` What is the question*? `r reqexpl` `r points`*  
+
+```{r questionlist, echo = FALSE, results = "asis"}
+if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else writeLines(c("\\ ","\\ "))
+```
+
+
+
+Solution
+========
+Describe is the solution.
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+if (reqexpl == "") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ "))
+```
+
+
+
+Meta-information
+================
+extype: `r extype`
+exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
+exname: `r question_id`

@@ -1,0 +1,19 @@
+Name: genexam
+Description: User interface to build exams from a package of questions.
+Binding: genexam
+Interactive: true
+
+Name: gradexam
+Description: User interface to gather information about questions and partipants with the corresponding answers.
+Binding: gradexam
+Interactive: true
+
+Name: checkexam
+Description: User interface to check and analyze exam results.
+Binding: checkexam
+Interactive: true
+
+Name: sendexam
+Description: User interface to create individual reports and send them.
+Binding: sendexam
+Interactive: true

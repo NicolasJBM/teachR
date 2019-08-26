@@ -1,0 +1,5 @@
+
+
+# Forewords {-}
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{B}OOKDOWN is a R package dedicated to the publication of full books. It allows a relatively easy integration of inline analyses, table of content, list of tables, list of figures, glossaries, and complete references. This template illustrates some of its functionalities.  

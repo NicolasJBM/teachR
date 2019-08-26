@@ -1,0 +1,25 @@
+
+
+# References, Footnotes, hyperlinks, and Index
+
+
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{S}PECIAL Latex environments define specific formating for research questions, hypotheses, propositions, equations, and quotes. Except for the latter, they are all numbered and automatically incremented.   
+
+\pagebreak
+
+
+## References
+
+First, there are several ways to cite prior literature. The citation can be added after the idea [@Adams1963], with the page number if desired [@Banker1989a, p.33], with multiple references [@Macintosh1987; @Williamson1981]. Author can also be subjects: @Kaplan2006b argue...
+
+
+
+## Footnotes and hyperlinks
+
+Footnotes are introduced with the power sign and between brackets^[This is a footnote].
+
+
+## Index
+
+To add a word in the index\index{index}, just embedded it in the index environment\index{environment}. It will be added to the list at the very end of the document.

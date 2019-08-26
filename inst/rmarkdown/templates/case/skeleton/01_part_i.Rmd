@@ -1,0 +1,8 @@
+\mainmatter
+
+# Part I: Formatting {-}
+
+\addthumb{First chapter}{\Huge{\textbf{1}}}{white}{gray}
+
+\lettrine[nindent=0em, lines=2, lraise=0.1, slope=-.5em]{M}AINMATTER at the beginning indicates that the normal arabic page numbering should succeed to the roman numbering used for the forewords, table of content, list of tables, and list of figures. In addition, the curly brackets encasing a minus sign ensure that the part will not be numbered.
+
