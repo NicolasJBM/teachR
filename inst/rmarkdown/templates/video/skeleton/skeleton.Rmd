@@ -1,0 +1,47 @@
+---
+title: Title
+author: <hr> Author
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  revealjs::revealjs_presentation:
+    self_contained: false
+    reveal_plugins: ["notes"]
+    includes:
+        in_header: img/header.html
+    incremental: true
+    highlight: pygments
+    center: true
+    transition: slide
+    background_transition: slide
+    reveal_options:
+      showNotes: true
+      slideNumber: true
+      previewLinks: true
+    fig_width: 8
+    fig_height: 6
+    fig_caption: true
+    css: fmt/styles.css
+    mathjax: default
+csl: fmt/apa.csl
+bibliography: ref.bib
+---
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+# Alternative YAML for powerpoint presentations
+#title: 'Title'
+#date: "`r format(Sys.time(), '%B %d, %Y')`"
+#output:
+#  powerpoint_presentation:
+#    reference_doc: fmt/template_ppt.potx
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+writer::gen_bib()
+```
+
+
+## Agenda
+
+# Section
+
+## Slide
