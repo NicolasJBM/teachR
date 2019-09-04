@@ -17,6 +17,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Imports:
+    knitr,
     dplyr,
     miniUI,
     shiny,
@@ -36,7 +37,5 @@ Imports:
     png,
     gmailr,
     rmarkdown,
-    stringr
-Suggests:
-    bibliogR,
+    stringr,
     writR

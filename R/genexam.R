@@ -71,7 +71,7 @@
 #' @importFrom stringr str_detect
 #' @importFrom utils data
 #' @importFrom utils read.csv
-#' @importFrom writer stat_totals
+#' @importFrom writR stat_totals
 #' @export
 
 
@@ -628,7 +628,7 @@ genexam <- function() {
           dplyr::summarise(Value = sum(Value)) %>%
           dplyr::ungroup() %>%
           tidyr::spread(Bloom, Value, fill = 0) %>%
-          writer::stat_totals(omit_col = "Topic", summary = "sum")
+          writR::stat_totals(omit_col = "Topic", summary = "sum")
       } else if (input$tblval == "questions"){
         balance <- tables$contentexam[,c(input$tblrow, "BL")] %>%
           dplyr::mutate(Value = 1)
@@ -638,7 +638,7 @@ genexam <- function() {
           dplyr::summarise(Value = sum(Value)) %>%
           dplyr::ungroup() %>%
           tidyr::spread(Bloom, Value, fill = 0) %>%
-          writer::stat_totals(omit_col = "Topic", summary = "sum")
+          writR::stat_totals(omit_col = "Topic", summary = "sum")
       } else {
         balance <- tables$contentexam[,c(input$tblrow, "BL", "DI")] 
         names(balance) <- c("Topic","Bloom","Value")
@@ -647,7 +647,7 @@ genexam <- function() {
           dplyr::summarise(Value = mean(Value)) %>%
           dplyr::ungroup() %>%
           tidyr::spread(Bloom, Value, fill = 0) %>%
-          writer::stat_totals(omit_col = "Topic", summary = "mean")
+          writR::stat_totals(omit_col = "Topic", summary = "mean")
       }
       balance
     })
@@ -843,7 +843,7 @@ genexam <- function() {
             incProgress(3 / 4, detail = "Generating scan...")
 
             if (input$format == "A4") {
-              genexam::make_scan_A4(
+              teachR::make_scan_A4(
                 exam = exam,
                 name = examid,
                 language = input$language,
