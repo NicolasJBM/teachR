@@ -69,6 +69,7 @@
 #' @importFrom stats na.omit
 #' @importFrom stringr str_split
 #' @importFrom stringr str_detect
+#' @importFrom stringr str_replace_all
 #' @importFrom utils data
 #' @importFrom utils read.csv
 #' @importFrom writR stat_totals
@@ -192,8 +193,8 @@ genexam <- function() {
                 selectInput(
                   inputId = "typequest",
                   label = "Type of questions",
-                  choices = c("Multiple choice", "Open"),
-                  selected = "Multiple choice"
+                  choices = c("mcq", "open"),
+                  selected = "mcq"
                 ),
                 checkboxInput(
                   inputId = "showquestid",
@@ -206,7 +207,7 @@ genexam <- function() {
                   value = TRUE
                 ),
                 conditionalPanel(
-                  'input.typequest === "Multiple choice"',
+                  'input.typequest === "mcq"',
                   numericInput(
                     inputId = "alternatives",
                     label = "Number of alternatives",
@@ -226,33 +227,27 @@ genexam <- function() {
         miniContentPanel(
           fillCol(
             flex = c(7, 1, 6),
+            
             fillRow(
               flex = c(1, 1),
               fillCol(
                 flex = c(1, 1, 1, 1),
-                uiOutput(outputId = "chapter"),
-                conditionalPanel(
-                  'input.chapter != "0 Any"',
-                  uiOutput(outputId = "section")
+                uiOutput(outputId = "filtchapter"),
+                uiOutput(outputId = "filtsection"),
+                uiOutput(outputId = "filtsubsection"),
+                uiOutput(outputId = "filtobjective")
                 ),
-                conditionalPanel(
-                  'input.chapter != "0 Any" & input.section != "0 Any"',
-                  uiOutput(outputId = "subsection")
-                ),
-                conditionalPanel(
-                  'input.chapter != "0 Any" & input.section != "0 Any" & input.subsection != "0 Any"',
-                  uiOutput(outputId = "objective")
-                )
-              ),
               fillCol(
                 flex = c(1, 1, 1, 1),
-                uiOutput(outputId = "level"),
-                uiOutput(outputId = "bloom"),
-                uiOutput(outputId = "difficulty"),
-                textInput("keywords", "Keywords", value = "")
+                uiOutput(outputId = "filtlevel"),
+                uiOutput(outputId = "filtbloom"),
+                uiOutput(outputId = "filtdifficulty"),
+                textInput("filtkeyword", "Keywords", value = "")
               )
             ),
+            
             tags$hr(),
+            
             fillRow(
               flex = c(3, 1),
               uiOutput("sampled"),
@@ -408,151 +403,197 @@ genexam <- function() {
       
       tables$order <- c()
     })
-
-
-    ####################
-    # Selection of questions and update of subfilters
+    
+    
     questions <- reactive({
-      questions <- get(paste0(input$package_name, "_questions"))
-      questions <- dplyr::filter(questions, !(questionID %in% tables$exclusion$QN))
+      if (!is.null(input$package_name)){
+        questions <- get(paste0(input$package_name, "_questions"))
+      }
+      
+      if (!is.null(input$language) & !is.null(input$typequest)){
+        questions <- questions %>%
+          dplyr::filter(
+            language == input$language,
+            kind == c(input$typequest,"both"),
+            !(questionID %in% tables$exclusion$QN)
+          )
+      }
+      
       questions
     })
+      
+      
 
+    
+    
+    ####################
+    # Prepare filters
+    output$filtchapter <- renderUI({
+      choices <- sort(c(setdiff(unique(questions()$chapter), ""), ""), decreasing = FALSE)
+      selectInput("slctchapter", "Chapter:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltchapter <- reactive({
+      filter <- input$slctchapter
+      if (is.null(filter)){
+        questions()
+      } else if (filter == "") {
+        questions()
+      } else {
+        dplyr::filter(questions(), str_detect(questions()$chapter, filter))
+      }
+    })
+    
+    
+    
+    output$filtsection <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltchapter()$section), ""), ""), decreasing = FALSE)
+      selectInput("slctsection", "Section:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltsection <- reactive({
+      filter <- input$slctsection
+      if (is.null(filter)){
+        afterfiltchapter()
+      } else if (filter == "") {
+        afterfiltchapter()
+      } else {
+        dplyr::filter(afterfiltchapter(), str_detect(afterfiltchapter()$section, filter))
+      }
+    })
+    
+    
+    
+    output$filtsubsection <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltsection()$subsection), ""), ""), decreasing = FALSE)
+      selectInput("slctsubsection", "Sub_section:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltsubsection <- reactive({
+      filter <- input$slctsubsection
+      if (is.null(filter)){
+        afterfiltsection()
+      } else if (filter == "") {
+        afterfiltsection()
+      } else {
+        dplyr::filter(afterfiltsection(), str_detect(afterfiltsection()$subsection, filter))
+      }
+    })
+    
+    
+    
+    output$filtobjective <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltsubsection()$objective), ""), ""), decreasing = FALSE)
+      selectInput("slctobjective", "Objective:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltobjective <- reactive({
+      filter <- input$slctobjective
+      if (is.null(filter)){
+        afterfiltsubsection()
+      } else if (filter == "") {
+        afterfiltsubsection()
+      } else {
+        dplyr::filter(afterfiltsubsection(), str_detect(afterfiltsubsection()$objective, filter))
+      }
+    })
+    
+    
+    
+    output$filtlevel <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltobjective()$level), ""), ""), decreasing = FALSE)
+      selectInput("slctlevel", "Level:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltlevel <- reactive({
+      filter <- input$slctlevel
+      if (is.null(filter)){
+        afterfiltobjective()
+      } else if (filter == "") {
+        afterfiltobjective()
+      } else {
+        dplyr::filter(afterfiltobjective(), str_detect(afterfiltobjective()$level, filter))
+      }
+    })
+    
+    
+    
+    output$filtbloom <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltlevel()$bloom), ""), ""), decreasing = FALSE)
+      selectInput("slctbloom", "Bloom:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltbloom <- reactive({
+      filter <- input$slctbloom
+      if (is.null(filter)){
+        afterfiltlevel()
+      } else if (filter == "") {
+        afterfiltlevel()
+      } else {
+        dplyr::filter(afterfiltlevel(), str_detect(afterfiltlevel()$bloom, filter))
+      }
+    })
+    
+    
+    
+    output$filtdifficulty <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltbloom()$difficulty), ""), ""), decreasing = FALSE)
+      selectInput("slctdifficulty", "Difficulty:", choices = choices, selected = "", multiple = FALSE, width = '100%')
+    })
+    
+    afterfiltdificulty <- reactive({
+      filter <- input$slctdifficulty
+      if (is.null(filter)){
+        afterfiltbloom()
+      } else if (filter == "") {
+        afterfiltbloom()
+      } else {
+        dplyr::filter(afterfiltbloom(), str_detect(afterfiltbloom()$difficulty, filter))
+      }
+    })
+    
+    
+    
+    output$filtkeyword <- renderUI({
+      textInput("slctkeyword", "Keywords:", value = "", width = '100%')
+    })
+    
+    afterfiltkeyword <- reactive({
+      filter <- input$slctkeyword
+      if (is.null(filter)){
+        afterfiltdificulty()
+      } else if (filter[[1]] == "") {
+        afterfiltdificulty()
+      } else {
+        keywords <- stringr::str_to_lower(unlist(str_split(filter, " ")))
+        keywords <- str_replace_all(keywords, "_", " ")
+        base <- afterfiltdificulty()
+        for (i in 1:length(keywords)) base <- dplyr::filter(afterfiltdificulty(), str_detect(stringr::str_to_lower(afterfiltdificulty()$description), keywords[i]))
+        base
+      }
+    })
+    
+    
+    
     preselection <- reactive({
       reset <- input$addSample
 
       if (input$allowduplicates == FALSE) {
-        available <- setdiff(questions()$questionID, tables$contentexam$QN)
+        available <- setdiff(afterfiltkeyword()$questionID, tables$contentexam$QN)
       } else {
-        available <- questions()$questionID
+        available <- afterfiltkeyword()$questionID
       }
 
-      preselection <- dplyr::filter(questions(), questionID %in% available)
-      if (input$typequest == "Multiple choice") {
-        preselection <- dplyr::filter(preselection, kind == "mcq" | kind == "both")
-      } else {
-        preselection <- dplyr::filter(preselection, kind == "open" | kind == "both")
-      }
-
-      if (!is.null(input$language)) sellanguage <- input$language else sellanguage <- "Any"
-      if (!is.null(input$chapter)) selchapter <- input$chapter else selchapter <- "0 Any"
-      if (!is.null(input$section)) selsection <- input$section else selsection <- "0 Any"
-      if (!is.null(input$subsection)) selsubsection <- input$subsection else selsubsection <- "0 Any"
-      if (!is.null(input$objective)) selobjective <- input$objective else selobjective <- "0 Any"
-      if (!is.null(input$level)) sellevel <- input$level else sellevel <- "0 Any"
-      if (!is.null(input$bloom)) selbloom <- input$bloom else selbloom <- "0 Any"
-      if (!is.null(input$difficulty)) seldifficulty <- input$difficulty else seldifficulty <- "Any"
-      if (input$keywords != "") selkeywords <- unlist(stringr::str_split(input$keywords, " ")) else selkeywords <- c(NA)
-
-      if (sellanguage != "Any") preselection <- dplyr::filter(preselection, language == sellanguage)
-      if (selchapter != "0 Any") {
-        preselection <- dplyr::filter(preselection, chapter == selchapter)
-        if (selsection != "0 Any") {
-          preselection <- dplyr::filter(preselection, section == selsection)
-          if (selsubsection != "0 Any") {
-            preselection <- dplyr::filter(preselection, subsection == selsubsection)
-            if (selobjective != "0 Any") {
-              preselection <- dplyr::filter(preselection, objective == selobjective)
-            }
-          }
-        }
-      }
-      if (sellevel != "0 Any") preselection <- dplyr::filter(preselection, level == sellevel)
-      if (selbloom != "0 Any") preselection <- dplyr::filter(preselection, bloom == selbloom)
-      if (seldifficulty != "Any") preselection <- dplyr::filter(preselection, difficulty == seldifficulty)
-      
-      if (!is.na(selkeywords[[1]])){
-        for (i in 1:length(selkeywords)){
-          preselection <- preselection %>%
-            filter(stringr::str_detect(description, pattern = selkeywords[[i]]))
-        } 
-      }
+      preselection <- dplyr::filter(afterfiltkeyword(), questionID %in% available)
 
       preselection
     })
+    
 
     sampled <- reactive({
       preselection()$questionID
     })
-
-    ##########################
-    # Menus' dynamic generation after filters' update
-    output$chapter <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$chapter)))
-      if (!is.null(input$chapter)) selected <- input$chapter else selected <- "0 Any"
-      selectInput(
-        inputId = "chapter",
-        label = "Chapter",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$section <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$section)))
-      if (!is.null(input$section)) selected <- input$section else selected <- "0 Any"
-      selectInput(
-        inputId = "section",
-        label = "Section",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$subsection <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$subsection)))
-      if (!is.null(input$subsection)) selected <- input$subsection else selected <- "0 Any"
-      selectInput(
-        inputId = "subsection",
-        label = "Subsection",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$objective <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$objective)))
-      if (!is.null(input$objective)) selected <- input$objective else selected <- "0 Any"
-      selectInput(
-        inputId = "objective",
-        label = "Objective",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$level <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$level)))
-      if (!is.null(input$level)) selected <- input$level else selected <- "0 Any"
-      selectInput(
-        inputId = "level",
-        label = "Level",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$bloom <- renderUI({
-      selection <- c("0 Any", sort(unique(preselection()$bloom)))
-      if (!is.null(input$bloom)) selected <- input$bloom else selected <- "0 Any"
-      selectInput(
-        inputId = "bloom",
-        label = "Bloom",
-        choices = selection,
-        selected = selected
-      )
-    })
-
-    output$difficulty <- renderUI({
-      selection <- c("Any", sort(unique(preselection()$difficulty)))
-      if (!is.null(input$difficulty)) selected <- input$difficulty else selected <- "Any"
-      selectInput(
-        inputId = "difficulty",
-        label = "Difficulty",
-        choices = selection,
-        selected = selected
-      )
-    })
+    
 
     ##########################################
     # Display tables
@@ -603,7 +644,7 @@ genexam <- function() {
     output$takequest <- renderUI({
       if (length(tables$contentexam$QN) > 0) {
         ids <- tables$contentexam$QN
-      } else questions$questionID
+      } else questions()$questionID
       selectInput("selquest",
                   "Select a question",
                   choices = ids,
@@ -724,8 +765,8 @@ genexam <- function() {
         if (nrow(choices) > 45 & input$withscan) choices <- choices[1:45, ]
 
         # Save parameters accessibles for question generation
-        if (!is.null(input$typequest)) type_quest <- input$typequest else type_quest <- "Multiple choice"
-        if (type_quest == "Multiple choice") {
+        if (!is.null(input$typequest)) type_quest <- input$typequest else type_quest <- "mcq"
+        if (type_quest == "mcq") {
           choices <- dplyr::filter(choices, KD == "mcq" | KD == "both")
         } else {
           choices <- dplyr::filter(choices, KD == "open" | KD == "both")
@@ -768,7 +809,7 @@ genexam <- function() {
           input$version
         )
         
-        if (input$typequest == "Multiple choice") stypequest <- "mcq" else stypequest <- "open"
+        if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
 
 
         # Generate the exam
