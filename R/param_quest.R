@@ -33,7 +33,7 @@ param_quest <- function(wdir = "",
     }
     seed <- as.integer(question_info$SD[[1]])
   } else {
-    type_quest <- "Multiple choice"
+    type_quest <- "mcq"
     quest_level <- "3 Apply"
     txt_question_id <- paste0(question_id, ". ")
     points <- ""
@@ -61,7 +61,7 @@ param_quest <- function(wdir = "",
   
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
   
-  if (type_quest == "Multiple choice") {
+  if (type_quest == "mcq") {
     reqexpl <- ""
     extype <- "schoice"
   } else if(quest_level %in% c("3 Apply","4 Analyze","5 Evaluate")) {

@@ -24,12 +24,10 @@
 #' @importFrom shiny runGadget
 #' @importFrom shiny conditionalPanel
 #' @importFrom shiny tags
-#' @importFrom shiny dataTableOutput
 #' @importFrom shiny tableOutput
 #' @importFrom shiny uiOutput
 #' @importFrom shiny plotOutput
 #' @importFrom shiny actionButton
-#' @importFrom shiny renderDataTable
 #' @importFrom shiny renderUI
 #' @importFrom shiny renderPlot
 #' @importFrom shiny renderText
@@ -42,6 +40,7 @@
 #' @importFrom shiny incProgress
 #' @importFrom shiny includeHTML
 #' @importFrom shiny withMathJax
+#' @importFrom shiny paneViewer
 #' @importFrom tibble column_to_rownames
 #' @importFrom tibble tibble
 #' @importFrom tibble as_tibble
@@ -61,6 +60,8 @@
 #' @importFrom exams exams2moodle
 #' @importFrom exams exams2blackboard
 #' @importFrom exams exams2html
+#' @importFrom DT renderDT
+#' @importFrom DT DTOutput
 #' @importFrom tth tth
 #' @importFrom tibble tibble
 #' @importFrom purrr map
@@ -288,7 +289,7 @@ genexam <- function() {
       miniTabPanel("Sort",
         icon = icon("list-ol"),
         miniContentPanel(
-          dataTableOutput(outputId = "contentexam"),
+          DT::DTOutput(outputId = "contentexam", height = "600px"),
           tags$hr(),
           uiOutput(outputId = "order"),
           fillRow(
@@ -414,7 +415,7 @@ genexam <- function() {
         questions <- questions %>%
           dplyr::filter(
             language == input$language,
-            kind == c(input$typequest,"both"),
+            kind %in% c(input$typequest,"both"),
             !(questionID %in% tables$exclusion$QN)
           )
       }
@@ -611,8 +612,8 @@ genexam <- function() {
       )
     })
 
-    output$contentexam <- renderDataTable(
-      tables$contentexam,
+    output$contentexam <- DT::renderDT({
+      as.data.frame(tables$contentexam)},
       options = list(pageLength = 10, lengthMenu = c(5, 10, 15), searching = FALSE, xtable.include.rownames = TRUE)
     )
 
@@ -735,7 +736,7 @@ genexam <- function() {
           na.omit() %>%
           dplyr::arrange(by = ID)
       }
-
+      
       tables$contentexam <- table
     })
 
@@ -922,5 +923,5 @@ genexam <- function() {
       stopApp()
     })
   }
-  runGadget(ui, server)
+  runGadget(ui, server, viewer = paneViewer(minHeight = "maximize"))
 }
