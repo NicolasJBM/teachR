@@ -131,7 +131,7 @@ genexam <- function() {
               selectInput(
                 inputId = "typequest",
                 label = "Type of questions",
-                choices = c("mcq", "open", "any"),
+                choices = c("mcq", "open"),
                 selected = "mcq"
               )
             ),
@@ -233,7 +233,7 @@ genexam <- function() {
                 )
               ),
               conditionalPanel(
-                'input.typequest === "mcq" || input.typequest === "any"',
+                'input.typequest === "mcq"',
                 numericInput(
                   inputId = "alternatives",
                   label = "Number of alternatives",
@@ -449,7 +449,7 @@ genexam <- function() {
       questions <- questions
       if (!is.null(input$language) & !is.null(input$typequest)){
         questions <- subset(questions, questions$language == input$language)
-        if (input$typequest != "any") questions <- subset(questions, questions$kind %in% c(input$typequest,"both"))
+        questions <- subset(questions, questions$kind %in% c(input$typequest,"both"))
         questions <- subset(questions, !(questions$questionID %in% tables$exclusion$QN))
       }
       questions
@@ -912,8 +912,7 @@ genexam <- function() {
         if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
         
         examid <- paste0(
-          substring(gsub("-", "", input$datexam), 3),
-          paste0(rep(0, (3 - nchar(as.character(i)))), collapse = "")
+          substring(gsub("-", "", input$datexam), 3)
         )
 
 
@@ -981,7 +980,11 @@ genexam <- function() {
             incProgress((i+1) / steps, detail = paste0("Generating version ", i))
             
             # Set the ewam id
-            versionid <- paste0(examid,i)
+            versionid <- paste0(
+              examid,
+              paste0(rep(0, (3 - nchar(as.character(i)))), collapse = ""),
+              i
+            )
             
             header <- list(Date = input$datexam, ID = examid)
             
@@ -995,7 +998,7 @@ genexam <- function() {
                               name = paste0("questions_", versionid),
                               header = header,
                               points = choices$PT,
-                              template = paste0(templates, "/exam_", input$language, "_", input$format, ".tex")
+                              template = paste0(templates, "/exam_", input$language, "_", input$typequest, "_", input$format, ".tex")
             )
             
             unlink(paste0(tmpdir, "/*"))
@@ -1009,7 +1012,7 @@ genexam <- function() {
                               texdir = tmpdir,
                               name = paste0("solutions_", versionid),
                               header = header,
-                              template = paste0(templates, "/solution_", input$language, "_", input$format, ".tex")
+                              template = paste0(templates, "/solution_", input$language, "_", input$typequest, "_", input$format, ".tex")
             )
             
             if (stypequest == "mcq" & input$withscan) {
