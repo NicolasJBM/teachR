@@ -1041,7 +1041,7 @@ genexam <- function() {
           dplyr::select(-paths) %>%
           as.data.frame(stringsAsFactors = FALSE)
         
-        utils::write.csv(exportexam, paste0("parameters/", examid, ".csv"), row.names = FALSE)
+        utils::write.csv(exportexam, paste0("parameters/questions_", examid, ".csv"), row.names = FALSE)
         
         if (input$versions > 1){
           exportblocs <- prepversions %>%
@@ -1049,8 +1049,8 @@ genexam <- function() {
             dplyr::select(bloc, question = QN) %>%
             unique()
           
-          utils::write.csv(exportblocs, paste0("parameters/questions_blocs.csv"), row.names = FALSE)
-          utils::write.csv(orderversions, paste0("parameters/versions_blocs.csv"), row.names = FALSE)
+          utils::write.csv(exportblocs, paste0("parameters/blocs_", examid,".csv"), row.names = FALSE)
+          utils::write.csv(orderversions, paste0("parameters/versions_", examid,".csv"), row.names = FALSE)
         }
         
       })
