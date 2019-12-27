@@ -21,6 +21,7 @@ Imports:
     dplyr,
     miniUI,
     shiny,
+    shinythemes,
     tidyr,
     exams,
     tth,
@@ -39,4 +40,7 @@ Imports:
     rmarkdown,
     stringr,
     writR,
-    DT
+    DT,
+    rvest,
+    xml2,
+    gtools

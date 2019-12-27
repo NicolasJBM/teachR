@@ -4,12 +4,17 @@
 \alias{param_quest}
 \title{Function to retrieve or generate parameters used when questions are generated.}
 \usage{
-param_quest(wdir = "", question_id = "")
+param_quest(wdir = "", question_id = "", alttype = NULL,
+  altlevel = NULL)
 }
 \arguments{
 \item{wdir}{Character. Working directory.}
 
 \item{question_id}{Character. ID of the question.}
+
+\item{alttype}{Character. force the type of question: "mcq" or "open"}
+
+\item{altlevel}{Character. force the type of level for the question: "2 Understand" or "3 Apply"}
 }
 \value{
 Parameters for the questions.

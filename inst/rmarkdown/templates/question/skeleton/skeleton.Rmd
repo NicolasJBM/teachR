@@ -2,8 +2,10 @@
 ##############################################################################
 # Packages
 library(exams)
-library(writer)
-library(knitr)
+library(manacc)
+library(writR)
+library(lubridate)
+library(tibble)
 library(dplyr)
 
 
@@ -11,7 +13,7 @@ library(dplyr)
 # Initialization
 question_id <- "EN00000XXX"
 wdir <- getwd()
-parameters <- genexam::param_quest(wdir, question_id)
+parameters <- teachR::param_quest(wdir, question_id, alttype = "mcq", altlevel = "3 Apply")
 for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
 options(xtable.comment = FALSE, xtable.floating = FALSE, xtable.timestamp = "")
 set.seed(seed)

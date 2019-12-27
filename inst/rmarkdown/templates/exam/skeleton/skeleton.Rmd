@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r}
-library(genexam)
+library(teachR)
 library(manacc)
 
 ```
