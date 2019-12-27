@@ -986,33 +986,35 @@ genexam <- function() {
               i
             )
             
-            header <- list(Date = input$datexam, ID = examid)
+            header <- list(Date = input$datexam, ID = versionid)
             
             set.seed(seed)
-            exam <- exams::exams2pdf(myexams[[i]],
-                              n = 1,
-                              dir = "questions",
-                              edir = exercises,
-                              tdir = tmpdir,
-                              texdir = tmpdir,
-                              name = paste0("questions_", versionid),
-                              header = header,
-                              points = choices$PT,
-                              template = paste0(templates, "/exam_", input$language, "_", input$typequest, "_", input$format, ".tex")
+            exam <- exams::exams2pdf(
+              myexams[[i]],
+              n = 1,
+              dir = "questions",
+              edir = exercises,
+              tdir = tmpdir,
+              texdir = tmpdir,
+              name = paste0("questions_", versionid),
+              header = header,
+              points = choices$PT,
+              template = paste0(templates, "/exam_", input$language, "_", input$typequest, "_", input$format, ".tex")
             )
             
             unlink(paste0(tmpdir, "/*"))
             
             set.seed(seed)
-            solu <- exams::exams2pdf(myexams[[i]],
-                              n = 1,
-                              dir = "questions",
-                              edir = exercises,
-                              tdir = tmpdir,
-                              texdir = tmpdir,
-                              name = paste0("solutions_", versionid),
-                              header = header,
-                              template = paste0(templates, "/solution_", input$language, "_", input$typequest, "_", input$format, ".tex")
+            solu <- exams::exams2pdf(
+              myexams[[i]],
+              n = 1,
+              dir = "questions",
+              edir = exercises,
+              tdir = tmpdir,
+              texdir = tmpdir,
+              name = paste0("solutions_", versionid),
+              header = header,
+              template = paste0(templates, "/solution_", input$language, "_", input$typequest, "_", input$format, ".tex")
             )
             
             if (stypequest == "mcq" & input$withscan) {
@@ -1024,7 +1026,6 @@ genexam <- function() {
                   title = input$title,
                   institution = input$institution,
                   date = input$datexam,
-                  startid = input$version,
                   alternatives = input$alternatives,
                   reglength = input$reglength,
                   encoding = ""
@@ -1035,11 +1036,21 @@ genexam <- function() {
           
         }
 
-        myexams %>%
-          dplyr::bind_rows() %>%
+        exportexam <- choices %>%
           dplyr::select(-paths) %>%
-          as.data.frame(stringsAsFactors = FALSE) %>%
-          utils::write.csv(paste0("parameters/", examid, ".csv"), row.names = FALSE)
+          as.data.frame(stringsAsFactors = FALSE)
+        
+        utils::write.csv(exportexam, paste0("parameters/", examid, ".csv"), row.names = FALSE)
+        
+        if (input$versions > 1){
+          exportblocs <- prepversions %>%
+            dplyr::bind_rows() %>%
+            dplyr::select(bloc, question = QN) %>%
+            unique()
+          
+          utils::write.csv(exportblocs, paste0("parameters/questions_blocs.csv"), row.names = FALSE)
+          utils::write.csv(orderversions, paste0("parameters/versions_blocs.csv"), row.names = FALSE)
+        }
         
       })
 
