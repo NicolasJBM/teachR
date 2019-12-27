@@ -391,6 +391,7 @@ genexam <- function() {
     score <- NULL
     section <- NULL
     subsection <- NULL
+    bloc <- NULL
     
     
     ################
