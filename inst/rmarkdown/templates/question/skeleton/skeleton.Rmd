@@ -68,8 +68,7 @@ Question
 `r txt_question_id` What is the question*? `r reqexpl` `r points`*  
 
 ```{r questionlist, echo = FALSE, results = "asis"}
-if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else
-  writeLines(lines)
+if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
 ```
 
 
