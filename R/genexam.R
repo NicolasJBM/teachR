@@ -989,9 +989,11 @@ genexam <- function() {
             
             header <- list(Date = input$datexam, ID = versionid)
             
+            
+            
             set.seed(seed)
             exam <- exams::exams2pdf(
-              myexams[[i]],
+              mutate(myexams[[i]], ES = "exam"),
               n = 1,
               dir = "questions",
               edir = exercises,
@@ -1007,7 +1009,7 @@ genexam <- function() {
             
             set.seed(seed)
             solu <- exams::exams2pdf(
-              myexams[[i]],
+              mutate(myexams[[i]], ES = "solution"),
               n = 1,
               dir = "questions",
               edir = exercises,

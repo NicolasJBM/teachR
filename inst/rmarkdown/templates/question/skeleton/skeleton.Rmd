@@ -20,12 +20,20 @@ set.seed(seed)
 
 
 ##############################################################################
-# Data
+# Preparation
+
+
+
 
 
 
 ##############################################################################
 # Answers
+
+#if (reqexpl != "" & exasolu == "exam") nbrlines <- 10 else nbrlines <- 2
+#lines <- rep("\\ ", nbrlines)
+lines <- rep("\\ ", 2)
+
 questions <- c(
   right1 = "right",
   wrong1 = "wrong",
@@ -60,7 +68,8 @@ Question
 `r txt_question_id` What is the question*? `r reqexpl` `r points`*  
 
 ```{r questionlist, echo = FALSE, results = "asis"}
-if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else writeLines(c("\\ ","\\ "))
+if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else
+  writeLines(lines)
 ```
 
 

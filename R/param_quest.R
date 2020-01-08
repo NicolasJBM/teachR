@@ -23,6 +23,7 @@ param_quest <- function(wdir = "",
     load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData")))
     question_info <- dplyr::filter(as.data.frame(choices), QN == question_id)
     quest_level <- question_info$BL[[1]]
+    exasolu <- question_info$ES[[1]]
     if (show_question_id == TRUE) {
       txt_question_id <- paste0(question_id, ". ")
     } else {
@@ -37,6 +38,7 @@ param_quest <- function(wdir = "",
     }
     seed <- as.integer(question_info$SD[[1]])
   } else {
+    exasolu <- "solution"
     if (is.null(alttype)) type_quest <- "mcq" else type_quest <- alttype
     if (is.null(altlevel)) quest_level <- "3 Apply" else quest_level <- altlevel
     txt_question_id <- paste0(question_id, ". ")
@@ -76,6 +78,8 @@ param_quest <- function(wdir = "",
     extype <- "string"
   }
   
+  
+  
   parameters <- list(
     reqexpl = reqexpl,
     extype = extype,
@@ -86,7 +90,8 @@ param_quest <- function(wdir = "",
     currencysymb = currencysymb,
     pctsymb = pctsymb,
     seed = seed,
-    alternatives = alternatives
+    alternatives = alternatives,
+    exasolu = exasolu
   )
 
   return(parameters)
