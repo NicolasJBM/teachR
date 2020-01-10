@@ -4,10 +4,18 @@
 \alias{make_scan_A4}
 \title{Simplification of the function exams2nops designed by Zeileis et al. to produce only the answer sheet and database.}
 \usage{
-make_scan_A4(exam, name = "scan", language = "en",
-  title = "Title of the exam", institution = "Academic Institution",
-  date = "2018-05-10", startid = 1, alternatives = 5,
-  reglength = 7L, encoding = "")
+make_scan_A4(
+  exam,
+  name = "scan",
+  language = "en",
+  title = "Title of the exam",
+  institution = "Academic Institution",
+  date = "2018-05-10",
+  startid = 1,
+  alternatives = 5,
+  reglength = 7L,
+  encoding = ""
+)
 }
 \arguments{
 \item{exam}{Output of the function exams2pdf.}

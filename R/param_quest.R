@@ -19,11 +19,14 @@ param_quest <- function(wdir = "",
   show_question_id <- NULL
   show_question_pt <- NULL
 
-  if (file.exists(gsub("/tmp/", "/", paste0(wdir, "/parameters/exam_parameters.RData")))) {
+  if (
+    file.exists(gsub("/tmp/", "/", paste0(wdir, "/parameters/exam_parameters.RData"))) &
+    file.exists(gsub("/tmp/", "/", paste0(wdir, "/parameters/exasolu.RData")))
+    ) {
     load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData")))
+    load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exasolu.RData")))
     question_info <- dplyr::filter(as.data.frame(choices), QN == question_id)
     quest_level <- question_info$BL[[1]]
-    exasolu <- question_info$ES[[1]]
     if (show_question_id == TRUE) {
       txt_question_id <- paste0(question_id, ". ")
     } else {

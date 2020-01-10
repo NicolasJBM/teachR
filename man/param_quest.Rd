@@ -4,8 +4,7 @@
 \alias{param_quest}
 \title{Function to retrieve or generate parameters used when questions are generated.}
 \usage{
-param_quest(wdir = "", question_id = "", alttype = NULL,
-  altlevel = NULL)
+param_quest(wdir = "", question_id = "", alttype = NULL, altlevel = NULL)
 }
 \arguments{
 \item{wdir}{Character. Working directory.}

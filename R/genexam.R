@@ -182,7 +182,7 @@ genexam <- function() {
                 )
               ),
               fillCol(
-                flex = c(1,1,1),
+                flex = c(1,1),
                 conditionalPanel(
                   'input.platform === "Print"',
                   numericInput(
@@ -200,11 +200,6 @@ genexam <- function() {
                     min = 1,
                     max = 45,
                     step = 1
-                  ),
-                  checkboxInput(
-                    inputId = "withscan",
-                    label = "With scan (limit to 45 questions)",
-                    value = FALSE
                   )
                 )
               ),
@@ -234,13 +229,21 @@ genexam <- function() {
               ),
               conditionalPanel(
                 'input.typequest === "mcq"',
-                numericInput(
-                  inputId = "alternatives",
-                  label = "Number of alternatives",
-                  value = 5,
-                  min = 4,
-                  max = 5,
-                  step = 1
+                fillCol(
+                  flex = c(1,1),
+                  numericInput(
+                    inputId = "alternatives",
+                    label = "Number of alternatives",
+                    value = 5,
+                    min = 4,
+                    max = 5,
+                    step = 1
+                  ),
+                  checkboxInput(
+                    inputId = "withscan",
+                    label = "With scan (limit to 45 questions)",
+                    value = FALSE
+                  )
                 )
               )
             )
@@ -920,7 +923,8 @@ genexam <- function() {
         # Generate the exam
         if (input$platform == "Web") {
           incProgress(1 / 2, detail = "Generating...")
-          web <- exams::exams2html(myexam,
+          web <- exams::exams2html(
+            myexam,
             n = 1,
             dir = "web",
             edir = exercises,
@@ -931,7 +935,8 @@ genexam <- function() {
           
         } else if (input$platform == "Blackboard") {
           incProgress(1 / 2, detail = "Generating...")
-          moodle <- exams::exams2blackboard(myexam,
+          moodle <- exams::exams2blackboard(
+            myexam,
             n = 1,
             dir = "blackboard",
             edir = exercises,
@@ -942,7 +947,8 @@ genexam <- function() {
           
         } else if (input$platform == "Moodle") {
           incProgress(1 / 2, detail = "Generating...")
-          moodle <- exams2moodle(myexam,
+          moodle <- exams2moodle(
+            myexam,
             n = 1,
             dir = "moodle",
             edir = exercises,
@@ -989,11 +995,12 @@ genexam <- function() {
             
             header <- list(Date = input$datexam, ID = versionid)
             
-            
+            exasolu = "exam"
+            save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
             
             set.seed(seed)
             exam <- exams::exams2pdf(
-              mutate(myexams[[i]], ES = "exam"),
+              myexams[[i]],
               n = 1,
               dir = "questions",
               edir = exercises,
@@ -1007,9 +1014,12 @@ genexam <- function() {
             
             unlink(paste0(tmpdir, "/*"))
             
+            exasolu = "solution"
+            save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+            
             set.seed(seed)
             solu <- exams::exams2pdf(
-              mutate(myexams[[i]], ES = "solution"),
+              myexams[[i]],
               n = 1,
               dir = "questions",
               edir = exercises,

@@ -2,11 +2,8 @@
 ##############################################################################
 # Packages
 library(exams)
+library(tidyverse)
 library(manacc)
-library(writR)
-library(lubridate)
-library(tibble)
-library(dplyr)
 
 
 ##############################################################################
