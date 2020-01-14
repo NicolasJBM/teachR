@@ -27,8 +27,7 @@ set.seed(seed)
 ##############################################################################
 # Answers
 
-#if (reqexpl != "" & exasolu == "exam") nbrlines <- 10 else nbrlines <- 2
-#lines <- rep("\\ ", nbrlines)
+#if (reqexpl != "" & exasolu == "exam" & type_table != "html") lines <- paste0("\\vspace{",selection$space[[1]],"cm}") else lines <- rep(" \\ ", 2)
 lines <- rep("\\ ", 2)
 
 questions <- c(

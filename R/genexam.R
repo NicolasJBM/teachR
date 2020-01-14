@@ -190,7 +190,7 @@ genexam <- function() {
                     label = "Number of versions",
                     value = 1,
                     min = 1,
-                    max = 4,
+                    max = 10,
                     step = 1
                   ),
                   numericInput(
@@ -229,21 +229,18 @@ genexam <- function() {
               ),
               conditionalPanel(
                 'input.typequest === "mcq"',
-                fillCol(
-                  flex = c(1,1),
-                  numericInput(
-                    inputId = "alternatives",
-                    label = "Number of alternatives",
-                    value = 5,
-                    min = 4,
-                    max = 5,
-                    step = 1
-                  ),
-                  checkboxInput(
-                    inputId = "withscan",
-                    label = "With scan (limit to 45 questions)",
-                    value = FALSE
-                  )
+                numericInput(
+                  inputId = "alternatives",
+                  label = "Number of alternatives",
+                  value = 5,
+                  min = 4,
+                  max = 5,
+                  step = 1
+                ),
+                checkboxInput(
+                  inputId = "withscan",
+                  label = "With scan (limit to 45 questions)",
+                  value = FALSE
                 )
               )
             )
