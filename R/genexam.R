@@ -232,7 +232,7 @@ genexam <- function() {
                 numericInput(
                   inputId = "alternatives",
                   label = "Number of alternatives",
-                  value = 5,
+                  value = 4,
                   min = 4,
                   max = 5,
                   step = 1
@@ -428,6 +428,9 @@ genexam <- function() {
           stringsAsFactors = FALSE
         )
       }
+    })
+    
+    observe({
       if (is.null(input$exclusion)) {
         tables$exclusion <- data.frame(
           QN = "",
@@ -442,9 +445,9 @@ genexam <- function() {
           stringsAsFactors = FALSE
         )
       }
-      tables$order <- c()
     })
     
+    tables$order <- c()
     
     questionlist <- reactive({
       questions <- questions
