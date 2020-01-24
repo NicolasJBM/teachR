@@ -78,6 +78,7 @@
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
 #' @importFrom writR stat_totals
+#' @importFrom questR questions
 #' @export
 
 
@@ -95,11 +96,6 @@ genexam <- function() {
             
             fillRow(
               flex = c(1,1,1),
-              textInput(
-                inputId = "package_name",
-                label = "Package of questions",
-                value = "manacc"
-              ),
               fileInput(
                 inputId = "selection",
                 label = "Preselection of questions",
@@ -111,7 +107,8 @@ genexam <- function() {
                 label = "Exclusion of questions",
                 accept = c(".csv"),
                 multiple = FALSE
-              )
+              ),
+              tags$br()
             ),
             
             fillRow(
@@ -255,22 +252,24 @@ genexam <- function() {
           fillRow(
             flex = c(1,1),
             fillCol(
-              flex = c(4, 1, 2, 5),
+              flex = c(5, 1, 2, 4),
               fillRow(
                 flex = c(1, 1),
                 fillCol(
-                  flex = c(1, 1, 1, 1),
+                  flex = c(1, 1, 1, 1, 1),
+                  uiOutput(outputId = "filtsubject"),
                   uiOutput(outputId = "filtchapter"),
                   uiOutput(outputId = "filtsection"),
                   uiOutput(outputId = "filtsubsection"),
                   uiOutput(outputId = "filtobjective")
                 ),
                 fillCol(
-                  flex = c(1, 1, 1, 1),
+                  flex = c(1, 1, 1, 1, 1),
                   uiOutput(outputId = "filtlevel"),
                   uiOutput(outputId = "filtbloom"),
                   uiOutput(outputId = "filtdifficulty"),
-                  textInput("filtkeyword", "Keywords", value = "")
+                  textInput("filtkeyword", "Keywords", value = ""),
+                  tags$br()
                 )
               ),
               tags$hr(),
@@ -372,6 +371,7 @@ genexam <- function() {
     # Bind variables
     Bloom <- NULL
     ID <- NULL
+    SU <- NULL
     KD <- NULL
     LS <- NULL
     PT <- NULL
@@ -407,6 +407,7 @@ genexam <- function() {
           ID = 0,
           QN = "tmp",
           LG = "tmp",
+          SU = "tmp",
           L1 = "tmp",
           L2 = "tmp",
           L3 = "tmp",
@@ -450,7 +451,7 @@ genexam <- function() {
     tables$order <- c()
     
     questionlist <- reactive({
-      questions <- questions
+      questions <- questR::questions
       if (!is.null(input$language) & !is.null(input$typequest)){
         questions <- subset(questions, questions$language == input$language)
         questions <- subset(questions, questions$kind %in% c(input$typequest,"both"))
@@ -463,8 +464,31 @@ genexam <- function() {
     
     ####################
     # Prepare filters
+    output$filtsubject <- renderUI({
+      choices <- sort(c(setdiff(unique(questionlist()$subject), ""), ""), decreasing = FALSE)
+      selectInput("slctsubject",
+                  "Subject:",
+                  choices = choices,
+                  selected = "",
+                  multiple = FALSE,
+                  width = '80%')
+    })
+    
+    afterfiltsubject <- reactive({
+      filter <- input$slctsubject
+      if (is.null(filter)){
+        questionlist()
+      } else if (filter == "") {
+        questionlist()
+      } else {
+        subset(questionlist(), stringr::str_detect(questionlist()$subject, filter))
+      }
+    })
+    
+    
+    
     output$filtchapter <- renderUI({
-      choices <- sort(c(setdiff(unique(questionlist()$chapter), ""), ""), decreasing = FALSE)
+      choices <- sort(c(setdiff(unique(afterfiltchapter()$chapter), ""), ""), decreasing = FALSE)
       selectInput("slctchapter",
                   "Chapter:",
                   choices = choices,
