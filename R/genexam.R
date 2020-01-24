@@ -265,11 +265,11 @@ genexam <- function() {
                 ),
                 fillCol(
                   flex = c(1, 1, 1, 1, 1),
+                  selectInput("filttype", "Type:", choices = c("0 Any","1 Question","2 Exercise","3 Problem","4 Essay"), selected = "0 Any"),
                   uiOutput(outputId = "filtlevel"),
                   uiOutput(outputId = "filtbloom"),
                   uiOutput(outputId = "filtdifficulty"),
-                  textInput("filtkeyword", "Keywords", value = ""),
-                  tags$br()
+                  textInput("filtkeyword", "Keywords", value = "")
                 )
               ),
               tags$hr(),
@@ -377,6 +377,7 @@ genexam <- function() {
     PT <- NULL
     QN <- NULL
     SD <- NULL
+    TY <- NULL
     Topic <- NULL
     Value <- NULL
     bloom <- NULL
@@ -412,6 +413,7 @@ genexam <- function() {
           L2 = "tmp",
           L3 = "tmp",
           LO = "tmp",
+          TY = "tmp",
           LV = "tmp",
           BL = "tmp",
           DI = 0,
@@ -680,8 +682,10 @@ genexam <- function() {
       } else {
         available <- afterfiltkeyword()$questionID
       }
-
+      
       preselection <- subset(afterfiltkeyword(), afterfiltkeyword()$questionID %in% available)
+      
+      if (input$filttype != "0 Any") preselection <- subset(preselection, preselection$type != input$filttype)
 
       preselection
     })
@@ -840,10 +844,12 @@ genexam <- function() {
             ID,
             QN,
             LG = language,
+            SU = subject,
             L1 = chapter,
             L2 = section,
             L3 = subsection,
             LO = objective,
+            TY = type,
             LV = level,
             BL = bloom,
             DI = difficulty,
