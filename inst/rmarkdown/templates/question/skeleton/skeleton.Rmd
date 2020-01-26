@@ -32,9 +32,9 @@ set.seed(seed)
 #words <- selection$words[[1]]
 #ref <- selection$references[[1]]
 #instructions <- dplyr::case_when(
-#  !is.na(inst) & !is.na(ref) ~ paste0(inst, ", remain within ", words, " words and build on the folowing references:"),
+#  !is.na(inst) & !is.na(ref) ~ paste0(inst, ", remain within ", words, " words and build on the folowing references:\n", ref),
 #  !is.na(inst) & is.na(ref) ~ paste0(inst, " and remain within ", words, " words."),
-#  is.na(inst) & !is.na(ref) ~ paste0("remain within ", words, " words and build on the folowing references:"),
+#  is.na(inst) & !is.na(ref) ~ paste0("remain within ", words, " words and build on the folowing references:\n", ref),
 #  TRUE ~ paste0("remain within ", words, " words.")
 #)
 
@@ -79,9 +79,7 @@ Question
 `r txt_question_id` What is the question? `r points`  
 \
 *Your answer should `r instructions`*  
-`r ref`  
 \
-
 ```{r questionlist, echo = FALSE, results = "asis"}
 if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
 ```
