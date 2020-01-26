@@ -14,7 +14,7 @@ LazyData: true
 License: GPL-3 | file LICENSE
 Depends: R (>= 3.6)
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.0
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 Imports:
     knitr,
@@ -43,4 +43,5 @@ Imports:
     DT,
     rvest,
     xml2,
-    gtools
+    gtools,
+    questR

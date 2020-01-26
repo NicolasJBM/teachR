@@ -27,7 +27,7 @@ set.seed(seed)
 ##############################################################################
 # Answers
 
-#if (reqexpl != "" & exasolu == "exam" & type_table != "html") lines <- paste0("\\vspace{",selection$space[[1]],"cm}") else lines <- rep(" \\ ", 2)
+#if (extype == "string" & exasolu == "exam" & type_table != "html") lines <- paste0("\\vspace{",selection$space[[1]],"cm}") else lines <- rep(" \\ ", 2)
 lines <- rep("\\ ", 2)
 
 questions <- c(
@@ -61,10 +61,10 @@ explanations <- explanations[alea]
 
 Question
 ========
-`r txt_question_id` What is the question*? `r reqexpl` `r points`*  
+`r txt_question_id` What is the question? `r points`  
 
 ```{r questionlist, echo = FALSE, results = "asis"}
-if (reqexpl == "") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
+if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
 ```
 
 
@@ -74,7 +74,7 @@ Solution
 Describe is the solution.
 
 ```{r solutionlist, echo = FALSE, results = "asis"}
-if (reqexpl == "") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ "))
+if (extype == "schoice") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ "))
 ```
 
 

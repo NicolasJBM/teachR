@@ -78,7 +78,7 @@
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
 #' @importFrom writR stat_totals
-#' @importFrom questR questions
+#' @import questR
 #' @export
 
 
@@ -265,7 +265,12 @@ genexam <- function() {
                 ),
                 fillCol(
                   flex = c(1, 1, 1, 1, 1),
-                  selectInput("filttype", "Type:", choices = c("0 Any","1 Question","2 Exercise","3 Problem","4 Essay"), selected = "0 Any"),
+                  selectInput(
+                    "filttype",
+                    "Type:",
+                    choices = c("0 Any","1 Statement","2 Question","3 Exercise","4 Problem","5 Essay"),
+                    selected = "0 Any"
+                  ),
                   uiOutput(outputId = "filtlevel"),
                   uiOutput(outputId = "filtbloom"),
                   uiOutput(outputId = "filtdifficulty"),
@@ -380,7 +385,9 @@ genexam <- function() {
     TY <- NULL
     Topic <- NULL
     Value <- NULL
+    subject <- NULL
     bloom <- NULL
+    type <- NULL
     chapter <- NULL
     difficulty <- NULL
     kind <- NULL
@@ -942,6 +949,8 @@ genexam <- function() {
         ifelse(!dir.exists(file.path(wd, "tmp")), dir.create(file.path(wd, "tmp")), FALSE)
         tmpdir <- paste0(wd, "/tmp")
         unlink(paste0(tmpdir, "/*"))
+        
+        file.copy(from = paste0(find.package("questR"),"/questions/ref.bib"), to = paste0(tmpdir,"/ref.bib"))
         
         if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
         

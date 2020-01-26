@@ -69,22 +69,9 @@ param_quest <- function(wdir = "",
   }
   
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
-  
-  if (type_quest == "mcq") {
-    reqexpl <- ""
-    extype <- "schoice"
-  } else if(quest_level %in% c("3 Apply","4 Analyze","5 Evaluate")) {
-    reqexpl <- "Please provide detailed computations and adequate explanations whenever applicable."
-    extype <- "string"
-  } else {
-    reqexpl <- "Please provide relevant justifications, explanations, and illustrations whenever applicable."
-    extype <- "string"
-  }
-  
-  
+  if (type_quest == "mcq") extype <- "schoice" else extype <- "string"
   
   parameters <- list(
-    reqexpl = reqexpl,
     extype = extype,
     txt_question_id = txt_question_id,
     points = points,

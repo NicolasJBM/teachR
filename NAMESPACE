@@ -3,6 +3,7 @@
 export(genexam)
 export(make_scan_A4)
 export(param_quest)
+import(questR)
 importFrom(DT,DTOutput)
 importFrom(DT,renderDT)
 importFrom(dplyr,"%>%")
