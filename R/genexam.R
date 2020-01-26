@@ -92,10 +92,10 @@ genexam <- function() {
         icon = icon("sliders"),
         miniContentPanel(
           fillCol(
-            flex = c(1,1,1,1,3),
+            flex = c(1,1,1,3),
             
             fillRow(
-              flex = c(1,1,1),
+              flex = c(1,1,1,1),
               fileInput(
                 inputId = "selection",
                 label = "Preselection of questions",
@@ -108,22 +108,11 @@ genexam <- function() {
                 accept = c(".csv"),
                 multiple = FALSE
               ),
-              tags$br()
-            ),
-            
-            fillRow(
-              flex = c(1,1,1),
               selectInput(
                 inputId = "language",
                 label = "Language",
                 choices = c("en"),
                 selected = "en"
-              ),
-              selectInput(
-                inputId = "currency",
-                label = "Currency to use",
-                choices = c("euro", "dollar", "pound", "yen"),
-                selected = "euro"
               ),
               selectInput(
                 inputId = "typequest",
@@ -134,7 +123,7 @@ genexam <- function() {
             ),
             
             fillRow(
-              flex = c(1,1,1),
+              flex = c(1,1,1,1),
               textInput(
                 inputId = "name",
                 label = "File name",
@@ -149,6 +138,12 @@ genexam <- function() {
                 label = "Platform of delivery",
                 choices = c("Print", "Web", "Moodle", "Blackboard"),
                 selected = "Print"
+              ),
+              selectInput(
+                inputId = "currency",
+                label = "Currency to use",
+                choices = c("euro", "dollar", "pound", "yen"),
+                selected = "euro"
               )
             ),
             
@@ -203,6 +198,26 @@ genexam <- function() {
               fillCol(
                 flex = c(1,1,1),
                 conditionalPanel(
+                  'input.typequest === "mcq"',
+                  numericInput(
+                    inputId = "alternatives",
+                    label = "Number of alternatives",
+                    value = 4,
+                    min = 4,
+                    max = 5,
+                    step = 1
+                  ),
+                  checkboxInput(
+                    inputId = "withscan",
+                    label = "With scan (limit to 45 questions)",
+                    value = FALSE
+                  )
+                ),
+                tags$br()
+              ),
+              fillCol(
+                flex = c(1,1,1),
+                conditionalPanel(
                   'input.withscan',
                   textInput(
                     inputId = "institution",
@@ -222,22 +237,6 @@ genexam <- function() {
                     max = 9,
                     step = 1
                   )
-                )
-              ),
-              conditionalPanel(
-                'input.typequest === "mcq"',
-                numericInput(
-                  inputId = "alternatives",
-                  label = "Number of alternatives",
-                  value = 4,
-                  min = 4,
-                  max = 5,
-                  step = 1
-                ),
-                checkboxInput(
-                  inputId = "withscan",
-                  label = "With scan (limit to 45 questions)",
-                  value = FALSE
                 )
               )
             )
@@ -265,12 +264,7 @@ genexam <- function() {
                 ),
                 fillCol(
                   flex = c(1, 1, 1, 1, 1),
-                  selectInput(
-                    "filttype",
-                    "Type:",
-                    choices = c("0 Any","1 Statement","2 Question","3 Exercise","4 Problem","5 Essay"),
-                    selected = "0 Any"
-                  ),
+                  uiOutput(outputId = "filttype"),
                   uiOutput(outputId = "filtlevel"),
                   uiOutput(outputId = "filtbloom"),
                   uiOutput(outputId = "filtdifficulty"),
@@ -498,7 +492,7 @@ genexam <- function() {
     
     
     output$filtchapter <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltchapter()$chapter), ""), ""), decreasing = FALSE)
+      choices <- sort(c(setdiff(unique(afterfiltsubject()$chapter), ""), ""), decreasing = FALSE)
       selectInput("slctchapter",
                   "Chapter:",
                   choices = choices,
@@ -510,11 +504,11 @@ genexam <- function() {
     afterfiltchapter <- reactive({
       filter <- input$slctchapter
       if (is.null(filter)){
-        questionlist()
+        afterfiltsubject()
       } else if (filter == "") {
-        questionlist()
+        afterfiltsubject()
       } else {
-        subset(questionlist(), stringr::str_detect(questionlist()$chapter, filter))
+        subset(afterfiltsubject(), stringr::str_detect(afterfiltsubject()$chapter, filter))
       }
     })
     
@@ -589,8 +583,30 @@ genexam <- function() {
     
     
     
+    output$filttype <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltobjective()$type), ""), ""), decreasing = FALSE)
+      selectInput("slcttype",
+                  "Type:",
+                  choices = choices,
+                  selected = "",
+                  multiple = FALSE)
+    })
+    
+    afterfilttype <- reactive({
+      filter <- input$slcttype
+      if (is.null(filter)){
+        afterfiltobjective()
+      } else if (filter == "") {
+        afterfiltobjective()
+      } else {
+        subset(afterfiltobjective(), stringr::str_detect(afterfiltobjective()$type, filter))
+      }
+    })
+    
+    
+    
     output$filtlevel <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltobjective()$level), ""), ""), decreasing = FALSE)
+      choices <- sort(c(setdiff(unique(afterfilttype()$level), ""), ""), decreasing = FALSE)
       selectInput("slctlevel",
                   "Level:",
                   choices = choices,
@@ -601,11 +617,11 @@ genexam <- function() {
     afterfiltlevel <- reactive({
       filter <- input$slctlevel
       if (is.null(filter)){
-        afterfiltobjective()
+        afterfilttype()
       } else if (filter == "") {
-        afterfiltobjective()
+        afterfilttype()
       } else {
-        subset(afterfiltobjective(), stringr::str_detect(afterfiltobjective()$level, filter))
+        subset(afterfilttype(), stringr::str_detect(afterfilttype()$level, filter))
       }
     })
     
@@ -689,8 +705,6 @@ genexam <- function() {
       }
       
       preselection <- subset(afterfiltkeyword(), afterfiltkeyword()$questionID %in% available)
-      
-      if (input$filttype != "0 Any") preselection <- subset(preselection, preselection$type != input$filttype)
 
       preselection
     })
