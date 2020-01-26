@@ -32,10 +32,10 @@ set.seed(seed)
 #words <- selection$words[[1]]
 #ref <- selection$references[[1]]
 #instructions <- dplyr::case_when(
-#  !is.na(inst) & !is.na(ref) ~ paste0(inst, ", remain within ", words, " words and build on the folowing references:\n", ref),
-#  !is.na(inst) & is.na(ref) ~ paste0(inst, " and remain within ", words, " words."),
-#  is.na(inst) & !is.na(ref) ~ paste0("remain within ", words, " words and build on the folowing references:\n", ref),
-#  TRUE ~ paste0("remain within ", words, " words.")
+#  !is.na(inst) & !is.na(ref) ~ paste0("*Your answer should ", inst, ", remain within ", words, " words and build on the folowing reference(s):*  "),
+#  !is.na(inst) & is.na(ref) ~ paste0("*Your answer should ", inst, " and remain within ", words, " words.*  "),
+#  is.na(inst) & !is.na(ref) ~ paste0("*Your answer should remain within ", words, " words and build on the folowing reference(s):*  "),
+#  TRUE ~ paste0("*Your answer should remain within ", words, " words.*  ")
 #)
 
 
@@ -78,7 +78,13 @@ Question
 ========
 `r txt_question_id` What is the question? `r points`  
 \
-*Your answer should `r instructions`*  
+```{r instructions, echo = FALSE, results = "asis"}
+writeLines(instructions)
+```
+
+```{r references, echo = FALSE, results = "asis"}
+if (!is.na(ref)) writeLines(ref)
+```
 \
 ```{r questionlist, echo = FALSE, results = "asis"}
 if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
@@ -88,7 +94,11 @@ if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else 
 
 Solution
 ========
-Describe is the solution.
+Describe here the solution.
+
+_______
+
+Keys:  
 
 ```{r solutionlist, echo = FALSE, results = "asis"}
 if (extype == "schoice") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ ")) # else writeLines(keys)
