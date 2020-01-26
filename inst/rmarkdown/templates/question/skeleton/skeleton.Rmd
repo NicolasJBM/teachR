@@ -21,7 +21,22 @@ set.seed(seed)
 
 
 
+#selection <- questR::openquest %>%
+#  dplyr::filter(subject == "Management Control", subsection == "", bloom == "")  %>%
+#  dplyr::sample_n(1)
 
+#quest <- selection$question[[1]]
+#sol <- selection$answer[[1]]
+#keys <- selection$keys[[1]]
+#inst <- unlist(strsplit(selection$instructions[[1]], "; "))
+#words <- selection$words[[1]]
+#ref <- selection$references[[1]]
+#instructions <- dplyr::case_when(
+#  !is.na(inst) & !is.na(ref) ~ paste0(inst, ", remain within ", words, " words and build on the folowing references:"),
+#  !is.na(inst) & is.na(ref) ~ paste0(inst, " and remain within ", words, " words."),
+#  is.na(inst) & !is.na(ref) ~ paste0("remain within ", words, " words and build on the folowing references:"),
+#  TRUE ~ paste0("remain within ", words, " words.")
+#)
 
 
 ##############################################################################
@@ -62,6 +77,10 @@ explanations <- explanations[alea]
 Question
 ========
 `r txt_question_id` What is the question? `r points`  
+\
+*Your answer should `r instructions`*  
+`r ref`  
+\
 
 ```{r questionlist, echo = FALSE, results = "asis"}
 if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
@@ -74,7 +93,7 @@ Solution
 Describe is the solution.
 
 ```{r solutionlist, echo = FALSE, results = "asis"}
-if (extype == "schoice") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ "))
+if (extype == "schoice") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ ")) # else writeLines(keys)
 ```
 
 
