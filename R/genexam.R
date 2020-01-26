@@ -86,7 +86,7 @@ genexam <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("spacelab"),
     
-    gadgetTitleBar("Generator of Exams and Solutions"),
+    gadgetTitleBar("Generator of Questions and Solutions"),
     miniTabstripPanel(
       miniTabPanel("Define",
         icon = icon("sliders"),
@@ -288,7 +288,8 @@ genexam <- function() {
                     min = 1,
                     max = 100,
                     value = 1,
-                    step = 1
+                    step = 1,
+                    width = '80%'
                   ),
                   actionButton(
                     inputId = "addSample",
@@ -594,8 +595,7 @@ genexam <- function() {
                   "Level:",
                   choices = choices,
                   selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+                  multiple = FALSE)
     })
     
     afterfiltlevel <- reactive({
@@ -617,8 +617,7 @@ genexam <- function() {
                   "Bloom:",
                   choices = choices,
                   selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+                  multiple = FALSE)
     })
     
     afterfiltbloom <- reactive({
@@ -640,8 +639,7 @@ genexam <- function() {
                   "Difficulty:",
                   choices = choices,
                   selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+                  multiple = FALSE)
     })
     
     afterfiltdificulty <- reactive({
@@ -711,7 +709,7 @@ genexam <- function() {
           selected = preselection,
           multiple = TRUE,
           selectize = TRUE,
-          width = "80%"
+          width = "100%"
         )
       }
     })
@@ -734,7 +732,7 @@ genexam <- function() {
     
     output$lookexample <- renderUI({
       if (!is.null(input$slctexample)){
-        address <- system.file("doc", paste0(input$slctexample, ".html"), package=input$package_name)
+        address <- system.file("doc", paste0(input$slctexample, ".html"), package="questR")
         page <- xml2::read_html(address)
         withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
       }
@@ -780,7 +778,7 @@ genexam <- function() {
         questions <- tables$contentexam$QN
         examination <- c()
         for (question in questions){
-          address <- system.file("doc", paste0(question, ".html"), package=input$package_name)
+          address <- system.file("doc", paste0(question, ".html"), package="questR")
           page <- xml2::read_html(address)
           examination[question] <- as.character(rvest::html_node(page, "body"))
         }
@@ -936,8 +934,8 @@ genexam <- function() {
         save(type_quest, show_question_id, show_question_pt, choices, type_table, currency, alternatives, file = paste0(wd, "/parameters/exam_parameters.RData"))
 
         # Set paths to exercises and templates
-        exercises <- paste0(find.package(input$package_name), "/rmd")
-        templates <- paste0(find.package(input$package_name), "/tex")
+        exercises <- paste0(find.package("questR"), "/rmd")
+        templates <- paste0(find.package("questR"), "/tex")
 
         # Create the paths for selected questions
         suffix <- ".Rmd"
