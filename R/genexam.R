@@ -251,24 +251,26 @@ genexam <- function() {
           fillRow(
             flex = c(1,1),
             fillCol(
-              flex = c(5, 1, 2, 4),
+              flex = c(7, 1, 2, 1),
               fillRow(
-                flex = c(1, 1),
+                flex = c(2, 1),
                 fillCol(
-                  flex = c(1, 1, 1, 1, 1),
+                  flex = c(1, 1, 1, 1, 1, 1),
                   uiOutput(outputId = "filtsubject"),
                   uiOutput(outputId = "filtchapter"),
                   uiOutput(outputId = "filtsection"),
                   uiOutput(outputId = "filtsubsection"),
+                  uiOutput(outputId = "filtsubtopic"),
                   uiOutput(outputId = "filtobjective")
                 ),
                 fillCol(
-                  flex = c(1, 1, 1, 1, 1),
+                  flex = c(1, 1, 1, 1, 1, 1),
                   uiOutput(outputId = "filttype"),
                   uiOutput(outputId = "filtlevel"),
                   uiOutput(outputId = "filtbloom"),
                   uiOutput(outputId = "filtdifficulty"),
-                  textInput("filtkeyword", "Keywords", value = "")
+                  textInput("filtkeyword", "Keywords", value = ""),
+                  tags$br()
                 )
               ),
               tags$hr(),
@@ -349,7 +351,7 @@ genexam <- function() {
                        flex = c(1,1,10),
                        fillRow(flex = c(1,1),
                                selectInput("tblrow", "Select rows",
-                                           choices = c("L1","L2","L3"),
+                                           choices = c("L1","L2","L3","L4"),
                                            selected = "L1"),
                                selectInput("tblval",
                                            "Select values",
@@ -384,13 +386,15 @@ genexam <- function() {
     bloom <- NULL
     type <- NULL
     chapter <- NULL
+    sectionid <- NULL
+    subtopic <- NULL
     difficulty <- NULL
     kind <- NULL
     language <- NULL
     level <- NULL
     objective <- NULL
     paths <- NULL
-    questionID <- NULL
+    questionid <- NULL
     score <- NULL
     section <- NULL
     subsection <- NULL
@@ -410,18 +414,20 @@ genexam <- function() {
           ID = 0,
           QN = "tmp",
           LG = "tmp",
+          SC = "tmp",
+          LO = "tmp",
+          TY = "tmp",
+          KD = "tmp",
+          LV = "tmp",
+          BL = "tmp",
+          DI = 0,
           SU = "tmp",
           L1 = "tmp",
           L2 = "tmp",
           L3 = "tmp",
-          LO = "tmp",
-          TY = "tmp",
-          LV = "tmp",
-          BL = "tmp",
-          DI = 0,
-          KD = "tmp",
-          PT = 0,
+          L4 = "tmp",
           SD = 0,
+          PT = 0,
           stringsAsFactors = FALSE
         )
       } else {
@@ -459,7 +465,7 @@ genexam <- function() {
       if (!is.null(input$language) & !is.null(input$typequest)){
         questions <- subset(questions, questions$language == input$language)
         questions <- subset(questions, questions$kind %in% c(input$typequest,"both"))
-        questions <- subset(questions, !(questions$questionID %in% tables$exclusion$QN))
+        questions <- subset(questions, !(questions$questionid %in% tables$exclusion$QN))
       }
       questions
     })
@@ -560,8 +566,31 @@ genexam <- function() {
     
     
     
+    output$filtsubtopic <- renderUI({
+      choices <- sort(c(setdiff(unique(afterfiltsubsection()$subtopic), ""), ""), decreasing = FALSE)
+      selectInput("slctsubtopic",
+                  "Subtopic:",
+                  choices = choices,
+                  selected = "",
+                  multiple = FALSE,
+                  width = '80%')
+    })
+    
+    afterfiltsubtopic <- reactive({
+      filter <- input$slctsubtopic
+      if (is.null(filter)){
+        afterfiltsubsection()
+      } else if (filter == "") {
+        afterfiltsubsection()
+      } else {
+        subset(afterfiltsubsection(), stringr::str_detect(afterfiltsubsection()$subtopic, filter))
+      }
+    })
+    
+    
+    
     output$filtobjective <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltsubsection()$objective), ""), ""), decreasing = FALSE)
+      choices <- sort(c(setdiff(unique(afterfiltsubtopic()$objective), ""), ""), decreasing = FALSE)
       selectInput("slctobjective",
                   "Objective:",
                   choices = choices,
@@ -573,11 +602,11 @@ genexam <- function() {
     afterfiltobjective <- reactive({
       filter <- input$slctobjective
       if (is.null(filter)){
-        afterfiltsubsection()
+        afterfiltsubtopic()
       } else if (filter == "") {
-        afterfiltsubsection()
+        afterfiltsubtopic()
       } else {
-        subset(afterfiltsubsection(), stringr::str_detect(afterfiltsubsection()$objective, filter))
+        subset(afterfiltsubtopic(), stringr::str_detect(afterfiltsubtopic()$objective, filter))
       }
     })
     
@@ -699,12 +728,12 @@ genexam <- function() {
       reset <- input$addSample
 
       if (input$allowduplicates == FALSE) {
-        available <- setdiff(afterfiltkeyword()$questionID, tables$contentexam$QN)
+        available <- setdiff(afterfiltkeyword()$questionid, tables$contentexam$QN)
       } else {
-        available <- afterfiltkeyword()$questionID
+        available <- afterfiltkeyword()$questionid
       }
       
-      preselection <- subset(afterfiltkeyword(), afterfiltkeyword()$questionID %in% available)
+      preselection <- subset(afterfiltkeyword(), afterfiltkeyword()$questionid %in% available)
 
       preselection
     })
@@ -715,7 +744,7 @@ genexam <- function() {
 
     output$manslct <- renderUI({
       if (!is.null(preselection())){
-        preselection <- preselection()$questionID
+        preselection <- preselection()$questionid
         selectInput(
           inputId = "manslct",
           label = "Sample",
@@ -852,7 +881,7 @@ genexam <- function() {
         questionNbr <- nrow(table) + 1
 
         add <- preselection() %>%
-          dplyr::filter(questionID == question) %>%
+          dplyr::filter(questionid == question) %>%
           dplyr::mutate(
             ID = questionNbr,
             QN = question,
@@ -863,16 +892,18 @@ genexam <- function() {
             ID,
             QN,
             LG = language,
+            SC = sectionid,
+            LO = objective,
+            TY = type,
+            KD = kind,
+            LV = level,
+            BL = bloom,
+            DI = difficulty,
             SU = subject,
             L1 = chapter,
             L2 = section,
             L3 = subsection,
-            LO = objective,
-            TY = type,
-            LV = level,
-            BL = bloom,
-            DI = difficulty,
-            KD = kind,
+            L4 = subtopic,
             SD,
             PT
           )
@@ -899,14 +930,18 @@ genexam <- function() {
           ID = 0,
           QN = "tmp",
           LG = "tmp",
+          SC = "tmp",
+          LO = "tmp",
+          TY = "tmp",
+          KD = "tmp",
+          LV = "tmp",
+          BL = "tmp",
+          DI = 0,
+          SU = "tmp",
           L1 = "tmp",
           L2 = "tmp",
           L3 = "tmp",
-          LO = "tmp",
-          LV = "tmp",
-          BL = "tmp",
-          DI = "tmp",
-          KD = "tmp",
+          L4 = "tmp",
           SD = 0,
           PT = 0,
           stringsAsFactors = FALSE
@@ -934,9 +969,6 @@ genexam <- function() {
 
         if (!is.null(input$showquestid)) show_question_id <- input$showquestid else show_question_id <- FALSE
         if (!is.null(input$showquestpt)) show_question_pt <- input$showquestpt else show_question_pt <- FALSE
-
-        # Remove question unfit for lms if lms
-        if (input$platform %in% c("Blackboard", "Moodle")) choices <- dplyr::filter(choices, LS == "yes") else choices <- choices
 
         # Define the kind of table
         if (input$platform %in% c("Web", "Blackboard", "Moodle")) type_table <- "html" else type_table <- "latex"
