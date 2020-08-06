@@ -687,7 +687,7 @@ genexam <- function() {
                   multiple = FALSE)
     })
     
-    afterfiltdificulty <- reactive({
+    afterfiltdifficulty <- reactive({
       filter <- input$slctdifficulty
       if (is.null(filter)){
         afterfiltbloom()
@@ -710,14 +710,14 @@ genexam <- function() {
     afterfiltkeyword <- reactive({
       filter <- input$slctkeyword
       if (is.null(filter)){
-        afterfiltdificulty()
+        afterfiltdifficulty()
       } else if (filter[[1]] == "") {
-        afterfiltdificulty()
+        afterfiltdifficulty()
       } else {
         keywords <- stringr::str_to_lower(unlist(str_split(filter, " ")))
         keywords <- stringr::str_replace_all(keywords, "_", " ")
-        base <- afterfiltdificulty()
-        for (i in 1:length(keywords)) base <- subset(afterfiltdificulty(), stringr::str_detect(stringr::str_to_lower(afterfiltdificulty()$description), keywords[i]))
+        base <- afterfiltdifficulty()
+        for (i in 1:length(keywords)) base <- subset(afterfiltdifficulty(), stringr::str_detect(stringr::str_to_lower(afterfiltdifficulty()$description), keywords[i]))
         base
       }
     })
@@ -994,8 +994,6 @@ genexam <- function() {
         tmpdir <- paste0(wd, "/tmp")
         unlink(paste0(tmpdir, "/*"))
         
-        file.copy(from = paste0(find.package("questR"),"/questions/ref.bib"), to = paste0(tmpdir,"/ref.bib"))
-        
         if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
         
         examid <- paste0(
@@ -1006,6 +1004,8 @@ genexam <- function() {
         # Generate the exam
         if (input$platform == "Web") {
           incProgress(1 / 2, detail = "Generating...")
+          exasolu = "exam"
+          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
           web <- exams::exams2html(
             myexam,
             n = 1,
@@ -1018,6 +1018,8 @@ genexam <- function() {
           
         } else if (input$platform == "Blackboard") {
           incProgress(1 / 2, detail = "Generating...")
+          exasolu = "exam"
+          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
           moodle <- exams::exams2blackboard(
             myexam,
             n = 1,
@@ -1030,6 +1032,8 @@ genexam <- function() {
           
         } else if (input$platform == "Moodle") {
           incProgress(1 / 2, detail = "Generating...")
+          exasolu = "exam"
+          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
           moodle <- exams2moodle(
             myexam,
             n = 1,
@@ -1069,7 +1073,7 @@ genexam <- function() {
             
             incProgress((i+1) / steps, detail = paste0("Generating version ", i))
             
-            # Set the ewam id
+            # Set the exam id
             versionid <- paste0(
               examid,
               paste0(rep(0, (3 - nchar(as.character(i)))), collapse = ""),
@@ -1085,7 +1089,7 @@ genexam <- function() {
             exam <- exams::exams2pdf(
               myexams[[i]],
               n = 1,
-              dir = "questions",
+              dir = "print",
               edir = exercises,
               tdir = tmpdir,
               texdir = tmpdir,
@@ -1104,7 +1108,7 @@ genexam <- function() {
             solu <- exams::exams2pdf(
               myexams[[i]],
               n = 1,
-              dir = "questions",
+              dir = "print",
               edir = exercises,
               tdir = tmpdir,
               texdir = tmpdir,
