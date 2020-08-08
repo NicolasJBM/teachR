@@ -37,6 +37,7 @@ param_quest <- function(wdir = "",
     }
     seed <- as.integer(question_info$SD[[1]])
   } else {
+    type_quest <- "mcq"
     exasolu <- "solution"
     txt_question_id <- paste0(question_id, ". ")
     points <- ""
@@ -65,6 +66,7 @@ param_quest <- function(wdir = "",
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
   
   parameters <- list(
+    type_quest = type_quest,
     txt_question_id = txt_question_id,
     points = points,
     type_table = type_table,
