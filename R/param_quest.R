@@ -1,17 +1,13 @@
 #' Function to retrieve or generate parameters used when questions are generated.
 #' @param wdir        Character. Working directory.
 #' @param question_id Character. ID of the question.
-#' @param alttype     Character. force the type of question: "mcq" or "open"
-#' @param altlevel    Character. force the type of level for the question: "2 Understand" or "3 Apply"
 #' @return Parameters for the questions.
 #' @importFrom dplyr filter
 #' @export
 
 
 param_quest <- function(wdir = "",
-                        question_id = "",
-                        alttype = NULL,
-                        altlevel = NULL) {
+                        question_id = "") {
 
   # Bind variables
   choices <- NULL
@@ -42,8 +38,6 @@ param_quest <- function(wdir = "",
     seed <- as.integer(question_info$SD[[1]])
   } else {
     exasolu <- "solution"
-    if (is.null(alttype)) type_quest <- "mcq" else type_quest <- alttype
-    if (is.null(altlevel)) quest_level <- "3 Apply" else quest_level <- altlevel
     txt_question_id <- paste0(question_id, ". ")
     points <- ""
     type_table <- "html"
@@ -69,10 +63,8 @@ param_quest <- function(wdir = "",
   }
   
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
-  if (type_quest == "mcq") extype <- "schoice" else extype <- "string"
   
   parameters <- list(
-    extype = extype,
     txt_question_id = txt_question_id,
     points = points,
     type_table = type_table,
