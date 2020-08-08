@@ -775,7 +775,7 @@ genexam <- function() {
     
     output$lookexample <- renderUI({
       if (!is.null(input$slctexample)){
-        address <- system.file("doc", paste0(input$slctexample, ".html"), package="questR")
+        address <- system.file("documents", paste0(input$slctexample, ".html"), package="questR")
         page <- xml2::read_html(address)
         withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
       }
@@ -821,7 +821,7 @@ genexam <- function() {
         questions <- tables$contentexam$QN
         examination <- c()
         for (question in questions){
-          address <- system.file("doc", paste0(question, ".html"), package="questR")
+          address <- system.file("documents", paste0(question, ".html"), package="questR")
           page <- xml2::read_html(address)
           examination[question] <- as.character(rvest::html_node(page, "body"))
         }
