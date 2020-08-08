@@ -65,6 +65,7 @@ param_quest <- function(wdir = "",
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
   
   parameters <- list(
+    type_quest = type_quest,
     txt_question_id = txt_question_id,
     points = points,
     type_table = type_table,
