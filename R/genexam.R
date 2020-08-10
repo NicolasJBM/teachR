@@ -997,7 +997,9 @@ genexam <- function() {
         if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
         
         examid <- paste0(
-          substring(gsub("-", "", input$datexam), 3)
+          input$name,
+          "_",
+          gsub("-", "", input$datexam)
         )
 
 
