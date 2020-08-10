@@ -996,11 +996,7 @@ genexam <- function() {
         
         if (input$typequest == "mcq") stypequest <- "mcq" else stypequest <- "open"
         
-        examid <- paste0(
-          input$name,
-          "_",
-          gsub("-", "", input$datexam)
-        )
+        examid <- substring(gsub("-", "", input$datexam),3)
 
 
         # Generate the exam
@@ -1014,7 +1010,7 @@ genexam <- function() {
             dir = "web",
             edir = exercises,
             tdir = tmpdir,
-            name = examid,
+            name = paste0(input$name, "_", examid),
             mathjax = TRUE
           )
           
@@ -1029,7 +1025,7 @@ genexam <- function() {
             edir = exercises,
             tdir = tmpdir,
             zip = ifelse(Sys.info()[[1]] == "Windows", FALSE, TRUE),
-            name = examid
+            name = paste0(input$name, "_", examid)
           )
           
         } else if (input$platform == "Moodle") {
@@ -1042,7 +1038,7 @@ genexam <- function() {
             dir = "moodle",
             edir = exercises,
             tdir = tmpdir,
-            name = examid
+            name = paste0(input$name, "_", examid)
           )
           
         } else {
@@ -1095,7 +1091,7 @@ genexam <- function() {
               edir = exercises,
               tdir = tmpdir,
               texdir = tmpdir,
-              name = paste0("questions_", versionid),
+              name = paste0("questions_", input$name, "_", versionid),
               header = header,
               points = choices$PT,
               template = paste0(templates, "/exam_", input$language, "_", input$typequest, "_", input$format, ".tex")
@@ -1114,7 +1110,7 @@ genexam <- function() {
               edir = exercises,
               tdir = tmpdir,
               texdir = tmpdir,
-              name = paste0("solutions_", versionid),
+              name = paste0("solutions_", input$name, "_", versionid),
               header = header,
               template = paste0(templates, "/solution_", input$language, "_", input$typequest, "_", input$format, ".tex")
             )
@@ -1142,7 +1138,7 @@ genexam <- function() {
           dplyr::select(-paths) %>%
           as.data.frame(stringsAsFactors = FALSE)
         
-        utils::write.csv(exportexam, paste0("parameters/questions_", examid, ".csv"), row.names = FALSE)
+        utils::write.csv(exportexam, paste0("parameters/questions_", input$name, "_", examid, ".csv"), row.names = FALSE)
         
         if (input$versions > 1){
           exportblocs <- prepversions %>%
@@ -1150,8 +1146,8 @@ genexam <- function() {
             dplyr::select(bloc, question = QN) %>%
             unique()
           
-          utils::write.csv(exportblocs, paste0("parameters/blocs_", examid,".csv"), row.names = FALSE)
-          utils::write.csv(orderversions, paste0("parameters/versions_", examid,".csv"), row.names = FALSE)
+          utils::write.csv(exportblocs, paste0("parameters/blocs_", input$name, examid,".csv"), row.names = FALSE)
+          utils::write.csv(orderversions, paste0("parameters/versions_", input$name, examid,".csv"), row.names = FALSE)
         }
         
       })
