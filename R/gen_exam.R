@@ -1,8 +1,5 @@
 #' Shiny gadget to select exam questions and generate both questions and solutions.
 #' @return Save the different versions of exams and solutions.
-#' @seealso gradexam()
-#' @seealso checkexam()
-#' @seealso sendexam()
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
 #' @importFrom miniUI miniTabstripPanel
@@ -15,21 +12,16 @@
 #' @importFrom shiny textInput
 #' @importFrom shiny dateInput
 #' @importFrom shiny numericInput
-#' @importFrom shiny textAreaInput
 #' @importFrom shiny selectInput
 #' @importFrom shiny checkboxInput
-#' @importFrom shiny downloadButton
-#' @importFrom shiny downloadHandler
 #' @importFrom shiny stopApp
 #' @importFrom shiny runGadget
 #' @importFrom shiny conditionalPanel
 #' @importFrom shiny tags
 #' @importFrom shiny tableOutput
 #' @importFrom shiny uiOutput
-#' @importFrom shiny plotOutput
 #' @importFrom shiny actionButton
 #' @importFrom shiny renderUI
-#' @importFrom shiny renderPlot
 #' @importFrom shiny renderText
 #' @importFrom shiny renderTable
 #' @importFrom shiny reactive
@@ -38,7 +30,6 @@
 #' @importFrom shiny observeEvent
 #' @importFrom shiny withProgress
 #' @importFrom shiny incProgress
-#' @importFrom shiny includeHTML
 #' @importFrom shiny withMathJax
 #' @importFrom shiny dialogViewer
 #' @importFrom shiny textOutput
@@ -46,16 +37,12 @@
 #' @importFrom shiny HTML
 #' @importFrom shinythemes shinytheme
 #' @importFrom dplyr %>%
-#' @importFrom dplyr sample_n
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
 #' @importFrom dplyr group_by
-#' @importFrom dplyr summarize_all
 #' @importFrom dplyr mutate
-#' @importFrom dplyr case_when
 #' @importFrom dplyr arrange
 #' @importFrom dplyr bind_rows
-#' @importFrom dplyr everything
 #' @importFrom tidyr spread
 #' @importFrom exams exams2nops
 #' @importFrom exams exams2pdf
@@ -64,9 +51,7 @@
 #' @importFrom exams exams2html
 #' @importFrom DT renderDT
 #' @importFrom DT DTOutput
-#' @importFrom tth tth
 #' @importFrom purrr map
-#' @importFrom readr read_csv
 #' @importFrom xml2 read_html
 #' @importFrom rvest html_node
 #' @importFrom gtools permutations
@@ -74,10 +59,9 @@
 #' @importFrom stringr str_split
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_replace_all
-#' @importFrom utils data
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
-#' @importFrom writR stat_totals
+#' @import writR
 #' @import questR
 #' @export
 
@@ -1156,5 +1140,5 @@ genexam <- function() {
     })
   }
   
-  runGadget(ui, server, viewer = dialogViewer(dialogName = "genexam", width = 1800, height = 1200))
+  runGadget(ui, server, viewer = shiny::browserViewer())
 }
