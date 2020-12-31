@@ -39,17 +39,7 @@
 #' @export
 
 
-
-library(shiny)
-library(miniUI)
-library(shinythemes)
-library(tidyverse)
-
-
-
-
-
-grad_essays <- function() {
+gradEssay <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("spacelab"),
     

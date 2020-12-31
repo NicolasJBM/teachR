@@ -1,39 +1,37 @@
 Package: teachR
-Title: Teaching and Evaluation
-Version: 1.1
-Date: 2019-08-26
+Title: Toolbox for Teaching and Evaluation
+Version: 0.1.0
+Date: 2020-12-25
 Authors@R: 
     person(given = "Nicolas",
            family = "Mangin",
            role = c("aut", "cre"),
            email = "nicolas.jb.mangin@gmail.com",
            comment = c(ORCID = "0000-0002-1597-9376"))
-Description: Functions and interfaces to support teaching and evaluating with R.
+Description: Support teaching and evaluation with R.
 Encoding: UTF-8
+URL: https://github.com/NicolasJBM/teachR
 LazyData: true
 License: GPL-3 | file LICENSE
 Depends: R (>= 3.6)
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Imports:
-    tools,
-    stats,
-    utils,
-    miniUI,
-    shiny,
-    shinythemes,
-    dplyr,
-    tidyr,
-    exams,
-    DT,
-    tth,
-    purrr,
-    gtools,
-    stringr,
-    readr,
-    rvest,
-    xml2,
-    knitr,
-    writR,
-    questR
+  tools,
+  stats,
+  utils,
+  miniUI,
+  shiny,
+  dplyr,
+  tidyr,
+  exams,
+  DT,
+  tth,
+  purrr,
+  gtools,
+  stringr,
+  readr,
+  rvest,
+  xml2,
+  knitr

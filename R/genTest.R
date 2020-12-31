@@ -1,5 +1,5 @@
-#' Shiny gadget to select exam questions and generate both questions and solutions.
-#' @return Save the different versions of exams and solutions.
+#' Shiny gadget to select test questions and generate both tests and solutions for several delivery formats.
+#' @return Create an exam folder will all the the necessary files fo test administration and subsequent steps.
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
 #' @importFrom miniUI miniTabstripPanel
@@ -44,6 +44,7 @@
 #' @importFrom dplyr arrange
 #' @importFrom dplyr bind_rows
 #' @importFrom tidyr spread
+#' @importFrom lubridate today
 #' @importFrom exams exams2nops
 #' @importFrom exams exams2pdf
 #' @importFrom exams exams2moodle
@@ -66,20 +67,197 @@
 #' @export
 
 
-genexam <- function() {
+genTest <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("spacelab"),
     
-    gadgetTitleBar("Generator of Questions and Solutions"),
+    gadgetTitleBar("Test Generator"),
+    
     miniTabstripPanel(
-      miniTabPanel("Define",
-        icon = icon("sliders"),
-        miniContentPanel(
+      
+      #########################################################################
+      
+      miniTabPanel(
+        "Information",
+        icon = icon("edit"),
+        fillCol(
+          flex = c(1,1,1),
+          
+          fillRow(
+            flex = c(1,1),
+            textInput(
+              inputId = "institution",
+              label = "Institution:",
+              value = ""
+            ),
+            textInput(
+              inputId = "course",
+              label = "Course:",
+              value = ""
+            )
+          ),
+          
+          fillRow(
+            textInput(
+              flex = c(1,1),
+              inputId = "name",
+              label = "Name:",
+              value = "test"
+            ),
+            dateInput(
+              inputId = "date",
+              label = "Date:",
+              value = lubridate::today()
+            )
+          ),
+          
+          fileInput(
+            "studentlist",
+            "Student list:"
+          )
+          
+        )
+      ),
+      
+      #########################################################################
+      
+      miniTabPanel(
+        "Delivery",
+        icon = icon("paper-plane"),
+        
+        fillRow(
+          flex = c(1,1,1,1),
+          
           fillCol(
-            flex = c(1,1,1,3),
-            
+            flex = c(1,1,1,1,1,1),
+            selectInput(
+              inputId = "typeanswer",
+              label = "Type of answer:",
+              choices = c("choice","number","text"),
+              selected = "multiple-choice"
+            ),
+            p("This will preselect questions compatible with this format."),
+            tags$hr(),
+            selectInput(
+              inputId = "currency",
+              label = "Currency used:",
+              choices = c("euro", "dollar", "pound", "yen"),
+              selected = "euro"
+            ),
+            checkboxInput(
+              inputId = "showquestpt",
+              label = "Show question points:",
+              value = TRUE
+            ),
+            checkboxInput(
+              inputId = "showquestcode",
+              label = "Show question code:",
+              value = TRUE
+            )
+          ),
+          
+          fillCol(
+            flex = c(1,1,1,1,1,1,1,1,1,1,1,1,1),
+            h3("Delivery platforms:"),
+            checkboxInput("pdf_out", "PDF", value = TRUE),
+            checkboxInput("blackboard_out", "Blackboard", value = TRUE),
+            checkboxInput("canvas_out", "Canvas", value = FALSE),
+            checkboxInput("moodle_out", "Moodle", value = FALSE),
+            checkboxInput("pandoc_out", "Pandoc", value = FALSE),
+            checkboxInput("nops_out", "nops", value = FALSE),
+            checkboxInput("lops_out", "lops", value = FALSE),
+            checkboxInput("html_out", "html", value = FALSE),
+            checkboxInput("openolat_out", "openolat", value = FALSE),
+            checkboxInput("arsnova_out", "arsnova", value = FALSE),
+            checkboxInput("tcexam_out", "tcexam", value = FALSE),
+            checkboxInput("qui12_out", "qti12", value = FALSE)
+          ),
+          
+          fillCol(
+            flex = c(1,1,1,1,1,1,1),
+            h3("Delivery languages:"),
+            checkboxInput("NL", "Ducth", value = FALSE),
+            checkboxInput("EN", "English", value = TRUE),
+            checkboxInput("FR", "French", value = FALSE),
+            checkboxInput("DE", "German", value = FALSE),
+            checkboxInput("IT", "Italian", value = FALSE),
+            checkboxInput("ES", "Spanish", value = FALSE),
+            p("This will preselect questions existing in all selected languages.")
+          ),
+          
+          fillCol(
+            flex = c(1,4,1),
+            conditionalPanel(
+              condition = "input.typeanswer == 'choice'",
+              numericInput(
+                inputId = "alternatives",
+                label = "Number of alternatives",
+                value = 4,
+                min = 4,
+                max = 5,
+                step = 1
+              )
+            ),
+            conditionalPanel(
+              condition = "input.pdf_out == TRUE",
+              selectInput(
+                inputId = "format",
+                label = "Format",
+                choices = c("A4", "letter"),
+                selected = "A4"
+              ),
+              checkboxInput(
+                inputId = "withscan",
+                label = "With scan (limit to 45 questions)",
+                value = FALSE
+              ),
+              numericInput(
+                inputId = "testversions",
+                label = "Number of test versions",
+                value = 1,
+                min = 1,
+                max = 10,
+                step = 1
+              ),
+              numericInput(
+                inputId = "blocsize",
+                label = "Bloc size",
+                value = 1,
+                min = 1,
+                max = 45,
+                step = 1
+              )
+            ),
+            numericInput(
+              inputId = "questversions",
+              label = "Number of question versions (for LMS)",
+              value = 1,
+              min = 1,
+              max = 100,
+              step = 1
+            )
+          )
+        )
+      ),
+      
+      #########################################################################
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      miniTabPanel(
+        "Selection",
+        icon = icon("filter"),
+        fillCol(
+          flex = c(),
+          miniContentPanel(
             fillRow(
-              flex = c(1,1,1,1),
+              flex = c(1,1),
               fileInput(
                 inputId = "selection",
                 label = "Preselection of questions",
@@ -91,262 +269,123 @@ genexam <- function() {
                 label = "Exclusion of questions",
                 accept = c(".csv"),
                 multiple = FALSE
-              ),
-              selectInput(
-                inputId = "language",
-                label = "Language",
-                choices = c("en"),
-                selected = "en"
-              ),
-              selectInput(
-                inputId = "typequest",
-                label = "Type of questions",
-                choices = c("mcq", "open"),
-                selected = "mcq"
               )
             ),
+            
+            
+            
             
             fillRow(
-              flex = c(1,1,1,1),
-              textInput(
-                inputId = "name",
-                label = "File name",
-                value = "exam"
+              flex = c(1,1),
+              fillCol(
+                flex = c(7, 1, 2, 1),
+                fillRow(
+                  flex = c(1,2,1),
+                  textInput("package", "Package", value = ""),
+                  fillCol(
+                    flex = c(1, 1, 1, 1, 1),
+                    uiOutput(outputId = "filtchapter"),
+                    uiOutput(outputId = "filtsection"),
+                    uiOutput(outputId = "filtsubsection"),
+                    uiOutput(outputId = "filtsubtopic"),
+                    uiOutput(outputId = "filtobjective")
+                  ),
+                  fillCol(
+                    flex = c(1, 1, 1, 1, 1),
+                    uiOutput(outputId = "filttype"),
+                    uiOutput(outputId = "filtlevel"),
+                    uiOutput(outputId = "filtbloom"),
+                    uiOutput(outputId = "filtdifficulty"),
+                    textInput("filtkeyword", "Keywords", value = ""),
+                    tags$br()
+                  )
+                ),
+                tags$hr(),
+                fillRow(
+                  flex = c(1,1),
+                  fillCol(
+                    flex = c(1,1),
+                    numericInput(
+                      inputId = "points",
+                      label = "Number of points",
+                      min = 1,
+                      max = 100,
+                      value = 1,
+                      step = 1,
+                      width = '80%'
+                    ),
+                    actionButton(
+                      inputId = "addSample",
+                      label = "Add question",
+                      width = "80%",
+                      icon("plane")
+                    )
+                  ),
+                  fillCol(
+                    flex = c(1,1),
+                    checkboxInput(
+                      inputId = "allowduplicates",
+                      label = "Allow duplicates",
+                      value = FALSE
+                    ),
+                    textOutput("checkblocs")
+                  )
+                ),
+                uiOutput("manslct")
               ),
-              dateInput(
-                inputId = "datexam",
-                label = "Date of delivery"
-              ),
-              selectInput(
-                inputId = "platform",
-                label = "Platform of delivery",
-                choices = c("Print", "Web", "Moodle", "Blackboard"),
-                selected = "Print"
-              ),
-              selectInput(
-                inputId = "currency",
-                label = "Currency to use",
-                choices = c("euro", "dollar", "pound", "yen"),
-                selected = "euro"
+              fillCol(
+                flex = c(1,11),
+                uiOutput("slctexample"),
+                htmlOutput("lookexample")
               )
+            )
+          )
+          
+          
+          
+        )
+      ),
+      
+      #########################################################################
+      
+      miniTabPanel(
+        "Sort",
+        icon = icon("sort-numeric-down"),
+        
+      ),
+      
+      #########################################################################
+      
+      miniTabPanel(
+        "Check",
+        icon = icon("eye"),
+        miniContentPanel(
+          uiOutput("viewquest")
+        )
+      ),
+      
+      #########################################################################
+      
+      miniTabPanel(
+        "Balance",
+        icon = icon("balance-scale"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1,1,10),
+            fillRow(flex = c(1,1),
+                    selectInput("tblrow", "Select rows",
+                                choices = c("L1","L2","L3","L4"),
+                                selected = "L1"),
+                    selectInput("tblval",
+                                "Select values",
+                                choices = c("points","questions","difficulty"),
+                                selected = "points")
+                    
             ),
-            
             tags$hr(),
-            
-            fillRow(
-              flex = c(1, 1, 1, 1),
-              fillCol(
-                flex = c(1,1,1),
-                conditionalPanel(
-                  'input.platform === "Print"',
-                  selectInput(
-                    inputId = "format",
-                    label = "Format",
-                    choices = c("A4", "letter"),
-                    selected = "A4"
-                  ),
-                  checkboxInput(
-                    inputId = "showquestid",
-                    label = "Show question id",
-                    value = FALSE
-                  ),
-                  checkboxInput(
-                    inputId = "showquestpt",
-                    label = "Show question points",
-                    value = TRUE
-                  )
-                )
-              ),
-              fillCol(
-                flex = c(1,1),
-                conditionalPanel(
-                  'input.platform === "Print"',
-                  numericInput(
-                    inputId = "versions",
-                    label = "Number of versions",
-                    value = 1,
-                    min = 1,
-                    max = 10,
-                    step = 1
-                  ),
-                  numericInput(
-                    inputId = "blocsize",
-                    label = "Bloc size",
-                    value = 1,
-                    min = 1,
-                    max = 45,
-                    step = 1
-                  )
-                )
-              ),
-              fillCol(
-                flex = c(1,1,1),
-                conditionalPanel(
-                  'input.typequest === "mcq"',
-                  numericInput(
-                    inputId = "alternatives",
-                    label = "Number of alternatives",
-                    value = 4,
-                    min = 4,
-                    max = 5,
-                    step = 1
-                  ),
-                  checkboxInput(
-                    inputId = "withscan",
-                    label = "With scan (limit to 45 questions)",
-                    value = FALSE
-                  )
-                ),
-                tags$br()
-              ),
-              fillCol(
-                flex = c(1,1,1),
-                conditionalPanel(
-                  'input.withscan',
-                  textInput(
-                    inputId = "institution",
-                    label = "Institution name",
-                    value = ""
-                  ),
-                  textInput(
-                    inputId = "title",
-                    label = "Title of the course",
-                    value = ""
-                  ),
-                  numericInput(
-                    inputId = "reglength",
-                    label = "Length student ID",
-                    value = 7,
-                    min = 7,
-                    max = 9,
-                    step = 1
-                  )
-                )
-              )
-            )
+            tableOutput("balance")
           )
         )
-      ),
-      
-      
-      miniTabPanel("Select",
-        icon = icon("filter"),
-        miniContentPanel(
-          fillRow(
-            flex = c(1,1),
-            fillCol(
-              flex = c(7, 1, 2, 1),
-              fillRow(
-                flex = c(2, 1),
-                fillCol(
-                  flex = c(1, 1, 1, 1, 1, 1),
-                  uiOutput(outputId = "filtsubject"),
-                  uiOutput(outputId = "filtchapter"),
-                  uiOutput(outputId = "filtsection"),
-                  uiOutput(outputId = "filtsubsection"),
-                  uiOutput(outputId = "filtsubtopic"),
-                  uiOutput(outputId = "filtobjective")
-                ),
-                fillCol(
-                  flex = c(1, 1, 1, 1, 1, 1),
-                  uiOutput(outputId = "filttype"),
-                  uiOutput(outputId = "filtlevel"),
-                  uiOutput(outputId = "filtbloom"),
-                  uiOutput(outputId = "filtdifficulty"),
-                  textInput("filtkeyword", "Keywords", value = ""),
-                  tags$br()
-                )
-              ),
-              tags$hr(),
-              fillRow(
-                flex = c(1,1),
-                fillCol(
-                  flex = c(1,1),
-                  numericInput(
-                    inputId = "points",
-                    label = "Number of points",
-                    min = 1,
-                    max = 100,
-                    value = 1,
-                    step = 1,
-                    width = '80%'
-                  ),
-                  actionButton(
-                    inputId = "addSample",
-                    label = "Add question",
-                    width = "80%",
-                    icon("plane")
-                  )
-                ),
-                fillCol(
-                  flex = c(1,1),
-                  checkboxInput(
-                    inputId = "allowduplicates",
-                    label = "Allow duplicates",
-                    value = FALSE
-                  ),
-                  textOutput("checkblocs")
-                )
-              ),
-              uiOutput("manslct")
-            ),
-            fillCol(
-              flex = c(1,11),
-              uiOutput("slctexample"),
-              htmlOutput("lookexample")
-            )
-          )
-        )
-      ),
-      
-      
-      miniTabPanel("Sort",
-        icon = icon("list-ol"),
-        miniContentPanel(
-          DT::DTOutput(outputId = "contentexam", height = "600px"),
-          tags$hr(),
-          uiOutput(outputId = "order"),
-          fillRow(
-            flex = c(4, 1, 1),
-            textOutput(outputId = "totalPoints"),
-            actionButton(
-              inputId = "reorder",
-              label = "Remove and reorder",
-              width = "100%",
-              icon("list-ol")
-            )
-          )
-        )
-      ),
-      
-      
-      miniTabPanel("Check",
-                   icon = icon("eye"),
-                   miniContentPanel(
-                     uiOutput("viewquest")
-                   )
-      ),
-      
-      
-      miniTabPanel("Balance",
-                   icon = icon("balance-scale"),
-                   miniContentPanel(
-                     fillCol(
-                       flex = c(1,1,10),
-                       fillRow(flex = c(1,1),
-                               selectInput("tblrow", "Select rows",
-                                           choices = c("L1","L2","L3","L4"),
-                                           selected = "L1"),
-                               selectInput("tblval",
-                                           "Select values",
-                                           choices = c("points","questions","difficulty"),
-                                           selected = "points")
-                               
-                       ),
-                       tags$hr(),
-                       tableOutput("balance")
-                     )
-                   )
       )
     )
   )
@@ -355,34 +394,6 @@ genexam <- function() {
   server <- function(input, output, session) {
     
     # Bind variables
-    Bloom <- NULL
-    ID <- NULL
-    SU <- NULL
-    KD <- NULL
-    LS <- NULL
-    PT <- NULL
-    QN <- NULL
-    SD <- NULL
-    TY <- NULL
-    Topic <- NULL
-    Value <- NULL
-    subject <- NULL
-    bloom <- NULL
-    type <- NULL
-    chapter <- NULL
-    sectionid <- NULL
-    subtopic <- NULL
-    difficulty <- NULL
-    kind <- NULL
-    language <- NULL
-    level <- NULL
-    objective <- NULL
-    paths <- NULL
-    questionid <- NULL
-    score <- NULL
-    section <- NULL
-    subsection <- NULL
-    bloc <- NULL
     
     
     ################
@@ -391,31 +402,24 @@ genexam <- function() {
     tables <- reactiveValues()
 
     # Visibly bind variables (avoid notes in checks)
-
+    
+    
     observe({
       if (is.null(input$selection)) {
-        tables$contentexam <- data.frame(
-          ID = 0,
-          QN = "tmp",
-          LG = "tmp",
-          SC = "tmp",
-          LO = "tmp",
-          TY = "tmp",
-          KD = "tmp",
-          LV = "tmp",
-          BL = "tmp",
-          DI = 0,
-          SU = "tmp",
-          L1 = "tmp",
-          L2 = "tmp",
-          L3 = "tmp",
-          L4 = "tmp",
-          SD = 0,
-          PT = 0,
+        tables$content <- data.frame(
+          package = "tmp",
+          questionid = "tmp",
+          language = "tmp",
+          type = "tmp",
+          question_number = 0,
+          question_version = 0,
+          question_code = "tmp",
+          seed = 1,
+          points = 1,
           stringsAsFactors = FALSE
         )
       } else {
-        tables$contentexam <- as.data.frame(
+        tables$content <- as.data.frame(
           utils::read.csv(
             file = input$selection$datapath[[1]],
             stringsAsFactors = FALSE
@@ -424,6 +428,11 @@ genexam <- function() {
         )
       }
     })
+    
+    
+    
+    
+    
     
     observe({
       if (is.null(input$exclusion)) {
@@ -883,6 +892,7 @@ genexam <- function() {
             LV = level,
             BL = bloom,
             DI = difficulty,
+            DE = description,
             SU = subject,
             L1 = chapter,
             L2 = section,
@@ -921,6 +931,7 @@ genexam <- function() {
           LV = "tmp",
           BL = "tmp",
           DI = 0,
+          DE = "tmp",
           SU = "tmp",
           L1 = "tmp",
           L2 = "tmp",
@@ -942,8 +953,8 @@ genexam <- function() {
         
         choices <- tables$contentexam
         if (nrow(choices) > 45 & input$withscan) choices <- choices[1:45, ]
-
-        # Save parameters accessibles for question generation
+        
+        # Save parameters accessible for question generation
         if (!is.null(input$typequest)) type_quest <- input$typequest else type_quest <- "mcq"
         if (type_quest == "mcq") {
           choices <- dplyr::filter(choices, KD == "mcq" | KD == "both")
@@ -951,13 +962,49 @@ genexam <- function() {
           choices <- dplyr::filter(choices, KD == "open" | KD == "both")
         }
 
-        if (!is.null(input$showquestid)) show_question_id <- input$showquestid else show_question_id <- FALSE
+        if (!is.null(input$showquestid)) show_question_id <- input$showquestid else show_question_id <- "Main"
         if (!is.null(input$showquestpt)) show_question_pt <- input$showquestpt else show_question_pt <- FALSE
-
+        
+        
+        # Setup the exam folder
+        if (dir.exists("examination")){
+          wd <- paste0(getwd(), "/examination")
+          setwd(wd)
+        } else {
+          dir.create("examination")
+          wd <- paste0(getwd(), "/examination")
+          setwd(wd)
+          dir.create("1_students")
+          dir.create("2_parameters")
+          dir.create("tmp")
+          dir.create("3_questions")
+          
+          
+          dir.create("3_questions/pdf")
+          dir.create("3_questions/blackboard")
+          dir.create("3_questions/canvas")
+          dir.create("3_questions/moodle")
+          dir.create("3_questions/pandoc")
+          dir.create("3_questions/nops")
+          dir.create("3_questions/lops")
+          dir.create("3_questions/html")
+          dir.create("3_questions/openolat")
+          dir.create("3_questions/arsnova")
+          dir.create("3_questions/tcexam")
+          dir.create("3_questions/qti12")
+          
+          
+          
+          
+          dir.create("3_questions/web")
+          dir.create("4_matrix")
+          dir.create("5_reports")
+          dir.create("6_feedback")
+        }
+        
+        
         # Define the kind of table
         if (input$platform %in% c("Web", "Blackboard", "Moodle")) type_table <- "html" else type_table <- "latex"
-        wd <- getwd()
-
         currency <- input$currency
         alternatives <- input$alternatives
 
@@ -1140,5 +1187,5 @@ genexam <- function() {
     })
   }
   
-  runGadget(ui, server, viewer = shiny::browserViewer())
+  runGadget(ui, server, viewer = dialogViewer("genExam", width = 1900, height = 1080))
 }

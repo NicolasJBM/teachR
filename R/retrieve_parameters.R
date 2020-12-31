@@ -1,13 +1,13 @@
 #' Function to retrieve or generate parameters used when questions are generated.
-#' @param wdir        Character. Working directory.
+#' @param wdir        Character. Path to working directory.
 #' @param question_id Character. ID of the question.
 #' @return Parameters for the questions.
 #' @importFrom dplyr filter
 #' @export
 
 
-param_quest <- function(wdir = "",
-                        question_id = "") {
+retrieve_parameters <- function(wdir = "",
+                                question_id = "") {
 
   # Bind variables
   choices <- NULL
@@ -23,10 +23,12 @@ param_quest <- function(wdir = "",
     load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exasolu.RData")))
     question_info <- dplyr::filter(as.data.frame(choices), QN == question_id)
     quest_level <- question_info$BL[[1]]
-    if (show_question_id == TRUE) {
-      txt_question_id <- paste0(question_id, ". ")
+    if (show_question_id == "Rank") {
+      local_id <- paste0("Q",question_info$ID[[1]], " - ")
+    } else if (show_question_id == "ID") {
+      local_id <- paste0(question_id, " - ")
     } else {
-      txt_question_id <- ""
+      local_id <- ""
     }
     if (show_question_pt == TRUE) {
       points <- as.integer(question_info$PT[[1]])
@@ -37,9 +39,9 @@ param_quest <- function(wdir = "",
     }
     seed <- as.integer(question_info$SD[[1]])
   } else {
-    type_quest <- "mcq"
+    type_quest <- "schoice"
     exasolu <- "solution"
-    txt_question_id <- paste0(question_id, ". ")
+    local_id <- paste0(local_id, " - ")
     points <- ""
     type_table <- "html"
     currency <- "euro"
@@ -66,16 +68,18 @@ param_quest <- function(wdir = "",
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
   
   parameters <- list(
+    pkg_name = "",
+    seed = seed,
     type_quest = type_quest,
-    txt_question_id = txt_question_id,
+    alternatives = alternatives,
+    exasolu = exasolu,
+    test_id = test_id,
+    difficulty = difficulty,
     points = points,
     type_table = type_table,
     currency = currency,
     currencysymb = currencysymb,
-    pctsymb = pctsymb,
-    seed = seed,
-    alternatives = alternatives,
-    exasolu = exasolu
+    pctsymb = pctsymb
   )
 
   return(parameters)

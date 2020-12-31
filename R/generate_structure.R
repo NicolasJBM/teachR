@@ -1,0 +1,121 @@
+library(dplyr)
+library(tidyr)
+library(readODS)
+
+generate_structure <- function(){
+  
+  # Create general structure
+  chapters <- readODS::read_ods("data-raw/structure/1a_chapters.ods")
+  sections <- readODS::read_ods("data-raw/structure/2a_sections.ods")
+  subsections <- readODS::read_ods("data-raw/structure/3a_subsections.ods")
+  topics <- readODS::read_ods("data-raw/structure/4a_topics.ods")
+  structure <- topics %>%
+    dplyr::left_join(subsections, by = "subsection_id") %>%
+    dplyr::left_join(sections, by = "section_id") %>%
+    dplyr::left_join(chapters, by = "chapter_id") %>%
+    dplyr::mutate(
+      filter_variable = dplyr::case_when(
+        topic_id > 0 ~ "topic_id",
+        subsection_id > 0 ~ "subsection_id",
+        section_id > 0 ~ "section_id",
+        TRUE ~ "chapter_id"
+      ),
+      filter_value = dplyr::case_when(
+        topic_id > 0 ~ topic_id,
+        subsection_id > 0 ~ subsection_id,
+        section_id > 0 ~ section_id,
+        TRUE ~ chapter_id
+      )
+    )
+  rm(chapters, sections, subsections, topics)
+  
+  # create question database
+  str_questions <- readODS::read_ods("data-raw/structure/5_questions.ods")
+  str_questions <- str_questions %>%
+    dplyr::left_join(structure, by = "topic_id") %>%
+    dplyr::select(
+      question_id,
+      question_nbr,
+      question_language,
+      objective,
+      type,
+      level,
+      bloom,
+      description,
+      topic_id,
+      topic_order,
+      subsection_id,
+      subsection_order,
+      section_id,
+      section_order,
+      chapter_id,
+      chapter_order,
+      field_id,
+      field_label,
+      filter_variable,
+      filter_value
+    )
+  save(str_questions, file = "data/str_questions.RData")
+  rm(str_questions)
+  
+  # Create statements database
+  str_statements <- readODS::read_ods("data-raw/structure/6_statements.ods")
+  str_statements <- str_statements %>%
+    dplyr::left_join(structure, by = "topic_id") %>%
+    dplyr::select(
+      statement_id,
+      statement_language,
+      proposition,
+      explanation,
+      value,
+      topic_id,
+      topic_order,
+      subsection_id,
+      subsection_order,
+      section_id,
+      section_order,
+      chapter_id,
+      chapter_order,
+      field_id,
+      field_label
+    )
+  save(str_statements, file = "data/str_statements.RData")
+  rm(str_statements)
+  
+  # Create labels database
+  languages <- c("EN","FR","DE","ES","IT","NL")
+  chapters_lab <- readODS::read_ods("data-raw/structure/1b_chapters_labels.ods") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(languages), names_to = "language", values_to = "chapter_label")
+  sections_lab <- readODS::read_ods("data-raw/structure/2b_sections_labels.ods") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(languages), names_to = "language", values_to = "section_label")
+  subsections_lab <- readODS::read_ods("data-raw/structure/3b_subsections_labels.ods") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(languages), names_to = "language", values_to = "subsection_label")
+  topics_lab <- readODS::read_ods("data-raw/structure/4b_topics_labels.ods") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(languages), names_to = "language", values_to = "topic_label")
+  str_labels <- structure %>%
+    dplyr::left_join(topics_lab, by = "topic_id") %>%
+    dplyr::left_join(subsections_lab, by = c("subsection_id","language")) %>%
+    dplyr::left_join(sections_lab, by = c("section_id","language")) %>%
+    dplyr::left_join(chapters_lab, by = c("chapter_id","language")) %>%
+    dplyr::select(
+      topic_id,
+      topic_order,
+      subsection_id,
+      subsection_order,
+      section_id,
+      section_order,
+      chapter_id,
+      chapter_order,
+      field_id,
+      field_label,
+      language,
+      topic_label,
+      subsection_label,
+      section_label,
+      chapter_label
+    )
+  save(str_labels, file = c("data/str_labels.RData"))
+  rm(str_labels)
+}
+
+

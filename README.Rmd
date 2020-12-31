@@ -1,0 +1,58 @@
+---
+output: github_document
+---
+
+
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-"
+)
+```
+
+# bibliogR <img src="man/figures/logo.svg" align="right" width="120" />
+
+Searching and Citing the Literature.
+
+
+
+## Overview
+
+
+
+
+## Installation
+
+Before you can install *bibliogR* itself, you will also need to install from CRAN the following R packages:  
+
+```{r, eval = FALSE}
+install.packages("knitr")
+install.packages("dplyr")
+install.packages("tibble")
+install.packages("stats")
+```
+
+Since the package uses some functions from the *lexR* package to clean text (i.e. to force ASCII format t oexport to .bib files), you will need to install it first:  
+
+```{r, eval = FALSE}
+devtools::install.github("NicolasJBM/lexR")
+```
+
+Then, install *biliogR* from its GitHub public repository:  
+
+```{r, eval = FALSE}
+devtools::install.github("NicolasJBM/fmtR")
+```
+
+
+
+## Usage
+
+
+
+
+## Toolboxes
+
+*bibliogR* requires *[lexR](https://github.com/NicolasJBM/lexR)* ans is particularly useful in combination with *[writR](https://github.com/NicolasJBM/writR)*.

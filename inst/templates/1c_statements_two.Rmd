@@ -1,0 +1,106 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+################################################################################
+# Initialization (do not edit)
+source(paste0(find.package("teachR"),"/scripts/initialize.R"))
+################################################################################
+
+
+################################################################################
+# Load packages
+
+library(dplyr)
+library(stringr)
+
+
+################################################################################
+# Selection
+
+mget(data(str_questions, package = pkg_name))
+mget(data(str_statements, package = pkg_name))
+
+filters <- str_questions %>%
+  dplyr::filter(question_id == questionid) %>%
+  dplyr::select(filter_variable, filter_value)
+
+true_statement <- str_statements %>%
+  dplyr::filter(
+    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
+    value == TRUE
+  ) %>%
+  dplyr::sample_n(1)
+  dplyr::sample_n(2)
+
+
+##############################################################################
+# Preparation
+
+questions <- c(
+  "Both statements are false.",
+  "Statement (1) is true, but statement (2) is false.",
+  "Statement (1) is false, but statement (2) is true.",
+  "Both statements are true."
+)
+
+solutions <- dplyr::case_when(
+  statements$value[[1]] == FALSE & statements$value[[2]] == FALSE ~ c(TRUE,FALSE,FALSE,FALSE),
+  statements$value[[1]] == TRUE & statements$value[[2]] == FALSE ~ c(FALSE,TRUE,FALSE,FALSE),
+  statements$value[[1]] == FALSE & statements$value[[2]] == TRUE ~ c(FALSE,FALSE,TRUE,FALSE),
+  TRUE ~ c(FALSE,FALSE,FALSE,TRUE)
+)
+
+explanations <- c(
+  "","","",""
+)
+
+
+################################################################################
+# Finalization (do not edit)
+source(paste0(find.package("teachR"),"/scripts/finalize.R"))
+################################################################################
+```
+
+
+
+
+
+Question
+========
+`r txt_question_id` Consider the two following statements:  
+\
+1 - `r statements$statement[[1]]`  
+\
+2 - `r statements$statement[[2]]`  
+\
+Which of the following answers is correct? `r points`  
+
+
+```{r questionlist, echo = FALSE, results = "asis"}
+exams::answerlist(questions, markup = "markdown")
+```
+
+
+
+
+
+Solution
+========
+
+`r statements$explanation[[1]]` Therefore, statement (1) is `r statements$value[[1]]`.  
+
+`r statements$explanation[[2]]` Therefore, statement (2) is `r statements$value[[2]]`.
+
+Keys:  
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown")
+```
+
+
+
+
+
+Meta-information
+================
+extype: schoice
+exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
+exname: `r question_id`

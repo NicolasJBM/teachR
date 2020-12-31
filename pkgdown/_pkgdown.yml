@@ -1,0 +1,15 @@
+authors:
+  Nicolas Mangin:
+    href: https://e-catalyst.net/people/nicolas_mangin/
+
+template:
+  params:
+    bootswatch: flatly
+    #docsearch:
+    #  api_key:
+    #  index_name:
+    #ganalytics:
+
+development:
+  mode: auto
+

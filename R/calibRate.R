@@ -39,7 +39,7 @@
 #' @export
 
 
-calib_rate <- function() {
+calibRate <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("spacelab"),
     

@@ -1,0 +1,91 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+################################################################################
+# Initialization (do not edit)
+source(paste0(find.package("teachR"),"/scripts/initialize.R"))
+################################################################################
+
+
+################################################################################
+# Load packages
+
+library(dplyr)
+library(stringr)
+
+
+################################################################################
+# Selection
+
+mget(data(str_questions, package = pkg_name))
+mget(data(str_statements, package = pkg_name))
+
+filters <- str_questions %>%
+  dplyr::filter(question_id == questionid) %>%
+  dplyr::select(filter_variable, filter_value)
+
+true_statement <- str_statements %>%
+  dplyr::filter(
+    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
+    value == TRUE
+  ) %>%
+  dplyr::sample_n(1)
+false_statements <- str_statements %>%
+  dplyr::filter(
+    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
+    value == FALSE
+  ) %>%
+  dplyr::sample_n(4)
+
+
+################################################################################
+# Preparation
+
+questions <- c(
+  right1 = true_statement$proposition[[1]],
+  wrong1 = false_statements$proposition[[1]],
+  wrong2 = false_statements$proposition[[2]],
+  wrong3 = false_statements$proposition[[3]],
+  wrong4 = false_statements$proposition[[4]]
+)
+
+solutions <- c(TRUE,FALSE,FALSE,FALSE,FALSE)
+
+explanations <- c(
+  true_statement$explanation[[1]],
+  false_statements$explanation[[1]],
+  false_statements$explanation[[2]],
+  false_statements$explanation[[3]],
+  false_statements$explanation[[4]]
+)
+
+
+################################################################################
+# Finalization (do not edit)
+source(paste0(find.package("teachR"),"/scripts/finalize.R"))
+################################################################################
+```
+
+
+Question
+========
+`r test_id` Which of the following statements is **true**? `r difficulty` `r points`
+
+```{r questionlist, echo = FALSE, results = "asis"}
+exams::answerlist(questions, markup = "markdown")
+```
+
+
+Solution
+========
+
+Answer:  
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown")
+```
+
+
+Meta-information
+================
+extype: schoice
+exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
+exname: `r test_id`
