@@ -1,5 +1,5 @@
-#' Shiny gadget to select exam questions and generate both questions and solutions.
-#' @return Save the different versions of exams and solutions.
+#' Shiny gadget to change and update the structure of a package.
+#' @return Make necessary entries in structure databases.
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
 #' @importFrom miniUI miniTabstripPanel
