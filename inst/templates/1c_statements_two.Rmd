@@ -1,7 +1,7 @@
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 
-pkgname <- "" # update
-questionid <- "" # update
+pkgname <- "" # edit
+questionid <- "" # edit
 
 ################################################################################
 # Initialization (do not edit)
@@ -65,13 +65,13 @@ explanations <- c(
 
 Question
 ========
-`r exname` Consider the two following statements:  
+`r showexname` Consider the two following statements:  
 \
 1 - `r statements$proposition[[1]]`  
 \
 2 - `r statements$proposition[[2]]`  
 \
-Which of the following answers is correct? `r points`  
+Which of the following answers is correct? `r showdiffpoints`  
 
 
 ```{r questionlist, echo = FALSE, results = "asis"}
