@@ -1,53 +1,77 @@
-#' Function to retrieve or generate parameters used when questions are generated.
+#' @name retrieve_parameters
+#' @title Retrieve parameters
+#' @author Nicolas Mangin
+#' @description Get the question parameters when it is prodiced for a test.
 #' @param wdir        Character. Path to working directory.
-#' @param question_id Character. ID of the question.
+#' @param questionid Character. ID of the question.
 #' @return Parameters for the questions.
 #' @importFrom dplyr filter
+#' @importFrom stats runif
 #' @export
 
 
 retrieve_parameters <- function(wdir = "",
-                                question_id = "") {
+                                questionid = "") {
+  if (file.exists(
+    gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData"))
+  )) {
+    load(file = gsub(
+      "/tmp/",
+      "/",
+      paste0(getwd(), "/parameters/exam_parameters.RData")
+    ))
 
-  # Bind variables
-  choices <- NULL
-  QN <- NULL
-  show_question_id <- NULL
-  show_question_pt <- NULL
+    exercise <- exam_parameters %>%
+      dplyr::filter(question_id == questionid) %>%
+      as.data.frame()
 
-  if (
-    file.exists(gsub("/tmp/", "/", paste0(wdir, "/parameters/exam_parameters.RData"))) &
-    file.exists(gsub("/tmp/", "/", paste0(wdir, "/parameters/exasolu.RData")))
-    ) {
-    load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData")))
-    load(file = gsub("/tmp/", "/", paste0(getwd(), "/parameters/exasolu.RData")))
-    question_info <- dplyr::filter(as.data.frame(choices), QN == question_id)
-    quest_level <- question_info$BL[[1]]
-    if (show_question_id == "Rank") {
-      local_id <- paste0("Q",question_info$ID[[1]], " - ")
-    } else if (show_question_id == "ID") {
-      local_id <- paste0(question_id, " - ")
+    extype <- exercise$extype[1]
+    exname <- exercise$exname[1]
+
+    if (exercise$show_difficulty[1]) {
+      if (exercise$show_points[1]) {
+        points <- paste0(
+          "(",
+          exercise$difficulty[1],
+          " difficulty, ",
+          exercise$points[1],
+          ifelse(exercise$points[1] == 1, " point)", " points)")
+        )
+      } else {
+        points <- paste0(
+          "(",
+          exercise$difficulty[1],
+          " difficulty)"
+        )
+      }
     } else {
-      local_id <- ""
+      if (exercise$show_points[1]) {
+        points <- paste0(
+          "(",
+          exercise$points[1],
+          ifelse(exercise$points[1] == 1, " point)", " points)")
+        )
+      } else {
+        points <- ""
+      }
     }
-    if (show_question_pt == TRUE) {
-      points <- as.integer(question_info$PT[[1]])
-      if (points == 1) unit <- "point" else unit <- "points"
-      points <- paste0("(", points, " ", unit, ")")
-    } else {
-      points <- ""
-    }
-    seed <- as.integer(question_info$SD[[1]])
+
+    seed <- exercise$seed[1]
+    alternatives <- exercise$alternatives[1]
+    type_table <- exercise$type_table[1]
+    currency <- exercise$currency[1]
+    test_or_solution <- exercise$test_or_solution[1]
   } else {
-    type_quest <- "schoice"
-    exasolu <- "solution"
-    local_id <- paste0(local_id, " - ")
+    extype <- "schoice"
+    exname <- questionid
     points <- ""
+    seed <- ceiling(stats::runif(1)*10000)
+    alternatives <- 5
     type_table <- "html"
     currency <- "euro"
-    seed <- sample(c(1:9999), 1)
-    alternatives <- 5
+    test_or_solution <- "solution"
   }
+
 
   if (type_table == "latex") {
     currencysymb <- switch(currency,
@@ -64,20 +88,18 @@ retrieve_parameters <- function(wdir = "",
       yen = "&yen;"
     )
   }
-  
+
   if (type_table == "latex") pctsymb <- "\\%" else pctsymb <- "%"
-  
+
   parameters <- list(
-    pkg_name = "",
-    seed = seed,
-    type_quest = type_quest,
-    alternatives = alternatives,
-    exasolu = exasolu,
-    test_id = test_id,
-    difficulty = difficulty,
+    extype = extype,
+    exname = exname,
     points = points,
+    seed = seed,
+    alternatives = alternatives,
     type_table = type_table,
     currency = currency,
+    test_or_solution = test_or_solution,
     currencysymb = currencysymb,
     pctsymb = pctsymb
   )

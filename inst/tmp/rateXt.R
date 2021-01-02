@@ -41,9 +41,12 @@
 
 gradEssay <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("spacelab"),
-    
-    tags$style(HTML(".shiny-text-output{margin-top:30px; text-align: left;}")),
+    theme = shinythemes::shinytheme("flatly"),
+    tags$head(tags$style(
+      HTML(".shiny-notification {
+              position:fixed;top: 30%;left: 0%;right: 0%;
+           }")
+    )),
     
     gadgetTitleBar("Grade open questions and essays"),
     fillCol(

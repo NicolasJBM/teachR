@@ -1,5 +1,24 @@
-Name: genexam
-Description: User interface to build exams from a package of questions.
-Binding: genexam
+Name: Create a question
+Description: User interface to build tests from a package of questions.
+Binding: genTest
 Interactive: true
 
+Name: Generate a test
+Description: User interface to build tests from a package of questions.
+Binding: genTest
+Interactive: true
+
+Name: Rate answers
+Description: User interface to rate answers to open questions.
+Binding: rateXt
+Interactive: true
+
+Name: Calibrate items
+Description: User interface to assess items' parameters.
+Binding: calibRate
+Interactive: true
+
+Name: Individual reports
+Description: User interface to support individual feedback.
+Binding: reporTest
+Interactive: true

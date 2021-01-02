@@ -1,4 +1,8 @@
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+pkgname <- "" # update
+questionid <- "" # update
+
 ################################################################################
 # Initialization (do not edit)
 source(paste0(find.package("teachR"),"/scripts/initialize.R"))
@@ -7,33 +11,30 @@ source(paste0(find.package("teachR"),"/scripts/initialize.R"))
 
 ################################################################################
 # Load packages
-
 library(dplyr)
 library(stringr)
 
 
 ################################################################################
 # Selection
-
-mget(data(str_questions, package = pkg_name))
-mget(data(str_statements, package = pkg_name))
+str_questions <-
+  eval(parse(text = paste0(pkgname,"::","str_questions")))
+str_statements <-
+  eval(parse(text = paste0(pkgname,"::","str_statements")))
 
 filters <- str_questions %>%
   dplyr::filter(question_id == questionid) %>%
   dplyr::select(filter_variable, filter_value)
 
-true_statement <- str_statements %>%
+statements <- str_statements %>%
   dplyr::filter(
-    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
-    value == TRUE
+    str_statements[,filters$filter_variable[1]] == filters$filter_value[1]
   ) %>%
-  dplyr::sample_n(1)
   dplyr::sample_n(2)
 
 
 ##############################################################################
 # Preparation
-
 questions <- c(
   "Both statements are false.",
   "Statement (1) is true, but statement (2) is false.",
@@ -55,7 +56,6 @@ explanations <- c(
 
 ################################################################################
 # Finalization (do not edit)
-source(paste0(find.package("teachR"),"/scripts/finalize.R"))
 ################################################################################
 ```
 
@@ -65,11 +65,11 @@ source(paste0(find.package("teachR"),"/scripts/finalize.R"))
 
 Question
 ========
-`r txt_question_id` Consider the two following statements:  
+`r exname` Consider the two following statements:  
 \
-1 - `r statements$statement[[1]]`  
+1 - `r statements$proposition[[1]]`  
 \
-2 - `r statements$statement[[2]]`  
+2 - `r statements$proposition[[2]]`  
 \
 Which of the following answers is correct? `r points`  
 
@@ -103,4 +103,4 @@ Meta-information
 ================
 extype: schoice
 exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
-exname: `r question_id`
+exname: `r exname`

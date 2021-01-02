@@ -1,4 +1,7 @@
-#' Shiny gadget to select test questions and generate both tests and solutions for several delivery formats.
+#' @name genTest
+#' @title Generate Tests
+#' @author Nicolas Mangin
+#' @description Shiny gadget to select test questions and generate both tests and solutions for several delivery formats.
 #' @return Create an exam folder will all the the necessary files fo test administration and subsequent steps.
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
@@ -19,11 +22,13 @@
 #' @importFrom shiny conditionalPanel
 #' @importFrom shiny tags
 #' @importFrom shiny tableOutput
+#' @importFrom shiny dataTableOutput
 #' @importFrom shiny uiOutput
 #' @importFrom shiny actionButton
 #' @importFrom shiny renderUI
 #' @importFrom shiny renderText
 #' @importFrom shiny renderTable
+#' @importFrom shiny renderDataTable
 #' @importFrom shiny reactive
 #' @importFrom shiny reactiveValues
 #' @importFrom shiny observe
@@ -35,6 +40,8 @@
 #' @importFrom shiny textOutput
 #' @importFrom shiny htmlOutput
 #' @importFrom shiny HTML
+#' @importFrom shiny h4
+#' @importFrom shinyBS bsTooltip
 #' @importFrom shinythemes shinytheme
 #' @importFrom dplyr %>%
 #' @importFrom dplyr filter
@@ -50,8 +57,6 @@
 #' @importFrom exams exams2moodle
 #' @importFrom exams exams2blackboard
 #' @importFrom exams exams2html
-#' @importFrom DT renderDT
-#' @importFrom DT DTOutput
 #' @importFrom purrr map
 #' @importFrom xml2 read_html
 #' @importFrom rvest html_node
@@ -62,14 +67,23 @@
 #' @importFrom stringr str_replace_all
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
-#' @import writR
-#' @import questR
+#' @importFrom rhandsontable rHandsontableOutput
+#' @importFrom rhandsontable hot_to_r
+#' @importFrom rhandsontable renderRHandsontable
+#' @importFrom rhandsontable rhandsontable
+#' @importFrom rhandsontable hot_context_menu
+#' @importFrom knitr knit
 #' @export
 
 
 genTest <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("spacelab"),
+    theme = shinythemes::shinytheme("flatly"),
+    tags$head(tags$style(
+      HTML(".shiny-notification {
+              position:fixed;top: 30%;left: 0%;right: 0%;
+           }")
+    )),
     
     gadgetTitleBar("Test Generator"),
     
@@ -79,12 +93,12 @@ genTest <- function() {
       
       miniTabPanel(
         "Information",
-        icon = icon("edit"),
-        fillCol(
-          flex = c(1,1,1),
-          
-          fillRow(
-            flex = c(1,1),
+        icon = icon("id-card"),
+        fillRow(
+          flex = c(1,1),
+          fillCol(
+            flex = c(1,1,1,1,4),
+            h4("General information about the test"),
             textInput(
               inputId = "institution",
               label = "Institution:",
@@ -94,28 +108,44 @@ genTest <- function() {
               inputId = "course",
               label = "Course:",
               value = ""
-            )
-          ),
-          
-          fillRow(
+            ),
             textInput(
-              flex = c(1,1),
               inputId = "name",
               label = "Name:",
               value = "test"
             ),
+            tags$br()
+          ),
+          
+          fillCol(
+            flex = c(1,1,1,1,4),
             dateInput(
               inputId = "date",
               label = "Date:",
               value = lubridate::today()
-            )
-          ),
-          
-          fileInput(
-            "studentlist",
-            "Student list:"
+            ),
+            fileInput(
+              "studentlist",
+              "Upload a list of students:",
+              accept = ".csv"
+            ),
+            fileInput(
+              "preselection",
+              "Upload a preselection of questions:",
+              accept = ".csv"
+            ),
+            fileInput(
+              "exclusion",
+              "Upload a list of questions to exclude:",
+              accept = ".csv"
+            ),
+            tags$br()
           )
-          
+        ),
+        shinyBS::bsTooltip(
+          id = "name",
+          title = "Do not use spaces or special characters.",
+          placement = "top", trigger = "hover"
         )
       ),
       
@@ -126,80 +156,98 @@ genTest <- function() {
         icon = icon("paper-plane"),
         
         fillRow(
-          flex = c(1,1,1,1),
+          flex = c(1,1,1),
           
           fillCol(
-            flex = c(1,1,1,1,1,1),
+            flex = c(1,1,1,1,1,1,1,2),
+            h4("Delivery format"),
+            selectInput(
+              "languages",
+              "Select the language(s):",
+              choices = c("DE","EN","ES","FR","IT","NL"),
+              selected = "EN",
+              multiple = TRUE
+            ),
+            selectInput(
+              inputId = "currency",
+              label = "Select the currency:",
+              choices = c("euro", "dollar", "pound", "yen"),
+              selected = "euro"
+            ),
+            checkboxInput(
+              inputId = "showquestcode",
+              label = "Show question code",
+              value = TRUE
+            ),
+            checkboxInput(
+              inputId = "showquestdiff",
+              label = "Show question difficulty",
+              value = TRUE
+            ),
+            checkboxInput(
+              inputId = "showquestpt",
+              label = "Show question points",
+              value = TRUE
+            ),
             selectInput(
               inputId = "typeanswer",
               label = "Type of answer:",
               choices = c("choice","number","text"),
               selected = "multiple-choice"
             ),
-            p("This will preselect questions compatible with this format."),
-            tags$hr(),
-            selectInput(
-              inputId = "currency",
-              label = "Currency used:",
-              choices = c("euro", "dollar", "pound", "yen"),
-              selected = "euro"
-            ),
-            checkboxInput(
-              inputId = "showquestpt",
-              label = "Show question points:",
-              value = TRUE
-            ),
-            checkboxInput(
-              inputId = "showquestcode",
-              label = "Show question code:",
-              value = TRUE
-            )
-          ),
-          
-          fillCol(
-            flex = c(1,1,1,1,1,1,1,1,1,1,1,1,1),
-            h3("Delivery platforms:"),
-            checkboxInput("pdf_out", "PDF", value = TRUE),
-            checkboxInput("blackboard_out", "Blackboard", value = TRUE),
-            checkboxInput("canvas_out", "Canvas", value = FALSE),
-            checkboxInput("moodle_out", "Moodle", value = FALSE),
-            checkboxInput("pandoc_out", "Pandoc", value = FALSE),
-            checkboxInput("nops_out", "nops", value = FALSE),
-            checkboxInput("lops_out", "lops", value = FALSE),
-            checkboxInput("html_out", "html", value = FALSE),
-            checkboxInput("openolat_out", "openolat", value = FALSE),
-            checkboxInput("arsnova_out", "arsnova", value = FALSE),
-            checkboxInput("tcexam_out", "tcexam", value = FALSE),
-            checkboxInput("qui12_out", "qti12", value = FALSE)
-          ),
-          
-          fillCol(
-            flex = c(1,1,1,1,1,1,1),
-            h3("Delivery languages:"),
-            checkboxInput("NL", "Ducth", value = FALSE),
-            checkboxInput("EN", "English", value = TRUE),
-            checkboxInput("FR", "French", value = FALSE),
-            checkboxInput("DE", "German", value = FALSE),
-            checkboxInput("IT", "Italian", value = FALSE),
-            checkboxInput("ES", "Spanish", value = FALSE),
-            p("This will preselect questions existing in all selected languages.")
-          ),
-          
-          fillCol(
-            flex = c(1,4,1),
             conditionalPanel(
-              condition = "input.typeanswer == 'choice'",
+              condition = "input.typeanswer === 'choice'",
               numericInput(
                 inputId = "alternatives",
-                label = "Number of alternatives",
-                value = 4,
+                label = "Number of alternatives:",
+                value = 5,
                 min = 4,
                 max = 5,
                 step = 1
               )
+            )
+          ),
+          fillCol(
+            flex = c(1,6),
+            h4("Delivery platforms"),
+            fillRow(
+              flex = c(1,1),
+              fillCol(
+                flex = c(1,1,1,1,1,1),
+                checkboxInput("blackboard_out", "Blackboard", value = TRUE),
+                checkboxInput("canvas_out", "Canvas", value = FALSE),
+                checkboxInput("moodle_out", "Moodle", value = FALSE),
+                checkboxInput("openolat_out", "openolat", value = FALSE),
+                checkboxInput("arsnova_out", "arsnova", value = FALSE),
+                checkboxInput("tcexam_out", "tcexam", value = FALSE)
+              ),
+              fillCol(
+                flex = c(1,1,1,1,1,1),
+                checkboxInput("pdf_out", "PDF", value = TRUE),
+                checkboxInput("html_out", "html", value = FALSE),
+                checkboxInput("pandoc_out", "Pandoc", value = FALSE),
+                checkboxInput("nops_out", "nops", value = FALSE),
+                checkboxInput("lops_out", "lops", value = FALSE),
+                checkboxInput("qui12_out", "qti12", value = FALSE)
+              )
+            )
+          ),
+          
+          fillCol(
+            flex = c(1,1,1,6),
+            h4("LMS details"),
+            numericInput(
+              inputId = "questversions",
+              label = "Number of versions for each question:",
+              value = 1,
+              min = 1,
+              max = 100,
+              step = 1
             ),
+            tags$hr(),
             conditionalPanel(
-              condition = "input.pdf_out == TRUE",
+              h4("Print details"),
+              condition = "input.pdf_out",
               selectInput(
                 inputId = "format",
                 label = "Format",
@@ -212,146 +260,135 @@ genTest <- function() {
                 value = FALSE
               ),
               numericInput(
-                inputId = "testversions",
-                label = "Number of test versions",
-                value = 1,
-                min = 1,
+                inputId = "blocnbr",
+                label = "Number of blocs",
+                value = 0,
+                min = 0,
                 max = 10,
                 step = 1
               ),
               numericInput(
                 inputId = "blocsize",
-                label = "Bloc size",
-                value = 1,
-                min = 1,
+                label = "Number of questions per bloc",
+                value = 0,
+                min = 0,
                 max = 45,
                 step = 1
               )
-            ),
-            numericInput(
-              inputId = "questversions",
-              label = "Number of question versions (for LMS)",
-              value = 1,
-              min = 1,
-              max = 100,
-              step = 1
             )
           )
+        ),
+        shinyBS::bsTooltip(
+          id = "languages",
+          title = "Select only questions existing in all selected languages.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "showquestcode",
+          title = "Display as the beginning of each question a code identifying the question and its version.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "showquestdiff",
+          title = "Display at the end of the question whether the question is easy, medium, or hard.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "showquestpt",
+          title = "Display at the end of the question the number of points for that question.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "typeanswer",
+          title = "Select only questions compatible with the desired format: choice for MCQ, number for computations, text for open-ended answers.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "alternatives",
+          title = "This indicates among how many options the student must choose in MCQ.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "questversions",
+          title = "For a number greater than 1, several versions of each question will be generated.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "withscan",
+          title = "If the scan is requested, a scanable answer sheet is printed, limited to 45 answers.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "blocnbr",
+          title = "Different versions are created by shuffling blocs of questions.",
+          placement = "top", trigger = "hover"
+        ),
+        shinyBS::bsTooltip(
+          id = "blocsize",
+          title = "The number of selected questions has to be equal to the number of blocs times the number of questions per bloc.",
+          placement = "top", trigger = "hover"
         )
       ),
       
       #########################################################################
-      
-      
-      
-      
-      
-      
-      
-      
       
       miniTabPanel(
         "Selection",
         icon = icon("filter"),
-        fillCol(
-          flex = c(),
-          miniContentPanel(
+        miniContentPanel(
+          fillCol(
+            flex = c(2,2,1,8),
             fillRow(
-              flex = c(1,1),
-              fileInput(
-                inputId = "selection",
-                label = "Preselection of questions",
-                accept = c(".csv"),
-                multiple = FALSE
-              ),
-              fileInput(
-                inputId = "exclusion",
-                label = "Exclusion of questions",
-                accept = c(".csv"),
-                multiple = FALSE
-              )
+              flex = c(1,1,1,1,1),
+              textInput("pkgname", "Package name:", value = ""),
+              uiOutput("filtchapter"),
+              uiOutput("filtsection"),
+              uiOutput("filtsubsection"),
+              uiOutput("filttopic")
             ),
-            
-            
-            
-            
+            fillRow(
+              flex = c(1,1,1,1,1),
+              uiOutput("filttype"),
+              uiOutput("filtlevel"),
+              uiOutput("filtbloom"),
+              uiOutput("filtdifficulty"),
+              uiOutput("filtkeywords")
+            ),
+            tags$hr(),
             fillRow(
               flex = c(1,1),
-              fillCol(
-                flex = c(7, 1, 2, 1),
-                fillRow(
-                  flex = c(1,2,1),
-                  textInput("package", "Package", value = ""),
-                  fillCol(
-                    flex = c(1, 1, 1, 1, 1),
-                    uiOutput(outputId = "filtchapter"),
-                    uiOutput(outputId = "filtsection"),
-                    uiOutput(outputId = "filtsubsection"),
-                    uiOutput(outputId = "filtsubtopic"),
-                    uiOutput(outputId = "filtobjective")
-                  ),
-                  fillCol(
-                    flex = c(1, 1, 1, 1, 1),
-                    uiOutput(outputId = "filttype"),
-                    uiOutput(outputId = "filtlevel"),
-                    uiOutput(outputId = "filtbloom"),
-                    uiOutput(outputId = "filtdifficulty"),
-                    textInput("filtkeyword", "Keywords", value = ""),
-                    tags$br()
-                  )
-                ),
-                tags$hr(),
-                fillRow(
-                  flex = c(1,1),
-                  fillCol(
-                    flex = c(1,1),
-                    numericInput(
-                      inputId = "points",
-                      label = "Number of points",
-                      min = 1,
-                      max = 100,
-                      value = 1,
-                      step = 1,
-                      width = '80%'
-                    ),
-                    actionButton(
-                      inputId = "addSample",
-                      label = "Add question",
-                      width = "80%",
-                      icon("plane")
-                    )
-                  ),
-                  fillCol(
-                    flex = c(1,1),
-                    checkboxInput(
-                      inputId = "allowduplicates",
-                      label = "Allow duplicates",
-                      value = FALSE
-                    ),
-                    textOutput("checkblocs")
-                  )
-                ),
-                uiOutput("manslct")
-              ),
+              dataTableOutput("filtered_questions"),
               fillCol(
                 flex = c(1,11),
-                uiOutput("slctexample"),
-                htmlOutput("lookexample")
+                uiOutput("select_display"),
+                uiOutput("lookexample")
               )
             )
           )
-          
-          
-          
+        ),
+        shinyBS::bsTooltip(
+          id = "pkgname",
+          title = "From which package the next question should be taken?",
+          placement = "top", trigger = "hover"
         )
       ),
+      
+      
+      
+      
+      
+      
+      
+      
       
       #########################################################################
       
       miniTabPanel(
-        "Sort",
-        icon = icon("sort-numeric-down"),
-        
+        "Edit",
+        icon = icon("edit"),
+        miniContentPanel(
+          
+        )
       ),
       
       #########################################################################
@@ -360,7 +397,7 @@ genTest <- function() {
         "Check",
         icon = icon("eye"),
         miniContentPanel(
-          uiOutput("viewquest")
+          
         )
       ),
       
@@ -370,21 +407,7 @@ genTest <- function() {
         "Balance",
         icon = icon("balance-scale"),
         miniContentPanel(
-          fillCol(
-            flex = c(1,1,10),
-            fillRow(flex = c(1,1),
-                    selectInput("tblrow", "Select rows",
-                                choices = c("L1","L2","L3","L4"),
-                                selected = "L1"),
-                    selectInput("tblval",
-                                "Select values",
-                                choices = c("points","questions","difficulty"),
-                                selected = "points")
-                    
-            ),
-            tags$hr(),
-            tableOutput("balance")
-          )
+          
         )
       )
     )
@@ -393,22 +416,39 @@ genTest <- function() {
 
   server <- function(input, output, session) {
     
-    # Bind variables
+    # Bind variables for dplyr
     
     
-    ################
-    # Filter list and selection table creation
     
+    # Create reactive values
     tables <- reactiveValues()
-
-    # Visibly bind variables (avoid notes in checks)
     
+    # Retrieve uploaded files
+    observe({
+      if (is.null(input$studentlist)) {
+        tables$students_list <- data.frame(
+          student_id = "",
+          firstname = "",
+          lastname = "",
+          email = "",
+          stringsAsFactors = FALSE
+        )
+      } else {
+        tables$exclusion <- as.data.frame(
+          utils::read.csv(
+            file = input$studentlist$datapath[[1]],
+            stringsAsFactors = FALSE
+          ),
+          stringsAsFactors = FALSE
+        )
+      }
+    })
     
     observe({
-      if (is.null(input$selection)) {
-        tables$content <- data.frame(
+      if (is.null(input$preselection)) {
+        tables$preselection <- data.frame(
           package = "tmp",
-          questionid = "tmp",
+          question_id = "tmp",
           language = "tmp",
           type = "tmp",
           question_number = 0,
@@ -416,10 +456,11 @@ genTest <- function() {
           question_code = "tmp",
           seed = 1,
           points = 1,
+          difficulty = "tmp",
           stringsAsFactors = FALSE
         )
       } else {
-        tables$content <- as.data.frame(
+        tables$preselection <- as.data.frame(
           utils::read.csv(
             file = input$selection$datapath[[1]],
             stringsAsFactors = FALSE
@@ -429,15 +470,10 @@ genTest <- function() {
       }
     })
     
-    
-    
-    
-    
-    
     observe({
       if (is.null(input$exclusion)) {
         tables$exclusion <- data.frame(
-          QN = "",
+          question_id = "",
           stringsAsFactors = FALSE
         )
       } else {
@@ -451,268 +487,344 @@ genTest <- function() {
       }
     })
     
-    tables$order <- c()
     
+    # Retrieve questions from package
     questionlist <- reactive({
-      questions <- questR::questions
-      if (!is.null(input$language) & !is.null(input$typequest)){
-        questions <- subset(questions, questions$language == input$language)
-        questions <- subset(questions, questions$kind %in% c(input$typequest,"both"))
-        questions <- subset(questions, !(questions$questionid %in% tables$exclusion$QN))
+      if (input$pkgname != ""){
+        questions <- eval(
+          parse(text = paste0(input$pkgname,"::","str_questions"))
+        )
+        
+        # Selection of questions which are neither included nor excluded
+        questions <- questions %>%
+          dplyr::filter(!(question_id %in% tables$exclusion$question_id)) %>%
+          dplyr::filter(!(question_id %in% tables$preselection$question_id))
+        
+        # Select questions available in appropriate languages
+        
+        in_all_languages <- questions %>%
+          dplyr::select(question_nbr, question_language) %>%
+          dplyr::filter(question_language %in% input$languages) %>%
+          dplyr::group_by(question_nbr) %>%
+          dplyr::count() %>%
+          dplyr::filter(n == length(input$languages))
+        
+        questions <- questions %>%
+          dplyr::filter(question_nbr %in% in_all_languages$question_nbr)
+        
+        # Selection question in appropriate format
+        if (input$typeanswer == "choice") questions <- dplyr::filter(
+          questions, type %in% c(
+            "1 Statements", "2 Alternatives", "3 Assessement", "4 Computation"
+          )
+        )
+        if (input$typeanswer == "number") questions <- dplyr::filter(
+          questions, type %in% c("4 Computation")
+        )
+        if (input$typeanswer == "text") questions <- dplyr::filter(
+          questions, type %in% c(
+            "4 Computation", "5 Interrogation",
+            "6 Problem", "7 Essay", "8 Case"
+          )
+        )
       }
+      
       questions
     })
-
     
     
     ####################
     # Prepare filters
-    output$filtsubject <- renderUI({
-      choices <- sort(c(setdiff(unique(questionlist()$subject), ""), ""), decreasing = FALSE)
-      selectInput("slctsubject",
-                  "Subject:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+    base_filters <- reactive({
+      filters <- eval(parse(text = paste0(input$pkgname,"::","str_labels")))
+      
+      # Selection question which are not excluded
+      filters <- filters %>%
+        dplyr::filter(language == input$languages[1]) %>%
+        dplyr::right_join(
+          questionlist(),
+          by = c(
+            "topic_id",
+            "topic_order",
+            "subsection_id",
+            "subsection_order",
+            "section_id",
+            "section_order",
+            "chapter_id",
+            "chapter_order",
+            "field_id",
+            "field_label"
+            )
+          ) %>%
+        tidyr::unite(
+          "topic_code",
+          field_id, chapter_order,
+          section_order, subsection_order,
+          topic_order,
+          sep = ""
+        ) %>%
+        dplyr::select(
+          question_id, question_nbr, topic_id, topic_code,
+          chapter_label, section_label,
+          subsection_label, topic_label,
+          objective, description,
+          type, level, bloom, difficulty
+        ) %>%
+        dplyr::arrange(topic_code)
     })
     
-    afterfiltsubject <- reactive({
-      filter <- input$slctsubject
-      if (is.null(filter)){
-        questionlist()
-      } else if (filter == "") {
-        questionlist()
-      } else {
-        subset(questionlist(), stringr::str_detect(questionlist()$subject, filter))
-      }
-    })
     
     
     
+    # Create filters
+    # Chapter
     output$filtchapter <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltsubject()$chapter), ""), ""), decreasing = FALSE)
-      selectInput("slctchapter",
-                  "Chapter:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = base_filters(), variable = "chapter_label",
+          id = "slctchapter", label = "Chapter:"
+        )
+      }
     })
-    
+      
     afterfiltchapter <- reactive({
-      filter <- input$slctchapter
-      if (is.null(filter)){
-        afterfiltsubject()
-      } else if (filter == "") {
-        afterfiltsubject()
-      } else {
-        subset(afterfiltsubject(), stringr::str_detect(afterfiltsubject()$chapter, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = base_filters(), variable = "chapter_label",
+          filt = input$slctchapter, type = "selection"
+        )
       }
     })
     
-    
-    
+    # Section
     output$filtsection <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltchapter()$section), ""), ""), decreasing = FALSE)
-      selectInput("slctsection",
-                  "Section:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfiltchapter(), variable = "section_label",
+          id = "slctsection", label = "Section:"
+        )
+      }
     })
-    
     afterfiltsection <- reactive({
-      filter <- input$slctsection
-      if (is.null(filter)){
-        afterfiltchapter()
-      } else if (filter == "") {
-        afterfiltchapter()
-      } else {
-        subset(afterfiltchapter(), stringr::str_detect(afterfiltchapter()$section, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfiltchapter(), variable = "section_label",
+          filt = input$slctsection, type = "selection"
+        )
       }
     })
     
-    
-    
+    # Subsection
     output$filtsubsection <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltsection()$subsection), ""), ""), decreasing = FALSE)
-      selectInput("slctsubsection",
-                  "Sub_section:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfiltsection(), variable = "subsection_label",
+          id = "slctsubsection", label = "Sub-section:"
+        )
+      }
     })
-    
     afterfiltsubsection <- reactive({
-      filter <- input$slctsubsection
-      if (is.null(filter)){
-        afterfiltsection()
-      } else if (filter == "") {
-        afterfiltsection()
-      } else {
-        subset(afterfiltsection(), stringr::str_detect(afterfiltsection()$subsection, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfiltsection(), variable = "subsection_label",
+          filt = input$slctsubsection, type = "selection"
+        )
       }
     })
     
-    
-    
-    output$filtsubtopic <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltsubsection()$subtopic), ""), ""), decreasing = FALSE)
-      selectInput("slctsubtopic",
-                  "Subtopic:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
+    # Topic
+    output$filttopic <- renderUI({
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfiltsubsection(), variable = "topic_label",
+          id = "slcttopic", label = "Topic:"
+        )
+      }
     })
-    
-    afterfiltsubtopic <- reactive({
-      filter <- input$slctsubtopic
-      if (is.null(filter)){
-        afterfiltsubsection()
-      } else if (filter == "") {
-        afterfiltsubsection()
-      } else {
-        subset(afterfiltsubsection(), stringr::str_detect(afterfiltsubsection()$subtopic, filter))
+    afterfilttopic <- reactive({
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfiltsubsection(), variable = "topic_label",
+          filt = input$slcttopic, type = "selection"
+        )
       }
     })
     
-    
-    
-    output$filtobjective <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltsubtopic()$objective), ""), ""), decreasing = FALSE)
-      selectInput("slctobjective",
-                  "Objective:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE,
-                  width = '80%')
-    })
-    
-    afterfiltobjective <- reactive({
-      filter <- input$slctobjective
-      if (is.null(filter)){
-        afterfiltsubtopic()
-      } else if (filter == "") {
-        afterfiltsubtopic()
-      } else {
-        subset(afterfiltsubtopic(), stringr::str_detect(afterfiltsubtopic()$objective, filter))
-      }
-    })
-    
-    
-    
+    # type
     output$filttype <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltobjective()$type), ""), ""), decreasing = FALSE)
-      selectInput("slcttype",
-                  "Type:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE)
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfilttopic(), variable = "type",
+          id = "slcttype", label = "Question type:"
+        )
+      }
     })
-    
     afterfilttype <- reactive({
-      filter <- input$slcttype
-      if (is.null(filter)){
-        afterfiltobjective()
-      } else if (filter == "") {
-        afterfiltobjective()
-      } else {
-        subset(afterfiltobjective(), stringr::str_detect(afterfiltobjective()$type, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfilttopic(), variable = "type",
+          filt = input$slcttype, type = "selection"
+        )
       }
     })
     
-    
-    
+    # level
     output$filtlevel <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfilttype()$level), ""), ""), decreasing = FALSE)
-      selectInput("slctlevel",
-                  "Level:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE)
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfilttype(), variable = "level",
+          id = "slctlevel", label = "Level:"
+        )
+      }
     })
-    
     afterfiltlevel <- reactive({
-      filter <- input$slctlevel
-      if (is.null(filter)){
-        afterfilttype()
-      } else if (filter == "") {
-        afterfilttype()
-      } else {
-        subset(afterfilttype(), stringr::str_detect(afterfilttype()$level, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfilttype(), variable = "level",
+          filt = input$slctlevel, type = "selection"
+        )
       }
     })
     
-    
-    
+    # bloom
     output$filtbloom <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltlevel()$bloom), ""), ""), decreasing = FALSE)
-      selectInput("slctbloom",
-                  "Bloom:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE)
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfiltlevel(), variable = "bloom",
+          id = "slctbloom", label = "Bloom level:"
+        )
+      }
     })
-    
     afterfiltbloom <- reactive({
-      filter <- input$slctbloom
-      if (is.null(filter)){
-        afterfiltlevel()
-      } else if (filter == "") {
-        afterfiltlevel()
-      } else {
-        subset(afterfiltlevel(), stringr::str_detect(afterfiltlevel()$bloom, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfiltlevel(), variable = "bloom",
+          filt = input$slctbloom, type = "selection"
+        )
       }
     })
     
-    
-    
+    # Difficulty
     output$filtdifficulty <- renderUI({
-      choices <- sort(c(setdiff(unique(afterfiltbloom()$difficulty), ""), ""), decreasing = FALSE)
-      selectInput("slctdifficulty",
-                  "Difficulty:",
-                  choices = choices,
-                  selected = "",
-                  multiple = FALSE)
+      if (input$pkgname != ""){
+        make_filter(
+          dataset = afterfiltbloom(), variable = "difficulty",
+          id = "slctdifficulty", label = "Difficulty:"
+        )
+      }
     })
-    
     afterfiltdifficulty <- reactive({
-      filter <- input$slctdifficulty
-      if (is.null(filter)){
-        afterfiltbloom()
-      } else if (filter == "") {
-        afterfiltbloom()
-      } else {
-        subset(afterfiltbloom(), stringr::str_detect(afterfiltbloom()$difficulty, filter))
+      if (input$pkgname != ""){
+        filter_data(
+          dataset = afterfiltbloom(), variable = "difficulty",
+          filt = input$slctdifficulty, type = "selection"
+        )
+      }
+    })
+    
+    # Keywords
+    output$filtkeywords <- renderUI({
+      if (input$pkgname != ""){
+        textInput(
+          "slctkeywords",
+          "Keywords (in objective or description):",
+          value = "",
+          width = "100%"
+        )
+      }
+    })
+    afterfiltkeywords <- reactive({
+      if (input$pkgname != ""){
+        inobj <- afterfiltdifficulty() %>%
+          filter_data(
+            variable = "objective",
+            filt = input$slctkeywords,
+            type = "text"
+          )
+        indesc <- afterfiltdifficulty() %>%
+            filter_data(
+            variable = "description",
+            filt = input$slctkeywords,
+            type = "text"
+          )
+        
+        ineither <- unique(c(inobj$question_nbr), c(indesc$question_nbr))
+        
+        afterfiltdifficulty() %>%
+          dplyr::filter(question_nbr %in% ineither)
+      }
+    })
+    
+    ############################################################################
+    # Interface to see filtered questions
+    output$filtered_questions <- shiny::renderDataTable({
+      if (input$pkgname != ""){
+        afterfiltkeywords() %>%
+          dplyr::select(question_id, objective, description) %>%
+          unique() %>%
+          dplyr::arrange(question_id)
+      }
+    })
+    
+    output$select_display <- renderUI({
+      if (input$pkgname != "") {
+        choices <- afterfiltkeywords() %>%
+          dplyr::select(question_id) %>%
+          unique() %>%
+          unlist() %>%
+          as.character() %>%
+          sort()
+        selectInput(
+          "slctdisp",
+          "Select the question to display:",
+          choices = choices,
+          selected = choices[1]
+        )
+      }
+    })
+    
+    output$lookexample <- renderUI({
+      if (input$pkgname != "" & !is.null(input$slctdisp)){
+        htmldoc <- system.file(
+          "examples",
+          paste0(input$slctdisp, ".html"),
+          package="mancon"
+        )
+        page <- xml2::read_html(htmldoc)
+        withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
       }
     })
     
     
     
-    output$filtkeyword <- renderUI({
-      textInput("slctkeyword",
-                "Keywords:",
-                value = "",
-                width = '80%')
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    output$edit_selection <- rhandsontable::renderRHandsontable({
+      #rhandsontable::rhandsontable(tables$edit_paths, height = 400, width = "100%", stretchH = "all") %>%
+      #  rhandsontable::hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     })
     
-    afterfiltkeyword <- reactive({
-      filter <- input$slctkeyword
-      if (is.null(filter)){
-        afterfiltdifficulty()
-      } else if (filter[[1]] == "") {
-        afterfiltdifficulty()
-      } else {
-        keywords <- stringr::str_to_lower(unlist(str_split(filter, " ")))
-        keywords <- stringr::str_replace_all(keywords, "_", " ")
-        base <- afterfiltdifficulty()
-        for (i in 1:length(keywords)) base <- subset(afterfiltdifficulty(), stringr::str_detect(stringr::str_to_lower(afterfiltdifficulty()$description), keywords[i]))
-        base
-      }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    output$selected_questions <- renderTable({
+      if (input$pkgname != "") afterfiltkeywords()
     })
     
     
@@ -720,15 +832,7 @@ genTest <- function() {
     preselection <- reactive({
       reset <- input$addSample
 
-      if (input$allowduplicates == FALSE) {
-        available <- setdiff(afterfiltkeyword()$questionid, tables$contentexam$QN)
-      } else {
-        available <- afterfiltkeyword()$questionid
-      }
       
-      preselection <- subset(afterfiltkeyword(), afterfiltkeyword()$questionid %in% available)
-
-      preselection
     })
     
 
@@ -758,52 +862,22 @@ genTest <- function() {
     
     output$slctexample <- renderUI({
       if (!is.null(input$manslct)){
-        manualselection <- input$manslct
-        selectInput("slctexample",
-                    "Select a question to see an example",
-                    choices = manualselection,
-                    selected = manualselection[1])
+        
       }
     })
     
-    output$lookexample <- renderUI({
-      if (!is.null(input$slctexample)){
-        address <- system.file("documents", paste0(input$slctexample, ".html"), package="questR")
-        page <- xml2::read_html(address)
-        withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
-      }
-    })
+    
     
     
     ##############################
     
-    output$contentexam <- DT::renderDT({
-      as.data.frame(tables$contentexam,
-                    stringsAsFactors = FALSE)},
-      options = list(pageLength = 10, lengthMenu = c(5, 10, 15), searching = FALSE, xtable.include.rownames = TRUE)
-    )
-    
-    output$order <- renderUI({
-      order <- tables$contentexam$ID
-      selectInput("order", "Order", choices = order, selected = order, multiple = TRUE, width = "100%")
+    output$selected_questions <- rhandsontable::renderRHandsontable({
+      
     })
     
     
     output$checkblocs <- renderText({
-      if (!is.null(input$versions) & !is.null(input$blocsize)){
-        versions <- input$versions
-        blocsize <- input$blocsize
-        selected <- nrow(tables$contentexam) 
-        
-        minquest <- versions * blocsize
-        
-        if (minquest > selected) missing <- minquest - selected else {
-          modulus <- selected %% blocsize
-          if (modulus > 0) missing <- blocsize - modulus else missing <- modulus
-        }
-        
-        paste0("You need at least ", minquest, " questions or ", missing, " more question(s).")
-      }
+      paste0("You need at least ", minquest, " questions or ", missing, " more question(s).")
     })
     
     
@@ -811,7 +885,7 @@ genTest <- function() {
     
     output$viewquest <- renderUI({
       if (nrow(tables$contentexam) > 1){
-        questions <- tables$contentexam$QN
+        #questions <- tables$contentexam$QN
         examination <- c()
         for (question in questions){
           address <- system.file("documents", paste0(question, ".html"), package="questR")
@@ -827,38 +901,7 @@ genTest <- function() {
     
     output$balance <- renderTable({
       
-      if (input$tblval == "points"){
-        balance <- tables$contentexam[,c(input$tblrow, "BL", "PT")]
-        names(balance) <- c("Topic","Bloom","Value")
-        balance <- balance %>%
-          dplyr::group_by(Topic, Bloom) %>%
-          dplyr::summarise(Value = sum(Value)) %>%
-          dplyr::ungroup() %>%
-          tidyr::spread(Bloom, Value, fill = 0) %>%
-          writR::stat_totals(omit_col = "Topic", summary = "sum")
-        
-      } else if (input$tblval == "questions"){
-        balance <- tables$contentexam[,c(input$tblrow, "BL")] %>%
-          dplyr::mutate(Value = 1)
-        names(balance) <- c("Topic","Bloom","Value")
-        balance <- balance %>%
-          dplyr::group_by(Topic, Bloom) %>%
-          dplyr::summarise(Value = sum(Value)) %>%
-          dplyr::ungroup() %>%
-          tidyr::spread(Bloom, Value, fill = 0) %>%
-          writR::stat_totals(omit_col = "Topic", summary = "sum")
-        
-      } else {
-        balance <- tables$contentexam[,c(input$tblrow, "BL", "DI")] 
-        names(balance) <- c("Topic","Bloom","Value")
-        balance <- balance %>%
-          dplyr::group_by(Topic, Bloom) %>%
-          dplyr::summarise(Value = mean(Value)) %>%
-          dplyr::ungroup() %>%
-          tidyr::spread(Bloom, Value, fill = 0) %>%
-          writR::stat_totals(omit_col = "Topic", summary = "mean")
-      }
-      balance
+      
     })
 
     ##########################################
@@ -866,83 +909,11 @@ genTest <- function() {
 
     # Add the selected questions to the table
     observeEvent(input$addSample, {
-      table <- tables$contentexam %>%
-        dplyr::filter(ID != 0)
-
-      if (!is.null(input$manslct)) {
-        question <- sample(input$manslct, 1)
-        questionNbr <- nrow(table) + 1
-
-        add <- preselection() %>%
-          dplyr::filter(questionid == question) %>%
-          dplyr::mutate(
-            ID = questionNbr,
-            QN = question,
-            PT = input$points,
-            SD = sample(c(1:9999), 1)
-          ) %>%
-          dplyr::select(
-            ID,
-            QN,
-            LG = language,
-            SC = sectionid,
-            LO = objective,
-            TY = type,
-            KD = kind,
-            LV = level,
-            BL = bloom,
-            DI = difficulty,
-            DE = description,
-            SU = subject,
-            L1 = chapter,
-            L2 = section,
-            L3 = subsection,
-            L4 = subtopic,
-            SD,
-            PT
-          )
-        
-        table <- table %>%
-          dplyr::bind_rows(add) %>%
-          na.omit() %>%
-          dplyr::arrange(by = ID)
-      }
       
-      tables$contentexam <- table
     })
 
     
-    observeEvent(input$reorder, {
-      if (nrow(tables$contentexam) > 1 & length(input$order) > 0) {
-        neworder <- as.integer(input$order)
-        reordered <- tables$contentexam[neworder, ]
-        reordered$ID <- c(1:nrow(reordered))
-        tables$contentexam <- reordered
-      }
-      if (length(input$order) == 0) {
-        tables$contentexam <- data.frame(
-          ID = 0,
-          QN = "tmp",
-          LG = "tmp",
-          SC = "tmp",
-          LO = "tmp",
-          TY = "tmp",
-          KD = "tmp",
-          LV = "tmp",
-          BL = "tmp",
-          DI = 0,
-          DE = "tmp",
-          SU = "tmp",
-          L1 = "tmp",
-          L2 = "tmp",
-          L3 = "tmp",
-          L4 = "tmp",
-          SD = 0,
-          PT = 0,
-          stringsAsFactors = FALSE
-        )
-      }
-    })
+    
 
     #################
     # On exit
@@ -1033,8 +1004,8 @@ genTest <- function() {
         # Generate the exam
         if (input$platform == "Web") {
           incProgress(1 / 2, detail = "Generating...")
-          exasolu = "exam"
-          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+          test_or_solution = "test"
+          save(test_or_solution, file = paste0(wd, "/parameters/test_or_solution.RData"))
           web <- exams::exams2html(
             myexam,
             n = 1,
@@ -1047,8 +1018,8 @@ genTest <- function() {
           
         } else if (input$platform == "Blackboard") {
           incProgress(1 / 2, detail = "Generating...")
-          exasolu = "exam"
-          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+          test_or_solution = "test"
+          save(test_or_solution, file = paste0(wd, "/parameters/test_or_solution.RData"))
           moodle <- exams::exams2blackboard(
             myexam,
             n = 1,
@@ -1061,8 +1032,8 @@ genTest <- function() {
           
         } else if (input$platform == "Moodle") {
           incProgress(1 / 2, detail = "Generating...")
-          exasolu = "exam"
-          save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+          test_or_solution = "test"
+          save(test_or_solution, file = paste0(wd, "/parameters/test_or_solution.RData"))
           moodle <- exams2moodle(
             myexam,
             n = 1,
@@ -1111,8 +1082,8 @@ genTest <- function() {
             
             header <- list(Date = input$datexam, ID = versionid)
             
-            exasolu = "exam"
-            save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+            test_or_solution = "test"
+            save(test_or_solution, file = paste0(wd, "/parameters/test_or_solution.RData"))
             
             set.seed(seed)
             exam <- exams::exams2pdf(
@@ -1130,8 +1101,8 @@ genTest <- function() {
             
             unlink(paste0(tmpdir, "/*"))
             
-            exasolu = "solution"
-            save(exasolu, file = paste0(wd, "/parameters/exasolu.RData"))
+            test_or_solution = "solution"
+            save(test_or_solution, file = paste0(wd, "/parameters/test_or_solution.RData"))
             
             set.seed(seed)
             solu <- exams::exams2pdf(
@@ -1188,4 +1159,50 @@ genTest <- function() {
   }
   
   runGadget(ui, server, viewer = dialogViewer("genExam", width = 1900, height = 1080))
+}
+
+
+
+
+
+
+# Function to generate dynamic filters in user interface
+make_filter <- function(dataset, variable, id, label) {
+  choices <- sort(
+    as.character(unique(c(unlist(dataset[, variable]), ""))),
+    decreasing = FALSE
+  )
+  selectInput(
+    id,
+    label,
+    choices = choices,
+    selected = "",
+    multiple = FALSE,
+    width = "100%"
+  )
+}
+
+
+# Functions to apply dynamically filters
+filter_data <- function(dataset, variable, filt, type) {
+  if (is.null(filt)) {
+    dataset
+  } else if (filt == "") {
+    dataset
+  } else {
+    if (type == "selection") {
+      dplyr::filter(dataset, str_detect(unlist(dataset[, variable]), filt))
+    } else {
+      terms <- stringr::str_to_lower(unlist(str_split(filt, " ")))
+      terms <- stringr::str_replace_all(terms, "_", " ")
+      base <- dataset
+      for (term in terms) {
+        base <- dplyr::filter(
+          base,
+          str_detect(stringr::str_to_lower(unlist(base[, variable])), term)
+        )
+      }
+      base
+    }
+  }
 }

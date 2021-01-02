@@ -1,4 +1,5 @@
-#' Shiny gadget testing a specified question and returning results
+#' Shiny gadget guiding through the creation of a question: selection of a template, assignment to a topic, and entry in relevant databases.
+#' @return Create a question based on the requested template and make entries in the structure databases.
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
 #' @importFrom miniUI miniTabstripPanel
@@ -38,22 +39,20 @@
 #' @export
 
 
-test_question <- function() {
+change_structure <- function() {
   
   ui <- miniPage(
     theme = shinythemes::shinytheme("flatly"),
+    tags$head(tags$style(
+      HTML(".shiny-notification {
+              position:fixed;top: 30%;left: 0%;right: 0%;
+           }")
+    )),
     
     gadgetTitleBar("Create a question"),
     miniTabstripPanel(
       miniTabPanel(
-        "Definition",
-        icon = icon("sliders"),
-        miniContentPanel(
-          
-        )
-      ),
-      miniTabPanel(
-        "Results",
+        "Create",
         icon = icon("sliders"),
         miniContentPanel(
           

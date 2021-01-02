@@ -26,7 +26,6 @@ Imports:
   dplyr,
   tidyr,
   exams,
-  DT,
   tth,
   purrr,
   gtools,
@@ -34,4 +33,9 @@ Imports:
   readr,
   rvest,
   xml2,
-  knitr
+  knitr,
+  shinyBS,
+  shinythemes,
+  lubridate,
+  readODS,
+  rhandsontable

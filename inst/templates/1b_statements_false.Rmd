@@ -1,4 +1,8 @@
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+pkgname <- "" # update
+questionid <- "" # update
+
 ################################################################################
 # Initialization (do not edit)
 source(paste0(find.package("teachR"),"/scripts/initialize.R"))
@@ -7,16 +11,16 @@ source(paste0(find.package("teachR"),"/scripts/initialize.R"))
 
 ################################################################################
 # Load packages
-
 library(dplyr)
 library(stringr)
 
 
 ################################################################################
 # Selection
-
-mget(data(str_questions, package = pkg_name))
-mget(data(str_statements, package = pkg_name))
+str_questions <-
+  eval(parse(text = paste0(pkgname,"::","str_questions")))
+str_statements <-
+  eval(parse(text = paste0(pkgname,"::","str_statements")))
 
 filters <- str_questions %>%
   dplyr::filter(question_id == questionid) %>%
@@ -67,7 +71,7 @@ source(paste0(find.package("teachR"),"/scripts/finalize.R"))
 
 Question
 ========
-`r test_id` Which of the following statements is **false**? `r difficulty` `r points`
+`r exname` Which of the following statements is **false**? `r points`
 
 ```{r questionlist, echo = FALSE, results = "asis"}
 exams::answerlist(questions, markup = "markdown")
@@ -88,4 +92,4 @@ Meta-information
 ================
 extype: schoice
 exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
-exname: `r test_id`
+exname: `r exname`

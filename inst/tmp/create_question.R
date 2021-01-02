@@ -39,10 +39,15 @@
 #' @export
 
 
-change_structure <- function() {
+create_question <- function() {
   
   ui <- miniPage(
     theme = shinythemes::shinytheme("flatly"),
+    tags$head(tags$style(
+      HTML(".shiny-notification {
+              position:fixed;top: 30%;left: 0%;right: 0%;
+           }")
+    )),
     
     gadgetTitleBar("Create a question"),
     miniTabstripPanel(

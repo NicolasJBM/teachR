@@ -41,7 +41,12 @@
 
 calibRate <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("spacelab"),
+    theme = shinythemes::shinytheme("flatly"),
+    tags$head(tags$style(
+      HTML(".shiny-notification {
+              position:fixed;top: 30%;left: 0%;right: 0%;
+           }")
+    )),
     
     gadgetTitleBar("Grade open questions and essays"),
     miniTabstripPanel(

@@ -1,6 +1,16 @@
-library(dplyr)
-library(tidyr)
-library(readODS)
+#' @name generate_structure
+#' @title Generate the structure of a question bank
+#' @author Nicolas Mangin
+#' @description Recompose structural databases of a question bank.
+#' @importFrom dplyr left_join
+#' @importFrom dplyr mutate
+#' @importFrom dplyr case_when
+#' @importFrom dplyr select
+#' @importFrom dplyr all_of
+#' @importFrom tidyr pivot_longer
+#' @importFrom readODS read_ods
+#' @export
+
 
 generate_structure <- function(){
   
@@ -38,10 +48,11 @@ generate_structure <- function(){
       question_nbr,
       question_language,
       objective,
+      description,
       type,
       level,
       bloom,
-      description,
+      difficulty,
       topic_id,
       topic_order,
       subsection_id,
