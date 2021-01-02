@@ -27,10 +27,11 @@ retrieve_parameters <- function(wdir = "",
 
     extype <- exercise$extype[1]
     exname <- exercise$exname[1]
+    showexname <- paste0(exname, " - ")
 
     if (exercise$show_difficulty[1]) {
       if (exercise$show_points[1]) {
-        points <- paste0(
+        showdiffpoints <- paste0(
           "(",
           exercise$difficulty[1],
           " difficulty, ",
@@ -38,7 +39,7 @@ retrieve_parameters <- function(wdir = "",
           ifelse(exercise$points[1] == 1, " point)", " points)")
         )
       } else {
-        points <- paste0(
+        showdiffpoints <- paste0(
           "(",
           exercise$difficulty[1],
           " difficulty)"
@@ -46,13 +47,13 @@ retrieve_parameters <- function(wdir = "",
       }
     } else {
       if (exercise$show_points[1]) {
-        points <- paste0(
+        showdiffpoints <- paste0(
           "(",
           exercise$points[1],
           ifelse(exercise$points[1] == 1, " point)", " points)")
         )
       } else {
-        points <- ""
+        showdiffpoints <- ""
       }
     }
 
@@ -64,7 +65,8 @@ retrieve_parameters <- function(wdir = "",
   } else {
     extype <- "schoice"
     exname <- questionid
-    points <- ""
+    showexname <- paste0(questionid, " - ")
+    showdiffpoints <- ""
     seed <- ceiling(stats::runif(1)*10000)
     alternatives <- 5
     type_table <- "html"
@@ -94,7 +96,8 @@ retrieve_parameters <- function(wdir = "",
   parameters <- list(
     extype = extype,
     exname = exname,
-    points = points,
+    showexname = showexname,
+    showdiffpoints = showdiffpoints,
     seed = seed,
     alternatives = alternatives,
     type_table = type_table,

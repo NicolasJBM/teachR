@@ -82,6 +82,9 @@ genTest <- function() {
     tags$head(tags$style(
       HTML(".shiny-notification {
               position:fixed;top: 30%;left: 0%;right: 0%;
+           }
+           .gadget-tabs-content-container {
+              margin:1em 1em 1em 1em !important;
            }")
     )),
     
@@ -1158,7 +1161,11 @@ genTest <- function() {
     })
   }
   
-  runGadget(ui, server, viewer = dialogViewer("genExam", width = 1900, height = 1080))
+  runGadget(
+    ui,
+    server,
+    viewer = browserViewer(browser = getOption("browser"))
+  )
 }
 
 

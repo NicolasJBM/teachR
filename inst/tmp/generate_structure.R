@@ -25,15 +25,15 @@ generate_structure <- function(){
     dplyr::left_join(chapters, by = "chapter_id") %>%
     dplyr::mutate(
       filter_variable = dplyr::case_when(
-        topic_id > 0 ~ "topic_id",
-        subsection_id > 0 ~ "subsection_id",
-        section_id > 0 ~ "section_id",
+        topic_order > 0 ~ "topic_id",
+        subsection_order > 0 ~ "subsection_id",
+        section_order > 0 ~ "section_id",
         TRUE ~ "chapter_id"
       ),
       filter_value = dplyr::case_when(
-        topic_id > 0 ~ topic_id,
-        subsection_id > 0 ~ subsection_id,
-        section_id > 0 ~ section_id,
+        topic_order > 0 ~ topic_id,
+        subsection_order > 0 ~ subsection_id,
+        section_order > 0 ~ section_id,
         TRUE ~ chapter_id
       )
     )

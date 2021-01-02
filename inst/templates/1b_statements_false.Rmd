@@ -1,7 +1,7 @@
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 
-pkgname <- "" # update
-questionid <- "" # update
+pkgname <- "" # edit
+questionid <- "" # edit
 
 ################################################################################
 # Initialization (do not edit)
@@ -71,7 +71,7 @@ source(paste0(find.package("teachR"),"/scripts/finalize.R"))
 
 Question
 ========
-`r exname` Which of the following statements is **false**? `r points`
+`r showexname` Which of the following statements is **false**? `r showdiffpoints`
 
 ```{r questionlist, echo = FALSE, results = "asis"}
 exams::answerlist(questions, markup = "markdown")
