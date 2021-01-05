@@ -19,6 +19,7 @@ RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Imports:
   tools,
+  tibble,
   stats,
   utils,
   miniUI,
@@ -38,4 +39,5 @@ Imports:
   shinythemes,
   lubridate,
   readODS,
-  rhandsontable
+  rhandsontable,
+  ggplot2

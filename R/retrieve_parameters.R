@@ -2,7 +2,7 @@
 #' @title Retrieve parameters
 #' @author Nicolas Mangin
 #' @description Get the question parameters when it is prodiced for a test.
-#' @param wdir        Character. Path to working directory.
+#' @param wdir       Character. Path to working directory.
 #' @param questionid Character. ID of the question.
 #' @return Parameters for the questions.
 #' @importFrom dplyr filter
@@ -12,6 +12,9 @@
 
 retrieve_parameters <- function(wdir = "",
                                 questionid = "") {
+  exam_parameters <- NULL
+  question_id <- NULL
+
   if (file.exists(
     gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData"))
   )) {
@@ -67,7 +70,7 @@ retrieve_parameters <- function(wdir = "",
     exname <- questionid
     showexname <- paste0(questionid, " - ")
     showdiffpoints <- ""
-    seed <- ceiling(stats::runif(1)*10000)
+    seed <- ceiling(stats::runif(1) * 10000)
     alternatives <- 5
     type_table <- "html"
     currency <- "euro"
