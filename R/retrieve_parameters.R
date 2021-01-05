@@ -1,35 +1,31 @@
 #' @name retrieve_parameters
 #' @title Retrieve parameters
 #' @author Nicolas Mangin
-#' @description Get the question parameters when it is prodiced for a test.
-#' @param wdir       Character. Path to working directory.
-#' @param questionid Character. ID of the question.
+#' @description Get the question parameters when it is produced for a test.
+#' @param ex_name Character. Name of the .Rmd file being processed.
+#' @param pkgname Character. Name of the package containing the .Rmd file being processed.
 #' @return Parameters for the questions.
+#' @importFrom dplyr %>%
 #' @importFrom dplyr filter
 #' @importFrom stats runif
 #' @export
 
 
-retrieve_parameters <- function(wdir = "",
-                                questionid = "") {
-  exam_parameters <- NULL
-  question_id <- NULL
-
-  if (file.exists(
-    gsub("/tmp/", "/", paste0(getwd(), "/parameters/exam_parameters.RData"))
-  )) {
-    load(file = gsub(
-      "/tmp/",
-      "/",
-      paste0(getwd(), "/parameters/exam_parameters.RData")
-    ))
-
-    exercise <- exam_parameters %>%
-      dplyr::filter(question_id == questionid) %>%
+retrieve_parameters <- function(ex_name, pkgname) {
+  test_parameters <- NULL
+  
+  wdir <- gsub("tmp","rmd", getwd())
+  parampath <- paste0(wdir, "/test_parameters.RData")
+  if (file.exists(parampath)) {
+    
+    load(file = parampath)
+    exercise <- test_parameters %>%
+      dplyr::filter(exname == ex_name) %>%
       as.data.frame()
 
     extype <- exercise$extype[1]
     exname <- exercise$exname[1]
+    questionid <- exercise$question_id[1]
     showexname <- paste0(exname, " - ")
 
     if (exercise$show_difficulty[1]) {
@@ -67,10 +63,11 @@ retrieve_parameters <- function(wdir = "",
     test_or_solution <- exercise$test_or_solution[1]
   } else {
     extype <- "schoice"
-    exname <- questionid
-    showexname <- paste0(questionid, " - ")
+    exname <- ex_name
+    questionid <- ex_name
+    showexname <- paste0(exname, " - ")
     showdiffpoints <- ""
-    seed <- ceiling(stats::runif(1) * 10000)
+    seed <- 1234 # switch back to random when test finished.
     alternatives <- 5
     type_table <- "html"
     currency <- "euro"
@@ -99,6 +96,7 @@ retrieve_parameters <- function(wdir = "",
   parameters <- list(
     extype = extype,
     exname = exname,
+    questionid = questionid,
     showexname = showexname,
     showdiffpoints = showdiffpoints,
     seed = seed,

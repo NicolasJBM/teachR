@@ -1,11 +1,13 @@
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 
-pkgname <- "" # edit
-questionid <- "" # edit
+pkgname <- "write_package_name" # edit
 
 ################################################################################
 # Initialization (do not edit)
-source(paste0(find.package("teachR"),"/scripts/initialize.R"))
+processed <- gsub(".Rmd", "", knitr::current_input())
+parameters <- teachR::retrieve_parameters(processed, pkgname)
+for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
+set.seed(seed)
 ################################################################################
 
 

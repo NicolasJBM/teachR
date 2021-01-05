@@ -4,18 +4,18 @@
 \alias{retrieve_parameters}
 \title{Retrieve parameters}
 \usage{
-retrieve_parameters(wdir = "", questionid = "")
+retrieve_parameters(ex_name, pkgname)
 }
 \arguments{
-\item{wdir}{Character. Path to working directory.}
+\item{ex_name}{Character. Name of the .Rmd file being processed.}
 
-\item{questionid}{Character. ID of the question.}
+\item{pkgname}{Character. Name of the package containing the .Rmd file being processed.}
 }
 \value{
 Parameters for the questions.
 }
 \description{
-Get the question parameters when it is prodiced for a test.
+Get the question parameters when it is produced for a test.
 }
 \author{
 Nicolas Mangin
