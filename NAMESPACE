@@ -3,6 +3,7 @@
 export(genTest)
 export(generate_structure)
 export(make_scan_A4)
+export(raText)
 export(retrieve_parameters)
 importFrom(dplyr,"%>%")
 importFrom(dplyr,all_of)

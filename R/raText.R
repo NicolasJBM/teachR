@@ -39,7 +39,7 @@
 #' @export
 
 
-gradEssay <- function() {
+raText <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("flatly"),
     tags$head(tags$style(
@@ -103,7 +103,12 @@ gradEssay <- function() {
   server <- function(input, output, session) {
     
     # Bind variables
-    
+    answer <- NULL
+    questionid <- NULL
+    solution <- NULL
+    studentid <- NULL
+    textAreaInput <- NULL
+    weight <- NULL
     
     ################
     # Filter list and selection table creation
