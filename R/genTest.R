@@ -874,7 +874,7 @@ genTest <- function() {
         htmldoc <- system.file(
           "examples",
           paste0(input$slctdisp, ".html"),
-          package = "mancon"
+          package = tables$pkgname
         )
         page <- xml2::read_html(htmldoc)
         withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
