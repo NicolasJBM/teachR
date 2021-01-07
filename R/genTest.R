@@ -586,7 +586,7 @@ genTest <- function() {
     questionlist <- reactive({
       if (tables$pkgname != "") {
         questions <- eval(
-          parse(text = paste0(input$pkgname, "::", "str_questions"))
+          parse(text = paste0(tables$pkgname, "::", "str_questions"))
         )
 
         # Select questions available in appropriate languages
@@ -637,7 +637,7 @@ genTest <- function() {
     ############################################################################
     # Prepare filters
     base_filters <- reactive({
-      filters <- eval(parse(text = paste0(input$pkgname, "::", "str_labels")))
+      filters <- eval(parse(text = paste0(tables$pkgname, "::", "str_labels")))
 
       # Selection question which are not excluded
       filters <- filters %>%
@@ -1236,7 +1236,6 @@ genTest <- function() {
           )
         }
       }
-
 
 
       if (input$canvas_out &
