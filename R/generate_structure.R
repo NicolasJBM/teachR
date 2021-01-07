@@ -120,6 +120,7 @@ generate_structure <- function() {
     dplyr::left_join(structure, by = "topic_id") %>%
     dplyr::select(
       statement_id,
+      statement_nbr,
       statement_language,
       proposition,
       explanation,
