@@ -31,14 +31,14 @@ filters <- str_questions %>%
 true_statement <- str_statements %>%
   dplyr::filter(
     str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
-    statement_language = filters$question_language[1],
+    statement_language == filters$question_language[1],
     value == TRUE
   ) %>%
   dplyr::sample_n(1)
 false_statements <- str_statements %>%
   dplyr::filter(
     str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
-    statement_language = filters$question_language[1],
+    statement_language == filters$question_language[1],
     value == FALSE
   ) %>%
   dplyr::sample_n(4)
