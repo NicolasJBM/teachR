@@ -41,6 +41,7 @@ generate_structure <- function() {
   filter_value <- NULL
   topic_code <- NULL
   statement_id <- NULL
+  statement_nbr <- NULL
   statement_language <- NULL
   proposition <- NULL
   value <- NULL
