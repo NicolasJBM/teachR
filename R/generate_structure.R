@@ -48,6 +48,13 @@ generate_structure <- function() {
   explanation <- NULL
   language <- NULL
   topic_label <- NULL
+  alternative_id <- NULL
+  alternative_language <- NULL
+  alternative_nbr <- NULL
+  proposition_id <- NULL
+  proposition_language <- NULL
+  proposition_nbr <- NULL
+  question <- NULL
 
   # Create general structure
   chapters <- readODS::read_ods("data-raw/structure/1a_chapters.ods")
@@ -56,6 +63,8 @@ generate_structure <- function() {
   topics <- readODS::read_ods("data-raw/structure/4a_topics.ods")
   str_questions <- readODS::read_ods("data-raw/structure/5_questions.ods")
   str_statements <- readODS::read_ods("data-raw/structure/6_statements.ods")
+  str_alt_questions <- readODS::read_ods("data-raw/structure/7a_alternatives_questions.ods")
+  str_alt_choices <- readODS::read_ods("data-raw/structure/7b_alternatives_choices.ods")
 
 
   structure <- topics %>%
@@ -140,6 +149,39 @@ generate_structure <- function() {
   save(str_statements, file = "data/str_statements.RData")
   rm(str_statements)
 
+  
+  # create alternatives database
+  str_alternatives <- str_alt_questions %>%
+    dplyr::left_join(str_alt_choices, by = "alternative_id") %>%
+    dplyr::left_join(structure, by = "topic_id") %>%
+    dplyr::select(
+      alternative_id,
+      alternative_nbr,
+      alternative_language,
+      question,
+      explanation,
+      proposition_id,
+      proposition_nbr,
+      proposition_language,
+      proposition,
+      value,
+      topic_id,
+      topic_order,
+      subsection_id,
+      subsection_order,
+      section_id,        
+      section_order,
+      chapter_id,
+      chapter_order,
+      filter_variable,
+      filter_value,
+      field_id,
+      topic_code
+    )
+  save(str_alternatives, file = "data/str_alternatives.RData")
+  rm(str_alternatives)
+  
+  
   # Create labels database
   languages <- c("EN", "FR", "DE", "ES", "IT", "NL")
   chapters_lab <- readODS::read_ods(

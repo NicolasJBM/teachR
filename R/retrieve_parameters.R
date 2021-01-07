@@ -67,7 +67,7 @@ retrieve_parameters <- function(ex_name, pkgname) {
     questionid <- ex_name
     showexname <- paste0(exname, " - ")
     showdiffpoints <- ""
-    seed <- 1234 # switch back to random when test finished.
+    seed <- floor(1000+stats::runif(1)*8999)
     alternatives <- 5
     type_table <- "html"
     currency <- "euro"
