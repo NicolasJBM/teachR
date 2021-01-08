@@ -37,6 +37,7 @@ generate_structure <- function() {
   level <- NULL
   bloom <- NULL
   difficulty <- NULL
+  stage <- NULL
   filter_variable <- NULL
   filter_value <- NULL
   topic_code <- NULL
@@ -109,6 +110,7 @@ generate_structure <- function() {
       level,
       bloom,
       difficulty,
+      stage,
       topic_id,
       topic_order,
       subsection_id,

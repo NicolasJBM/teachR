@@ -479,6 +479,7 @@ genTest <- function() {
     chapter_label <- NULL
     description <- NULL
     difficulty <- NULL
+    stage <- NULL
     exname <- NULL
     field_id <- NULL
     language <- NULL
@@ -585,9 +586,12 @@ genTest <- function() {
 
     questionlist <- reactive({
       if (tables$pkgname != "") {
+        
+        # Select published questions (exclude "design" and "review" stages)
         questions <- eval(
           parse(text = paste0(tables$pkgname, "::", "str_questions"))
-        )
+        ) %>%
+          dplyr::filter(stage == "public")
 
         # Select questions available in appropriate languages
         in_all_languages <- questions %>%
