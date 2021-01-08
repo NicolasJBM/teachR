@@ -875,13 +875,15 @@ genTest <- function() {
 
     output$lookexample <- renderUI({
       if (tables$pkgname != "" & !is.null(input$slctdisp)) {
-        htmldoc <- system.file(
-          "examples",
-          paste0(input$slctdisp, ".html"),
-          package = tables$pkgname
-        )
-        page <- xml2::read_html(htmldoc)
-        withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
+        if (input$slctdisp != ""){
+          htmldoc <- system.file(
+            "examples",
+            paste0(input$slctdisp, ".html"),
+            package = tables$pkgname
+          )
+          page <- xml2::read_html(htmldoc)
+          withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
+        }
       }
     })
 
@@ -1070,7 +1072,7 @@ genTest <- function() {
     })
 
     output$check_test <- renderUI({
-      if (nrow(tables$test) > 1) {
+      if (nrow(base_test()) > 1) {
         questions <- base_test()
 
         test <- c()
