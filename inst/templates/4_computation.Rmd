@@ -1,0 +1,98 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+pkgname <- "write_package_name" # edit
+
+################################################################################
+# Initialization (do not edit)
+processed <- gsub(".Rmd", "", knitr::current_input())
+parameters <- teachR::retrieve_parameters(processed, pkgname)
+for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
+set.seed(seed)
+################################################################################
+
+
+################################################################################
+# Load packages
+library(exams)
+library(dplyr)
+library(fmtR)
+library(lubridate)
+
+
+##############################################################################
+# Preparation
+
+
+
+##############################################################################
+# Answers
+questions <- c(0,1,2,3,4,5)
+
+questions <- paste0(currencysymb, " ", fmtR::dbl(questions), ".")
+
+solutions <- c(TRUE,FALSE,FALSE,FALSE,FALSE)
+
+explanations <- c(
+  "","","","",""
+)
+
+
+################################################################################
+# Finalization (do not edit)
+instructions <- dplyr::case_when(
+  extype == "schoice" ~ "",
+  extype == "num" ~ "Please report your result rounded to the closest two digits.",
+  TRUE ~ "Make sure to detail intermediary computations and to highlight your final result."
+)
+if (extype == "string" & test_or_solution == "test" & type_table != "html"){
+  lines <- paste0("\\vspace{",selection$space[[1]],"cm}")
+} else lines <- rep(" \\ ", 2)
+alea <- sample(c(1, sample(2:length(questions), (alternatives-1))), alternatives)
+questions <- questions[alea]
+solutions <- solutions[alea]
+explanations <- explanations[alea]
+################################################################################
+```
+
+
+
+Question
+========
+`r showexname` Write here your question? `r showdiffpoints`  
+
+```{r instructions, echo = FALSE, results = "asis"}
+writeLines(instructions)
+```
+
+```{r questionlist, echo = FALSE, results = "asis"}
+if (extype == "schoice") exams::answerlist(questions, markup = "markdown") else writeLines(lines)
+```
+
+
+
+
+
+Solution
+========
+Write here your solution using LateX formulas: 
+
+\begin{equation*}
+\begin{aligned}
+y = \alpha x + \beta
+\end{aligned}
+\end{equation*}
+
+
+Keys:  
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+if (extype == "schoice") exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown") else writeLines(c("\\ ","\\ "))
+```
+
+
+
+Meta-information
+================
+extype: `r extype`
+exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
+exname: `r exname`

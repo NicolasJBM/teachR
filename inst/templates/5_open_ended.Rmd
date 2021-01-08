@@ -1,0 +1,68 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+pkgname <- "manacc" # edit
+
+################################################################################
+# Initialization (do not edit)
+processed <- gsub(".Rmd", "", knitr::current_input())
+parameters <- teachR::retrieve_parameters(processed, pkgname)
+for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
+set.seed(seed)
+################################################################################
+
+
+################################################################################
+# Load packages
+library(tidyverse)
+
+
+################################################################################
+# Preparation
+word_limit <- 300
+necessary_space <- 20
+check_list <- eval(parse(text = paste0(pkgname,"::","str_open_criteria"))) %>%
+  dplyr::filter(question_id == questionid) %>%
+  dplyr::select(criterion_label) %>%
+  unlist()
+check_list <- paste("-", check_list, sep = " ") %>%
+  paste(collapse = "  \n")
+
+################################################################################
+# Finalization (do not edit)
+if (test_or_solution == "test" & type_table != "html"){
+  lines <- paste0("\\vspace{",necessary_space,"cm}")
+} else lines <- rep(" \\ ", 2)
+################################################################################
+```
+
+
+
+Question
+========
+`r showexname` In the context of a multi-product company and in a period when the inventory of one product increases dramatically, accountants can make pure costing choices (after cost recognition and before financial statements) increasing artificially operating income. **Identify two** of these choices and then **explain and illustrate** how they lead to that outcome. *Please remain within `r fmtR::int(word_limit)` words.* `r showdiffpoints`  
+
+```{r questionlist, echo = FALSE, results = "asis"}
+writeLines(lines)
+```
+
+
+
+Solution
+========
+Mis-classifying period costs as manufacturing costs increases operating income in the period because some of these costs will be assigned to products staying in the inventory. Therefore, these costs not not reduce operating income in the current period, but in the period when these products will be sold. For instance, if `r currencysymb`1,000 of advertising expenses are classified as manufacturing costs and 10% of that amount is allocated to products staying in the inventory, operating income will increase by `r currencysymb`100.  
+
+Gathering all indirect manufacturing costs in a single cost pool and choosing as allocation base for this cost pool a resource relatively more consumed by the product staying in the inventory ensures that more costs stay with this product in the inventory instead of reducing the operating income of the period. For instance, if an allocation base exists that allocates 20% of manufacturing costs to products staying in the inventory instead of 10%, using it increases operating income of `r currencysymb`200 instead of `r currencysymb`100.   
+
+Checklist:  
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+writeLines(check_list)
+```
+
+
+
+Meta-information
+================
+extype: string
+exsolution: NA
+exname: `r exname`

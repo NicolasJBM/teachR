@@ -1,0 +1,126 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+pkgname <- "write_package_name" # edit
+
+################################################################################
+# Initialization (do not edit)
+processed <- gsub(".Rmd", "", knitr::current_input())
+parameters <- teachR::retrieve_parameters(processed, pkgname)
+for (i in 1:length(parameters)) assign(names(parameters)[[i]], parameters[[i]])
+set.seed(seed)
+################################################################################
+
+
+################################################################################
+# Load packages
+library(exams)
+library(tidyverse)
+
+
+##############################################################################
+# Preparation
+
+# Describe situations
+situations <- tibble(
+  sid = c("S1","S2","S3"),
+  slab = c(
+    "Description of a first situation.",
+    "Description of a second situation.",
+    "etc."
+  )
+)
+
+# Select one randomly
+situation <- situations %>%
+  sample_n(1)
+
+# List options and their respective fit with each situation
+options <- tibble(
+  olab = c(
+    "Labor costs in each department",
+    "Labor hours used in each department",
+    "Machine hours used by each department",
+    "Material costs incurred in each department",
+    "Number of batches processed for each department",
+    "Number of interventions in each department",
+    "Number of units produced by each department",
+    "Record of each technician's time dedicated to each department",
+    "Surface occupied by each department",
+    "Time spent on interventions in each department"
+  ),
+  S1 = c(0,0,0.2,0,0.3,0.7,0.4,0.6,0,0.9),
+  S2 = c(0,0,0.2,0,0.3,0.6,0.4,0.7,0,0.5),
+  S3 = c(0,0,0.2,0,0.3,1,  0.4,0.7,0,0.9)
+) %>%
+  rename(selected = situation[[1,"sid"]])
+
+# Select the option with the best fit in the situation
+best <- options %>%
+  dplyr::top_n(1,selected)
+
+# Select second best fits  
+medium <- options %>%
+  dplyr::top_n(3,selected) %>%
+  dplyr::top_n(2,-selected)
+
+# Select worst fits
+worse <- options %>%
+  dplyr::top_n(3,-selected)
+
+# Combine second best and worse in wring
+wrong <- medium %>%
+  dplyr::bind_rows(worse) %>%
+  unique() %>%
+  dplyr::sample_n(4)
+
+##############################################################################
+# Answers
+questions <- c(
+  right1 = stringr::str_to_sentence(paste0(best$olab[[1]],".")),
+  wrong1 = stringr::str_to_sentence(paste0(wrong$olab[[1]],".")),
+  wrong2 = stringr::str_to_sentence(paste0(wrong$olab[[2]],".")),
+  wrong3 = stringr::str_to_sentence(paste0(wrong$olab[[3]],".")),
+  wrong4 = stringr::str_to_sentence(paste0(wrong$olab[[4]],"."))
+)
+
+solutions <- c(TRUE,FALSE,FALSE,FALSE,FALSE)
+
+explanations <- c("","","","","")
+
+################################################################################
+# Finalization (do not edit)
+alea <- sample(c(1, sample(2:length(questions), (alternatives-1))), alternatives)
+questions <- questions[alea]
+solutions <- solutions[alea]
+explanations <- explanations[alea]
+################################################################################
+```
+
+
+
+Question
+========
+`r showexname` `r situation$slab[[1]]` In this situation, which of the following options would you recommend? `r showdiffpoints`  
+
+```{r questionlist, echo = FALSE, results = "asis"}
+exams::answerlist(questions, markup = "markdown")
+```
+
+
+
+Solution
+========
+
+Explanation of the selection criteria. 
+
+```{r solutionlist, echo = FALSE, results = "asis"}
+exams::answerlist(ifelse(solutions, "True", "False"), explanations, markup = "markdown")
+```
+
+
+
+Meta-information
+================
+extype: schoice
+exsolution: `r exams::mchoice2string(solutions, single = TRUE)`
+exname: `r exname`

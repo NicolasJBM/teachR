@@ -32,14 +32,14 @@ true_statement <- str_statements %>%
   dplyr::filter(
     str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
     statement_language == filters$question_language[1],
-    value == FALSE
+    value == TRUE
   ) %>%
   dplyr::sample_n(1)
 false_statements <- str_statements %>%
   dplyr::filter(
     str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
     statement_language == filters$question_language[1],
-    value == TRUE
+    value == FALSE
   ) %>%
   dplyr::sample_n(4)
 
@@ -78,7 +78,7 @@ explanations <- explanations[alea]
 
 Question
 ========
-`r showexname` Which of the following statements is **false**? `r showdiffpoints`
+`r showexname` Which of the following statements is **true**? `r showdiffpoints`
 
 ```{r questionlist, echo = FALSE, results = "asis"}
 exams::answerlist(questions, markup = "markdown")

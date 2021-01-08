@@ -21,48 +21,50 @@ library(stringr)
 # Selection
 str_questions <-
   eval(parse(text = paste0(pkgname,"::","str_questions")))
-str_statements <-
-  eval(parse(text = paste0(pkgname,"::","str_statements")))
+str_alternatives <-
+  eval(parse(text = paste0(pkgname,"::","str_alternatives")))
 
 filters <- str_questions %>%
   dplyr::filter(question_id == questionid) %>%
   dplyr::select(filter_variable, filter_value, question_language)
 
-true_statement <- str_statements %>%
+true_alternative <- str_alternatives %>%
   dplyr::filter(
-    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
-    statement_language == filters$question_language[1],
-    value == FALSE
+    str_alternatives[,filters$filter_variable[1]] == filters$filter_value[1],
+    alternative_language == filters$question_language[1],
+    value == TRUE
   ) %>%
   dplyr::sample_n(1)
-false_statements <- str_statements %>%
+false_alternatives <- str_alternatives %>%
   dplyr::filter(
-    str_statements[,filters$filter_variable[1]] == filters$filter_value[1],
-    statement_language == filters$question_language[1],
-    value == TRUE
+    str_alternatives[,filters$filter_variable[1]] == filters$filter_value[1],
+    alternative_language == filters$question_language[1],
+    value == FALSE
   ) %>%
   dplyr::sample_n(4)
 
+question_text <- true_alternative$question[1]
+explanation_text <- true_alternative$explanation[1]
 
 ################################################################################
 # Preparation
 
 questions <- c(
-  right1 = true_statement$proposition[[1]],
-  wrong1 = false_statements$proposition[[1]],
-  wrong2 = false_statements$proposition[[2]],
-  wrong3 = false_statements$proposition[[3]],
-  wrong4 = false_statements$proposition[[4]]
+  right1 = true_alternative$proposition[[1]],
+  wrong1 = false_alternatives$proposition[[1]],
+  wrong2 = false_alternatives$proposition[[2]],
+  wrong3 = false_alternatives$proposition[[3]],
+  wrong4 = false_alternatives$proposition[[4]]
 )
 
 solutions <- c(TRUE,FALSE,FALSE,FALSE,FALSE)
 
 explanations <- c(
-  true_statement$explanation[[1]],
-  false_statements$explanation[[1]],
-  false_statements$explanation[[2]],
-  false_statements$explanation[[3]],
-  false_statements$explanation[[4]]
+  "",
+  "",
+  "",
+  "",
+  ""
 )
 
 
@@ -78,7 +80,7 @@ explanations <- explanations[alea]
 
 Question
 ========
-`r showexname` Which of the following statements is **false**? `r showdiffpoints`
+`r showexname` `r question_text` `r showdiffpoints`
 
 ```{r questionlist, echo = FALSE, results = "asis"}
 exams::answerlist(questions, markup = "markdown")
@@ -87,6 +89,8 @@ exams::answerlist(questions, markup = "markdown")
 
 Solution
 ========
+
+`r explanation_text`
 
 Answer:  
 
