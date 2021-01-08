@@ -499,6 +499,8 @@ genTest <- function() {
     topic_id <- NULL
     topic_label <- NULL
     type <- NULL
+    criterion_id <- NULL
+    student_id <- NULL
 
     # Create reactive values
     tables <- reactiveValues()
@@ -509,10 +511,11 @@ genTest <- function() {
     observe({
       if (is.null(input$studentlist)) {
         tables$students_list <- data.frame(
-          student_id = "",
-          firstname = "",
-          lastname = "",
-          email = "",
+          student_id = "xxxxxxx",
+          first_name = "John",
+          last_name = "Doe",
+          e_mail = "john_doe@noone.com",
+          language = "EN",
           stringsAsFactors = FALSE
         )
       } else {
@@ -586,7 +589,7 @@ genTest <- function() {
 
     questionlist <- reactive({
       if (tables$pkgname != "") {
-        
+
         # Select published questions (exclude "design" and "review" stages)
         questions <- eval(
           parse(text = paste0(tables$pkgname, "::", "str_questions"))
@@ -875,7 +878,7 @@ genTest <- function() {
 
     output$lookexample <- renderUI({
       if (tables$pkgname != "" & !is.null(input$slctdisp)) {
-        if (input$slctdisp != ""){
+        if (input$slctdisp != "") {
           htmldoc <- system.file(
             "examples",
             paste0(input$slctdisp, ".html"),
@@ -1042,8 +1045,9 @@ genTest <- function() {
     ############################################################################
     # Check exam
     base_test <- reactive({
-      if (nrow(tables$test) > 1) {
-        base_test <- tables$test %>%
+      basetest <- dplyr::filter(tables$test, exname != "tmp")
+      if (nrow(basetest) > 0) {
+        base_test <- basetest %>%
           dplyr::select(pkgname, question_nbr, exname, points) %>%
           dplyr::filter(
             stringr::str_detect(
@@ -1068,11 +1072,13 @@ genTest <- function() {
           tidyr::unnest(data) %>%
           dplyr::ungroup()
         base_test
+      } else {
+        basetest
       }
     })
 
     output$check_test <- renderUI({
-      if (nrow(base_test()) > 1) {
+      if (nrow(base_test()) > 0) {
         questions <- base_test()
 
         test <- c()
@@ -1181,6 +1187,8 @@ genTest <- function() {
       create_folder(test_name, "/3_test/rmd")
       create_folder(test_name, "/3_test/tmp")
       create_folder(test_name, "/4_answers")
+      create_folder(test_name, "/4_answers/raw")
+      create_folder(test_name, "/4_answers/clean")
       create_folder(test_name, "/5_matrix")
       create_folder(test_name, "/5_matrix/raw")
       create_folder(test_name, "/5_matrix/calibrated")
@@ -1288,6 +1296,57 @@ genTest <- function() {
         !dir.exists(paste0(test_name, "3_test/qui12"))) {
         dir.create(paste0(test_name, "/3_test/qui12"))
       }
+
+
+      # Create the files used for calibration
+      for (lang in input$languages) {
+        
+        students <- tables$students_list %>%
+          dplyr::filter(language == lang) %>%
+          dplyr::select(student_id) %>%
+          unique() %>%
+          unlist() %>%
+          as.character()
+
+        if (input$typeanswer == "text") {
+          criteria <- eval(parse(text = paste0(
+            input$pkgname, "::", "str_open_criteria"
+          ))) %>%
+            dplyr::filter(question_id %in% tables$test$question_id)
+
+          write.csv(criteria, file = paste0(
+            wd,
+            "/4_answers/clean/criteria_",
+            lang,
+            ".csv"
+          ), row.names = FALSE)
+
+          results <- tibble::tibble(
+            student_id = students,
+            criterion_id = list(unique(criteria$criterion_id))
+          ) %>%
+            tidyr::unnest(criterion_id) %>%
+            mutate(value = 0)
+          
+        } else {
+          
+          results <- tibble::tibble(
+            student_id = students,
+            question_id = list(unique(tables$test$question_id))
+          ) %>%
+            tidyr::unnest(question_id) %>%
+            mutate(value = 0)
+          
+        }
+        
+        write.csv(results, file = paste0(
+          wd,
+          "/4_answers/clean/results_",
+          lang,
+          ".csv"
+        ), row.names = FALSE)
+      }
+
 
       stopApp()
     })
