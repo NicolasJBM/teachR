@@ -19,7 +19,7 @@ library(tidyverse)
 ################################################################################
 # Preparation
 word_limit <- 300
-necessary_space <- 20
+necessary_space <- 10
 check_list <- eval(parse(text = paste0(pkgname,"::","str_open_criteria"))) %>%
   dplyr::filter(question_id == questionid) %>%
   dplyr::select(criterion_label) %>%

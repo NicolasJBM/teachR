@@ -16,11 +16,12 @@ retrieve_parameters <- function(ex_name, pkgname) {
   test_parameters <- NULL
 
   wdir <- gsub("tmp", "rmd", getwd())
-  testsolpath <- paste0(wdir, "/test_or_solution.RData")
+  testsolpath <- paste0(wdir, "/specifications.RData")
   if (file.exists(testsolpath)) {
     load(file = testsolpath)
   } else {
     test_or_solution <- "solution"
+    type_table <- "html"
   }
 
   parampath <- paste0(wdir, "/test_parameters.RData")
@@ -67,7 +68,6 @@ retrieve_parameters <- function(ex_name, pkgname) {
 
     seed <- exercise$seed[1]
     alternatives <- exercise$alternatives[1]
-    type_table <- exercise$type_table[1]
     currency <- exercise$currency[1]
   } else {
     extype <- "schoice"
@@ -77,7 +77,6 @@ retrieve_parameters <- function(ex_name, pkgname) {
     showdiffpoints <- ""
     seed <- floor(1000 + stats::runif(1) * 8999)
     alternatives <- 5
-    type_table <- "html"
     currency <- "euro"
   }
 

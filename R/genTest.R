@@ -135,12 +135,12 @@ genTest <- function() {
             textInput(
               inputId = "name",
               label = "Name:",
-              value = "test"
+              value = "TEST"
             ),
             textInput(
               inputId = "prefix",
               label = "Question prefix:",
-              value = "pre"
+              value = "Q"
             )
           ),
 
@@ -581,14 +581,21 @@ genTest <- function() {
       }
     })
 
-
-
-
-
-    ################ PBM: CANNOT TAKE IF PKD NOT LOADED ########################
     # Retrieve questions from package
     observeEvent(input$getpkg, {
       tables$pkgname <- input$pkgname
+      questions <- teachR::get_pkg_data(tables$pkgname, "str_questions") %>%
+        dplyr::filter(stage == "public")
+      in_all_languages <- questions %>%
+        dplyr::select(question_nbr, question_language) %>%
+        dplyr::filter(question_language %in% input$languages) %>%
+        dplyr::group_by(question_nbr) %>%
+        dplyr::count() %>%
+        dplyr::filter(n == length(input$languages))
+      tables$in_all_languages <- c(
+        tables$in_all_languages,
+        unique(in_all_languages$question_nbr)
+      )
     })
 
     questionlist <- reactive({
@@ -597,25 +604,15 @@ genTest <- function() {
         # Select published questions (exclude "design" and "review" stages)
         questions <- teachR::get_pkg_data(tables$pkgname, "str_questions") %>%
           dplyr::filter(stage == "public")
-
+        
         # Select questions available in appropriate languages
-        in_all_languages <- questions %>%
-          dplyr::select(question_nbr, question_language) %>%
-          dplyr::filter(question_language %in% input$languages) %>%
-          dplyr::group_by(question_nbr) %>%
-          dplyr::count() %>%
-          dplyr::filter(n == length(input$languages))
-        tables$in_all_languages <- c(
-          tables$in_all_languages,
-          unique(in_all_languages$question_nbr)
-        )
         questions <- questions %>%
           dplyr::filter(question_nbr %in% tables$in_all_languages)
-
+        
         # Selection of questions which are not excluded
         questions <- questions %>%
           dplyr::filter(!(question_id %in% tables$exclusion$question_id))
-
+        
         # Selection of questions in appropriate format
         if (input$typeanswer == "choice") {
           questions <- dplyr::filter(
@@ -624,11 +621,13 @@ genTest <- function() {
             )
           )
         }
+        
         if (input$typeanswer == "number") {
           questions <- dplyr::filter(
             questions, type %in% c("4 Computation")
           )
         }
+        
         if (input$typeanswer == "text") {
           questions <- dplyr::filter(
             questions, type %in% c(
@@ -638,7 +637,6 @@ genTest <- function() {
           )
         }
       }
-
       questions
     })
 
@@ -908,8 +906,10 @@ genTest <- function() {
             paste0(input$slctdisp, ".html"),
             package = tables$pkgname
           )
-          page <- xml2::read_html(htmldoc)
-          withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
+          if (file.exists(htmldoc)){
+            page <- xml2::read_html(htmldoc)
+            withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
+          }
         }
       }
     })
@@ -938,7 +938,6 @@ genTest <- function() {
           show_difficulty = input$showquestdifficulty[1],
           seed = 0,
           alternatives = input$alternatives,
-          type_table = "html",
           currency = input$currency,
           stringsAsFactors = FALSE
         )
@@ -1065,7 +1064,8 @@ genTest <- function() {
       )
       edited <- dplyr::filter(edited, remove == FALSE)
       tables$clean_preselection <- edited
-      tables$test <- tables$clean_preselection
+      tables$test <- tables$clean_preselection %>%
+        dplyr::arrange(exname)
     })
 
     ############################################################################
@@ -1209,7 +1209,7 @@ genTest <- function() {
 
         # Retrieve questions from all listed packages
         all_pkg_questions <- tibble::tibble(
-          pkg = unique(base$test$pkgname)
+          pkg = unique(tables$test$pkgname)
         ) %>%
           dplyr::mutate(
             questions = purrr::map(
@@ -1345,6 +1345,14 @@ genTest <- function() {
             file = paste0(
               rmddir, "/test_parameters.RData"
             )
+          )
+          
+          # Initialize specifications
+          test_or_solution <- "test"
+          type_table <- "html"
+          save(
+            test_or_solution, type_table,
+            file = paste0(rmddir, "/specifications.RData")
           )
 
           ######################################################################
@@ -1624,9 +1632,10 @@ genTest <- function() {
 
               # Create the test
               test_or_solution <- "test"
+              type_table <- "latex"
               save(
-                test_or_solution,
-                file = paste0(rmddir, "/test_or_solution.RData")
+                test_or_solution, type_table,
+                file = paste0(rmddir, "/specifications.RData")
               )
               test <- exams::exams2pdf(
                 file = unlist(tmpversion$files),
@@ -1644,9 +1653,10 @@ genTest <- function() {
               # Create the solution
               unlink(paste0(tmpdir, "/*"))
               test_or_solution <- "solution"
+              type_table <- "latex"
               save(
-                test_or_solution,
-                file = paste0(rmddir, "/test_or_solution.RData")
+                test_or_solution, type_table,
+                file = paste0(rmddir, "/specifications.RData")
               )
               exams::exams2pdf(
                 file = unlist(tmpversion$files),

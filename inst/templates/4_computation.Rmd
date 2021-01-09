@@ -21,7 +21,7 @@ library(lubridate)
 
 ##############################################################################
 # Preparation
-
+necessary_space <- 10
 
 
 ##############################################################################
@@ -45,7 +45,7 @@ instructions <- dplyr::case_when(
   TRUE ~ "Make sure to detail intermediary computations and to highlight your final result."
 )
 if (extype == "string" & test_or_solution == "test" & type_table != "html"){
-  lines <- paste0("\\vspace{",selection$space[[1]],"cm}")
+  lines <- paste0("\\vspace{",necessary_space,"cm}")
 } else lines <- rep(" \\ ", 2)
 alea <- sample(c(1, sample(2:length(questions), (alternatives-1))), alternatives)
 questions <- questions[alea]
