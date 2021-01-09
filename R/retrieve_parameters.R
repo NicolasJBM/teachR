@@ -13,11 +13,17 @@
 
 retrieve_parameters <- function(ex_name, pkgname) {
   test_parameters <- NULL
-  
-  wdir <- gsub("tmp","rmd", getwd())
+
+  wdir <- gsub("tmp", "rmd", getwd())
+  testsolpath <- paste0(wdir, "/test_or_solution.RData")
+  if (file.exists(testsolpath)) {
+    load(file = testsolpath)
+  } else {
+    test_or_solution <- "solution"
+  }
+
   parampath <- paste0(wdir, "/test_parameters.RData")
   if (file.exists(parampath)) {
-    
     load(file = parampath)
     exercise <- test_parameters %>%
       dplyr::filter(exname == ex_name) %>%
@@ -33,7 +39,7 @@ retrieve_parameters <- function(ex_name, pkgname) {
         showdiffpoints <- paste0(
           "(",
           exercise$difficulty[1],
-          " difficulty, ",
+          ", ",
           exercise$points[1],
           ifelse(exercise$points[1] == 1, " point)", " points)")
         )
@@ -41,7 +47,7 @@ retrieve_parameters <- function(ex_name, pkgname) {
         showdiffpoints <- paste0(
           "(",
           exercise$difficulty[1],
-          " difficulty)"
+          ")"
         )
       }
     } else {
@@ -60,18 +66,16 @@ retrieve_parameters <- function(ex_name, pkgname) {
     alternatives <- exercise$alternatives[1]
     type_table <- exercise$type_table[1]
     currency <- exercise$currency[1]
-    test_or_solution <- exercise$test_or_solution[1]
   } else {
     extype <- "schoice"
     exname <- ex_name
     questionid <- ex_name
     showexname <- paste0(exname, " - ")
     showdiffpoints <- ""
-    seed <- floor(1000+stats::runif(1)*8999)
+    seed <- floor(1000 + stats::runif(1) * 8999)
     alternatives <- 5
     type_table <- "html"
     currency <- "euro"
-    test_or_solution <- "solution"
   }
 
 

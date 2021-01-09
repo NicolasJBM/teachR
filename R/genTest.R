@@ -52,13 +52,17 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr arrange
 #' @importFrom dplyr bind_rows
-#' @importFrom tidyr spread
+#' @importFrom dplyr ungroup
 #' @importFrom dplyr n
+#' @importFrom tidyr spread
 #' @importFrom tidyr nest
 #' @importFrom tidyr unnest
 #' @importFrom lubridate today
 #' @importFrom tibble rownames_to_column
-#' @importFrom exams exams2nops
+#' @importFrom exams exams2canvas
+#' @importFrom exams exams2openolat
+#' @importFrom exams exams2arsnova
+#' @importFrom exams exams2tcexam
 #' @importFrom exams exams2pdf
 #' @importFrom exams exams2moodle
 #' @importFrom exams exams2blackboard
@@ -72,6 +76,7 @@
 #' @importFrom stringr str_split
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_replace_all
+#' @importFrom stringr str_extract
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
 #' @importFrom rhandsontable rHandsontableOutput
@@ -234,33 +239,23 @@ genTest <- function() {
             )
           ),
           fillCol(
-            flex = c(1, 6),
+            flex = c(1, 8),
             h4("Delivery platforms"),
-            fillRow(
-              flex = c(1, 1),
-              fillCol(
-                flex = c(1, 1, 1, 1, 1, 1),
-                checkboxInput("blackboard_out", "Blackboard", value = TRUE),
-                checkboxInput("canvas_out", "Canvas", value = FALSE),
-                checkboxInput("moodle_out", "Moodle", value = FALSE),
-                checkboxInput("openolat_out", "openolat", value = FALSE),
-                checkboxInput("arsnova_out", "arsnova", value = FALSE),
-                checkboxInput("tcexam_out", "tcexam", value = FALSE)
-              ),
-              fillCol(
-                flex = c(1, 1, 1, 1, 1, 1),
-                checkboxInput("pdf_out", "PDF", value = TRUE),
-                checkboxInput("html_out", "html", value = FALSE),
-                checkboxInput("pandoc_out", "Pandoc", value = FALSE),
-                checkboxInput("nops_out", "nops", value = FALSE),
-                checkboxInput("lops_out", "lops", value = FALSE),
-                checkboxInput("qui12_out", "qti12", value = FALSE)
-              )
+            fillCol(
+              flex = c(1, 1, 1, 1, 1, 1, 1, 1),
+              checkboxInput("blackboard_out", "Blackboard", value = TRUE),
+              checkboxInput("canvas_out", "Canvas", value = FALSE),
+              checkboxInput("moodle_out", "Moodle", value = FALSE),
+              checkboxInput("openolat_out", "Open OLAT", value = FALSE),
+              checkboxInput("arsnova_out", "ARS Novaova", value = FALSE),
+              checkboxInput("tcexam_out", "tcexam", value = FALSE),
+              checkboxInput("html_out", "html", value = TRUE),
+              checkboxInput("pdf_out", "PDF", value = FALSE)
             )
           ),
 
           fillCol(
-            flex = c(1, 1, 1, 6),
+            flex = c(1, 1, 1, 5),
             h4("LMS details"),
             numericInput(
               inputId = "questversions",
@@ -280,26 +275,32 @@ genTest <- function() {
                 choices = c("A4", "letter"),
                 selected = "A4"
               ),
-              checkboxInput(
-                inputId = "withscan",
-                label = "With scan (limit to 45 questions)",
-                value = FALSE
-              ),
               numericInput(
-                inputId = "blocnbr",
-                label = "Number of blocs",
-                value = 0,
-                min = 0,
+                inputId = "versionnbr",
+                label = "Number of versions",
+                value = 1,
+                min = 1,
                 max = 10,
                 step = 1
               ),
-              numericInput(
-                inputId = "blocsize",
-                label = "Number of questions per bloc",
-                value = 0,
-                min = 0,
-                max = 45,
-                step = 1
+              conditionalPanel(
+                condition = "input.versionnbr > 1",
+                numericInput(
+                  inputId = "blocnbr",
+                  label = "Number of blocs",
+                  value = 2,
+                  min = 2,
+                  max = 10,
+                  step = 1
+                ),
+                numericInput(
+                  inputId = "blocsize",
+                  label = "Number of questions per bloc",
+                  value = 2,
+                  min = 2,
+                  max = 45,
+                  step = 1
+                )
               )
             )
           )
@@ -337,11 +338,6 @@ genTest <- function() {
         shinyBS::bsTooltip(
           id = "questversions",
           title = "For a number greater than 1, several versions of each question will be generated.",
-          placement = "top", trigger = "hover"
-        ),
-        shinyBS::bsTooltip(
-          id = "withscan",
-          title = "If the scan is requested, a scanable answer sheet is printed, limited to 45 answers.",
           placement = "top", trigger = "hover"
         ),
         shinyBS::bsTooltip(
@@ -500,7 +496,12 @@ genTest <- function() {
     topic_label <- NULL
     type <- NULL
     criterion_id <- NULL
-    student_id <- NULL
+    criterion_label <- NULL
+    criterion_language <- NULL
+    criterion_nbr <- NULL
+    criterion_order <- NULL
+    V1 <- NULL
+    data <- NULL
 
     # Create reactive values
     tables <- reactiveValues()
@@ -511,7 +512,7 @@ genTest <- function() {
     observe({
       if (is.null(input$studentlist)) {
         tables$students_list <- data.frame(
-          student_id = "xxxxxxx",
+          student_id = "s9999999",
           first_name = "John",
           last_name = "Doe",
           e_mail = "john_doe@noone.com",
@@ -547,7 +548,6 @@ genTest <- function() {
           alternatives = 0,
           type_table = "tmp",
           currency = "tmp",
-          test_or_solution = "tmp",
           stringsAsFactors = FALSE
         )
         tables$preselection <- template
@@ -603,18 +603,15 @@ genTest <- function() {
           dplyr::group_by(question_nbr) %>%
           dplyr::count() %>%
           dplyr::filter(n == length(input$languages))
-
         questions <- questions %>%
           dplyr::filter(question_nbr %in% in_all_languages$question_nbr)
-
         tables$in_all_languages <- unique(in_all_languages$question_nbr)
 
-        # Selection of questions which are neither included nor excluded
+        # Selection of questions which are not excluded
         questions <- questions %>%
-          dplyr::filter(!(question_id %in% tables$exclusion$question_id)) %>%
-          dplyr::filter(!(question_id %in% tables$preselection$question_id))
+          dplyr::filter(!(question_id %in% tables$exclusion$question_id))
 
-        # Selection question in appropriate format
+        # Selection of questions in appropriate format
         if (input$typeanswer == "choice") {
           questions <- dplyr::filter(
             questions, type %in% c(
@@ -646,7 +643,7 @@ genTest <- function() {
     base_filters <- reactive({
       filters <- eval(parse(text = paste0(tables$pkgname, "::", "str_labels")))
 
-      # Selection question which are not excluded
+      # Selection of questions which are not excluded
       filters <- filters %>%
         dplyr::filter(language == input$languages[1]) %>%
         dplyr::right_join(
@@ -672,7 +669,24 @@ genTest <- function() {
           field_id, objective, description,
           type, level, bloom, difficulty
         ) %>%
-        dplyr::arrange(topic_code)
+        dplyr::mutate(
+          chapter_label = paste0(
+            substr(topic_code, 3, 3),
+            " ", chapter_label
+          ),
+          section_label = paste0(
+            substr(topic_code, 3, 4),
+            " ", section_label
+          ),
+          subsection_label = paste0(
+            substr(topic_code, 3, 5),
+            " ", section_label
+          ),
+          topic_label = paste0(
+            substr(topic_code, 3, 6),
+            " ", section_label
+          )
+        )
     })
 
 
@@ -751,7 +765,7 @@ genTest <- function() {
       }
     })
 
-    # type
+    # Type
     output$filttype <- renderUI({
       if (tables$pkgname != "") {
         make_filter(
@@ -769,7 +783,7 @@ genTest <- function() {
       }
     })
 
-    # level
+    # Level
     output$filtlevel <- renderUI({
       if (tables$pkgname != "") {
         make_filter(
@@ -787,7 +801,7 @@ genTest <- function() {
       }
     })
 
-    # bloom
+    # Bloom
     output$filtbloom <- renderUI({
       if (tables$pkgname != "") {
         make_filter(
@@ -850,10 +864,13 @@ genTest <- function() {
 
     ############################################################################
     # Interface to see filtered questions
+    # (after removing the questions already selected)
     output$filtered_questions <- shiny::renderDataTable({
       if (tables$pkgname != "") {
-        afterfiltkeywords() %>%
+        preselected <- c("", unique(tables$preselection$question_id))
+        filtered <- afterfiltkeywords() %>%
           dplyr::select(question_id, objective, description) %>%
+          dplyr::filter(!(question_id %in% preselected)) %>%
           unique() %>%
           dplyr::arrange(question_id)
       }
@@ -861,7 +878,9 @@ genTest <- function() {
 
     output$select_display <- renderUI({
       if (tables$pkgname != "") {
+        preselected <- c("", unique(tables$preselection$question_id))
         choices <- afterfiltkeywords() %>%
+          dplyr::filter(!(question_id %in% preselected)) %>%
           dplyr::select(question_id) %>%
           unique() %>%
           unlist() %>%
@@ -915,7 +934,6 @@ genTest <- function() {
           alternatives = input$alternatives,
           type_table = "html",
           currency = input$currency,
-          test_or_solution = "test",
           stringsAsFactors = FALSE
         )
       }
@@ -1016,7 +1034,11 @@ genTest <- function() {
 
     output$check_blocs <- renderText({
       actual <- length(unique(tables$clean_preselection$question_nbr))
-      target <- input$blocnbr * input$blocsize
+      if (input$versionnbr > 1) {
+        target <- input$blocnbr * input$blocsize
+      } else {
+        target <- 1
+      }
       delta <- target - actual
       if (target > 1) {
         showdelta <- dplyr::case_when(
@@ -1177,58 +1199,131 @@ genTest <- function() {
     # On exit
 
     observeEvent(input$done, {
-      test_name <- paste0(input$name, "_", input$date)
+      incr <- 0.05
 
-      # Setup the test folder structure if it does not exist
-      if (!dir.exists(test_name)) dir.create(test_name)
-      create_folder(test_name, "/1_students")
-      create_folder(test_name, "/2_parameters")
-      create_folder(test_name, "/3_test")
-      create_folder(test_name, "/3_test/rmd")
-      create_folder(test_name, "/3_test/tmp")
-      create_folder(test_name, "/4_answers")
-      create_folder(test_name, "/4_answers/raw")
-      create_folder(test_name, "/4_answers/clean")
-      create_folder(test_name, "/5_matrix")
-      create_folder(test_name, "/5_matrix/raw")
-      create_folder(test_name, "/5_matrix/calibrated")
-      create_folder(test_name, "/6_reports")
+      withProgress(message = "Generate tests", {
 
-      # Store parameters per language
-      write.csv(
-        tables$test,
-        paste0(test_name, "/2_parameters/parameters.csv"),
-        row.names = FALSE
-      )
+        # Setup the test folder structure if it does not exist
+        incProgress(amount = incr, detail = "Create folders")
+        test_name <- paste0(input$name, "_", input$date)
+        if (!dir.exists(test_name)) dir.create(test_name)
+        create_folder(test_name, "/1_parameters")
+        create_folder(test_name, "/2_test")
+        create_folder(test_name, "/2_test/rmd")
+        create_folder(test_name, "/2_test/tmp")
+        create_folder(test_name, "/3_answers")
+        create_folder(test_name, "/3_answers/raw")
+        create_folder(test_name, "/3_answers/structure")
+        create_folder(test_name, "/4_matrix")
+        create_folder(test_name, "/4_matrix/raw")
+        create_folder(test_name, "/4_matrix/calibrated")
+        create_folder(test_name, "/5_reports")
 
-      # Retrieve .Rmd files
-      files <- tables$test %>%
-        dplyr::select(question_id, exname, pkgname) %>%
-        unique() %>%
-        dplyr::mutate(test_name = test_name)
+        # Store parameters per language
+        incProgress(amount = incr, detail = "Create parameters")
+        write.csv(
+          tables$test,
+          paste0(test_name, "/1_parameters/parameters.csv"),
+          row.names = FALSE
+        )
 
-      purrr::pmap(files, retrieve_file)
+        # Retrieve .Rmd files
+        incProgress(amount = incr, detail = "Retrieve questions")
+        files <- tables$test %>%
+          dplyr::select(question_id, exname, pkgname) %>%
+          unique() %>%
+          dplyr::mutate(test_name = test_name)
 
-      wd <- paste0(getwd(), "/", test_name)
-      pardir <- paste0(wd, "/2_parameters")
-      tstdir <- paste0(wd, "/3_test")
-      rmddir <- paste0(tstdir, "/rmd")
-      tmpdir <- paste0(tstdir, "/tmp")
+        purrr::pmap(files, retrieve_file)
 
-      # Generate the exams on each platform for each language
-      if (input$blackboard_out) {
-        outdir <- paste0(tstdir, "/blackboard")
-        if (!dir.exists(outdir)) dir.create(outdir)
+        # Define paths to relevant directories
+        incProgress(amount = incr, detail = "Define paths")
+        wd <- paste0(getwd(), "/", test_name)
+        pardir <- paste0(wd, "/1_parameters")
+        tstdir <- paste0(wd, "/2_test")
+        rmddir <- paste0(tstdir, "/rmd")
+        tmpdir <- paste0(tstdir, "/tmp")
 
+        # Generate the exams on each platform for each language
         for (lang in input$languages) {
+
+          # Save student list
+          incProgress(amount = incr, detail = paste0(lang, ": students list"))
+          students <- tables$students_list %>%
+            dplyr::filter(language == lang)
+          write.csv(students, file = paste0(
+            wd,
+            "/3_answers/structure/",
+            lang,
+            "_students.csv"
+          ), row.names = FALSE)
+
+          # Save question list
+          incProgress(amount = incr, detail = paste0(lang, ": questions list"))
+          labels <- eval(parse(
+            text = paste0(tables$pkgname, "::", "str_labels")
+          )) %>%
+            dplyr::filter(language == lang) %>%
+            dplyr::select(topic_code, topic_label)
+          test <- tables$test %>%
+            dplyr::filter(question_language == lang) %>%
+            dplyr::select(question_id, exname)
+          questions <- questionlist() %>%
+            dplyr::filter(
+              question_id %in% unique(tables$test$question_id),
+              question_language == lang
+            ) %>%
+            dplyr::select(
+              question_id, question_nbr, topic_code, objective,
+              type, level, bloom, difficulty
+            ) %>%
+            dplyr::left_join(labels, by = "topic_code") %>%
+            dplyr::left_join(test, by = "question_id")
+          write.csv(questions, file = paste0(
+            wd,
+            "/3_answers/structure/",
+            lang,
+            "_questions.csv"
+          ), row.names = FALSE)
+
+          # Save criteria for open questions
+          incProgress(amount = incr, detail = paste0(lang, ": criteria list"))
+          if (input$typeanswer == "text") {
+            criteria <- eval(parse(text = paste0(
+              input$pkgname, "::", "str_open_criteria"
+            ))) %>%
+              dplyr::filter(
+                question_id %in% tables$test$question_id,
+                criterion_language == lang
+              ) %>%
+              dplyr::select(
+                question_id,
+                criterion_id,
+                criterion_nbr,
+                criterion_order,
+                criterion_label
+              )
+            write.csv(criteria, file = paste0(
+              wd,
+              "/3_answers/structure/",
+              lang,
+              "_criteria.csv"
+            ), row.names = FALSE)
+          }
+
+          # Prepare list of questions
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": update parameters")
+          )
           test_parameters <- read.csv(paste0(
             pardir, "/parameters.csv"
           )) %>%
             dplyr::filter(question_language == lang) %>%
-            dplyr::mutate(files = paste0(
-              exname, ".Rmd"
-            ))
+            dplyr::mutate(files = paste0(exname, ".Rmd"))
 
+          # Save parameters
+          incProgress(amount = incr, detail = paste0(lang, ": save parameters"))
           save(
             test_parameters,
             file = paste0(
@@ -1236,117 +1331,323 @@ genTest <- function() {
             )
           )
 
-          exams::exams2blackboard(
-            file = unlist(test_parameters$files),
-            n = 1,
-            name = paste0("blackboard", test_name),
-            dir = outdir,
-            edir = rmddir,
-            tdir = tmpdir,
-            points = test_parameters$points,
-            quiet = TRUE,
-            verbose = FALSE,
-            zip = TRUE
+          ######################################################################
+          # Blackboard
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for Blackboard")
           )
+          if (input$blackboard_out) {
+            outdir <- paste0(tstdir, "/blackboard")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2blackboard(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_blackboard_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # Canvas
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for Canvas")
+          )
+          if (input$canvas_out) {
+            outdir <- paste0(tstdir, "/canvas")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2canvas(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_canvas_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # Moodle
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for Moodle")
+          )
+          if (input$moodle_out) {
+            outdir <- paste0(tstdir, "/moodle")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2moodle(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_moodle_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # OpenOlat
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for Open Olat")
+          )
+          if (input$openolat_out) {
+            outdir <- paste0(tstdir, "/openolat")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2openolat(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_openolat_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # Arsnova
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for ARS Nova")
+          )
+          if (input$arsnova_out) {
+            outdir <- paste0(tstdir, "/arsnova")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2arsnova(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_arsnova_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # Tcexam
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for TCE Exam")
+          )
+          if (input$tcexam_out) {
+            outdir <- paste0(tstdir, "/tcexam")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2tcexam(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_tcexam_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              points = test_parameters$points,
+              quiet = TRUE,
+              verbose = FALSE,
+              zip = TRUE
+            )
+          }
+
+          # HTML
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for HTML")
+          )
+          if (input$html_out) {
+            outdir <- paste0(tstdir, "/html")
+            if (!dir.exists(outdir)) dir.create(outdir)
+            exams::exams2html(
+              file = unlist(test_parameters$files),
+              n = 1,
+              name = paste0(test_name, "_html_", lang),
+              dir = outdir,
+              edir = rmddir,
+              tdir = tmpdir,
+              quiet = TRUE,
+              verbose = FALSE
+            )
+          }
+
+
+          ######################################################################
+
+          # PDF
+          incProgress(
+            amount = incr,
+            detail = paste0(lang, ": generate for print")
+          )
+          if (input$pdf_out) {
+            outdir <- paste0(tstdir, "/pdf")
+            if (!dir.exists(outdir)) dir.create(outdir)
+
+            # Select one version of each question
+            sample_versions <- test_parameters %>%
+              dplyr::group_by(question_id) %>%
+              dplyr::sample_n(1) %>%
+              ungroup()
+
+            # Cut of too many questions and assign to blocs
+            nbr_quest <- input$blocnbr * input$blocsize
+            nbr_quest <- min(nrow(sample_versions), nbr_quest)
+
+            # Create different bloc ordering if requested
+            if (input$versionnbr > 1) {
+              order <- as.data.frame(
+                matrix(seq_len(input$blocnbr), nrow = 1)
+              )
+              addorder <- as.data.frame(
+                gtools::permutations(
+                  input$blocnbr,
+                  input$blocnbr,
+                  repeats.allowed = FALSE
+                )
+              ) %>%
+                dplyr::filter(V1 != 1) %>%
+                dplyr::group_by(V1) %>%
+                dplyr::sample_n(1) %>%
+                dplyr::ungroup() %>%
+                dplyr::sample_n((input$versionnbr - 1))
+
+              order <- dplyr::bind_rows(order, addorder)
+              names(order) <- gsub("V", "B", names(order))
+              order$version <- paste0("V", seq_len(nrow(order)))
+              write.csv(
+                order,
+                paste0(pardir, "/bloc_order.csv"),
+                row.names = FALSE
+              )
+              order <- dplyr::select(order, -version)
+            } else {
+              order <- data.frame(B1 = 1)
+            }
+
+            for (i in seq_len(nrow(order))) {
+              incProgress(
+                amount = incr,
+                detail = paste0(lang, ": generate version ", i)
+              )
+
+              version_id <- paste0("V", i)
+
+              tmpversion <- sample_versions %>%
+                dplyr::mutate(
+                  bloc = dplyr::case_when(
+                    input$versionnbr > 1 ~ paste0(
+                      "B",
+                      sort(rep(
+                        seq_len(input$blocnbr),
+                        input$blocsize
+                      ))
+                    ),
+                    TRUE ~ "B1"
+                  )
+                )
+
+              if (input$versionnbr > 1) {
+                tmpversion <- split(tmpversion, tmpversion$bloc)
+                tmpversion <- tmpversion[as.numeric(order[i, ])]
+                tmpversion <- dplyr::bind_rows(tmpversion)
+                write.csv(
+                  tmpversion,
+                  file = paste0(pardir, "/parameters_with_blocs.csv"),
+                  row.names = FALSE
+                )
+              }
+
+              version_name <- paste0(test_name, "_pdf_", version_id, "_", lang)
+
+              template_test <- dplyr::case_when(
+                input$typeanswer == "choice" ~
+                paste0(
+                  find.package("teachR"),
+                  "/tex/",
+                  lang,
+                  "_MCQ_A4_TEST.tex"
+                ),
+                TRUE ~
+                paste0(
+                  find.package("teachR"),
+                  "/tex/",
+                  lang,
+                  "_NUMTXT_A4_TEST.tex"
+                ),
+              )
+
+              template_solution <- dplyr::case_when(
+                input$typeanswer == "choice" ~
+                paste0(
+                  find.package("teachR"),
+                  "/tex/",
+                  lang,
+                  "_MCQ_A4_SOL.tex"
+                ),
+                TRUE ~
+                paste0(
+                  find.package("teachR"),
+                  "/tex/",
+                  lang,
+                  "_NUMTXT_A4_SOL.tex"
+                ),
+              )
+
+              # Create the test
+              test_or_solution <- "test"
+              save(
+                test_or_solution,
+                file = paste0(rmddir, "/test_or_solution.RData")
+              )
+              test <- exams::exams2pdf(
+                file = unlist(tmpversion$files),
+                n = 1,
+                name = paste0(version_name, "_questions"),
+                dir = outdir,
+                edir = rmddir,
+                tdir = tmpdir,
+                points = tmpversion$points,
+                quiet = TRUE,
+                verbose = FALSE,
+                template = template_test
+              )
+
+              # Create the solution
+              unlink(paste0(tmpdir, "/*"))
+              test_or_solution <- "solution"
+              save(
+                test_or_solution,
+                file = paste0(rmddir, "/test_or_solution.RData")
+              )
+              exams::exams2pdf(
+                file = unlist(tmpversion$files),
+                n = 1,
+                name = paste0(version_name, "_solutions"),
+                dir = outdir,
+                edir = rmddir,
+                tdir = tmpdir,
+                points = tmpversion$points,
+                quiet = TRUE,
+                verbose = FALSE,
+                template = template_solution
+              )
+            }
+          }
         }
-      }
-
-
-      if (input$canvas_out &
-        !dir.exists(paste0(test_name, "/3_test/canvas"))) {
-        dir.create(paste0(test_name, "/3_test/canvas"))
-      }
-      if (input$moodle_out &
-        !dir.exists(paste0(test_name, "/3_test/moodle"))) {
-        dir.create(paste0(test_name, "/3_test/moodle"))
-      }
-      if (input$openolat_out &
-        !dir.exists(paste0(test_name, "3/_test/openolat"))) {
-        dir.create(paste0(test_name, "3/_test/openolat"))
-      }
-      if (input$arsnova_out &
-        !dir.exists(paste0(test_name, "3/_test/arsnova"))) {
-        dir.create(paste0(test_name, "3/_test/arsnova"))
-      }
-      if (input$tcexam_out &
-        !dir.exists(paste0(test_name, "/3_test/tcexam"))) {
-        dir.create(paste0(test_name, "/3_test/tcexam"))
-      }
-      if (input$pdf_out &
-        !dir.exists(paste0(test_name, "/3_test/pdf"))) {
-        dir.create(paste0(test_name, "/3_test/pdf"))
-      }
-      if (input$html_out &
-        !dir.exists(paste0(test_name, "/3_test/html"))) {
-        dir.create(paste0(test_name, "/3_test/html"))
-      }
-      if (input$pandoc_out &
-        !dir.exists(paste0(test_name, "3_test/pandoc"))) {
-        dir.create(paste0(test_name, "3_test/pandoc"))
-      }
-      if (input$nops_out &
-        !dir.exists(paste0(test_name, "3_test/nops"))) {
-        dir.create(paste0(test_name, "3_test/nops"))
-      }
-      if (input$lops_out &
-        !dir.exists(paste0(test_name, "/3_test/lops"))) {
-        dir.create(paste0(test_name, "3_test/lops"))
-      }
-      if (input$qui12_out &
-        !dir.exists(paste0(test_name, "3_test/qui12"))) {
-        dir.create(paste0(test_name, "/3_test/qui12"))
-      }
-
-
-      # Create the files used for calibration
-      for (lang in input$languages) {
-        
-        students <- tables$students_list %>%
-          dplyr::filter(language == lang) %>%
-          dplyr::select(student_id) %>%
-          unique() %>%
-          unlist() %>%
-          as.character()
-
-        if (input$typeanswer == "text") {
-          criteria <- eval(parse(text = paste0(
-            input$pkgname, "::", "str_open_criteria"
-          ))) %>%
-            dplyr::filter(question_id %in% tables$test$question_id)
-
-          write.csv(criteria, file = paste0(
-            wd,
-            "/4_answers/clean/criteria_",
-            lang,
-            ".csv"
-          ), row.names = FALSE)
-
-          results <- tibble::tibble(
-            student_id = students,
-            criterion_id = list(unique(criteria$criterion_id))
-          ) %>%
-            tidyr::unnest(criterion_id) %>%
-            mutate(value = 0)
-          
-        } else {
-          
-          results <- tibble::tibble(
-            student_id = students,
-            question_id = list(unique(tables$test$question_id))
-          ) %>%
-            tidyr::unnest(question_id) %>%
-            mutate(value = 0)
-          
-        }
-        
-        write.csv(results, file = paste0(
-          wd,
-          "/4_answers/clean/results_",
-          lang,
-          ".csv"
-        ), row.names = FALSE)
-      }
-
+      })
 
       stopApp()
     })
@@ -1467,7 +1768,7 @@ create_folder <- function(test_name, folder) {
 
 # Function to retrieve Rmd files from the different packages
 retrieve_file <- function(question_id, exname, pkgname, test_name) {
-  destination <- paste0(test_name, "/", "3_test/rmd/", exname, ".Rmd")
+  destination <- paste0(test_name, "/", "2_test/rmd/", exname, ".Rmd")
   if (!file.exists(destination)) {
     source <- system.file(
       paste0("questions/", question_id, ".Rmd"),
