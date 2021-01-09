@@ -36,7 +36,7 @@
 #' @importFrom shiny withProgress
 #' @importFrom shiny incProgress
 #' @importFrom shiny withMathJax
-#' @importFrom shiny dialogViewer
+#' @importFrom shiny browserViewer
 #' @importFrom shiny textOutput
 #' @importFrom shiny htmlOutput
 #' @importFrom shiny renderPlot
@@ -415,11 +415,10 @@ genTest <- function() {
           fillCol(
             flex = c(1, 1, 10),
             fillRow(
-              flex = c(1, 1, 1, 1, 1),
+              flex = c(1, 1, 1, 1),
               textOutput("total_points"),
               textOutput("unique_questions"),
               textOutput("check_blocs"),
-              actionButton("update_selection", "Update"),
               actionButton("validate_selection", "Validate")
             ),
             tags$hr(),
@@ -502,6 +501,7 @@ genTest <- function() {
     criterion_order <- NULL
     V1 <- NULL
     data <- NULL
+    pkg <- NULL
 
     # Create reactive values
     tables <- reactiveValues()
@@ -582,6 +582,10 @@ genTest <- function() {
     })
 
 
+
+
+
+    ################ PBM: CANNOT TAKE IF PKD NOT LOADED ########################
     # Retrieve questions from package
     observeEvent(input$getpkg, {
       tables$pkgname <- input$pkgname
@@ -591,9 +595,7 @@ genTest <- function() {
       if (tables$pkgname != "") {
 
         # Select published questions (exclude "design" and "review" stages)
-        questions <- eval(
-          parse(text = paste0(tables$pkgname, "::", "str_questions"))
-        ) %>%
+        questions <- teachR::get_pkg_data(tables$pkgname, "str_questions") %>%
           dplyr::filter(stage == "public")
 
         # Select questions available in appropriate languages
@@ -603,9 +605,12 @@ genTest <- function() {
           dplyr::group_by(question_nbr) %>%
           dplyr::count() %>%
           dplyr::filter(n == length(input$languages))
+        tables$in_all_languages <- c(
+          tables$in_all_languages,
+          unique(in_all_languages$question_nbr)
+        )
         questions <- questions %>%
-          dplyr::filter(question_nbr %in% in_all_languages$question_nbr)
-        tables$in_all_languages <- unique(in_all_languages$question_nbr)
+          dplyr::filter(question_nbr %in% tables$in_all_languages)
 
         # Selection of questions which are not excluded
         questions <- questions %>%
@@ -641,7 +646,7 @@ genTest <- function() {
     ############################################################################
     # Prepare filters
     base_filters <- reactive({
-      filters <- eval(parse(text = paste0(tables$pkgname, "::", "str_labels")))
+      filters <- teachR::get_pkg_data(tables$pkgname, "str_labels")
 
       # Selection of questions which are not excluded
       filters <- filters %>%
@@ -913,6 +918,7 @@ genTest <- function() {
       selected_question <- questionlist() %>%
         filter(question_id == input$slctdisp)
 
+      # Add the question in every selected language
       for (lang in input$languages) {
         add <- data.frame(
           pkgname = tables$pkgname,
@@ -938,6 +944,7 @@ genTest <- function() {
         )
       }
 
+      # Update the preselection
       tables$preselection <- tables$preselection %>%
         dplyr::bind_rows(add)
 
@@ -1052,15 +1059,12 @@ genTest <- function() {
       showdelta
     })
 
-    observeEvent(input$update_selection, {
+    observeEvent(input$validate_selection, {
       edited <- suppressWarnings(
         rhandsontable::hot_to_r(input$edit_preselection)
       )
       edited <- dplyr::filter(edited, remove == FALSE)
       tables$clean_preselection <- edited
-    })
-
-    observeEvent(input$validate_selection, {
       tables$test <- tables$clean_preselection
     })
 
@@ -1203,6 +1207,19 @@ genTest <- function() {
 
       withProgress(message = "Generate tests", {
 
+        # Retrieve questions from all listed packages
+        all_pkg_questions <- tibble::tibble(
+          pkg = unique(base$test$pkgname)
+        ) %>%
+          dplyr::mutate(
+            questions = purrr::map(
+              pkg,
+              get_pkg_data,
+              "str_questions"
+            )
+          ) %>%
+          tidyr::unnest(questions)
+
         # Setup the test folder structure if it does not exist
         incProgress(amount = incr, detail = "Create folders")
         test_name <- paste0(input$name, "_", input$date)
@@ -1260,15 +1277,13 @@ genTest <- function() {
 
           # Save question list
           incProgress(amount = incr, detail = paste0(lang, ": questions list"))
-          labels <- eval(parse(
-            text = paste0(tables$pkgname, "::", "str_labels")
-          )) %>%
+          labels <- teachR::get_pkg_data(tables$pkgname, "str_labels") %>%
             dplyr::filter(language == lang) %>%
             dplyr::select(topic_code, topic_label)
           test <- tables$test %>%
             dplyr::filter(question_language == lang) %>%
             dplyr::select(question_id, exname)
-          questions <- questionlist() %>%
+          questions <- all_pkg_questions %>%
             dplyr::filter(
               question_id %in% unique(tables$test$question_id),
               question_language == lang
@@ -1289,9 +1304,10 @@ genTest <- function() {
           # Save criteria for open questions
           incProgress(amount = incr, detail = paste0(lang, ": criteria list"))
           if (input$typeanswer == "text") {
-            criteria <- eval(parse(text = paste0(
-              input$pkgname, "::", "str_open_criteria"
-            ))) %>%
+            criteria <- teachR::get_pkg_data(
+              input$pkgname,
+              "str_open_criteria"
+            ) %>%
               dplyr::filter(
                 question_id %in% tables$test$question_id,
                 criterion_language == lang
@@ -1656,7 +1672,7 @@ genTest <- function() {
   runGadget(
     ui,
     server,
-    viewer = shiny::dialogViewer("genTest", 1920, 1080)
+    viewer = shiny::browserViewer()
   )
 }
 
@@ -1726,12 +1742,8 @@ append_questions <- function(x, pkgname, lang) {
   topic_label <- NULL
   type <- NULL
 
-  questions <- eval(
-    parse(text = paste0(pkgname, "::", "str_questions"))
-  )
-  labels <- eval(
-    parse(text = paste0(pkgname, "::", "str_labels"))
-  ) %>%
+  questions <- teachR::get_pkg_data(pkgname, "str_questions")
+  labels <- teachR::get_pkg_data(pkgname, "str_labels") %>%
     dplyr::filter(language == lang) %>%
     dplyr::select(
       topic_id,

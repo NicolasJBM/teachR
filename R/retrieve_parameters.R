@@ -7,6 +7,7 @@
 #' @return Parameters for the questions.
 #' @importFrom dplyr %>%
 #' @importFrom dplyr filter
+#' @importFrom dplyr case_when
 #' @importFrom stats runif
 #' @export
 
@@ -32,7 +33,9 @@ retrieve_parameters <- function(ex_name, pkgname) {
     extype <- exercise$extype[1]
     exname <- exercise$exname[1]
     questionid <- exercise$question_id[1]
-    showexname <- paste0(exname, " - ")
+    if (exercise$showexname[1]) {
+      showexname <- paste0(exname, " - ")
+    } else showexname <- ""
 
     if (exercise$show_difficulty[1]) {
       if (exercise$show_points[1]) {
