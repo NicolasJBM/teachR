@@ -40,4 +40,5 @@ Imports:
   readODS,
   rhandsontable,
   ggplot2,
-  readxl
+  readxl,
+  lexR

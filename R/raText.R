@@ -43,6 +43,7 @@
 #' @importFrom shinythemes shinytheme
 #' @importFrom readODS read_ods
 #' @importFrom readxl read_excel
+#' @importFrom lexR count_words
 #' @export
 
 
@@ -176,8 +177,9 @@ raText <- function() {
               )
             ),
             fillRow(
-              flex = c(1,1),
-              textOutput("answer"),
+              flex = c(5,1,4),
+              uiOutput("answer"),
+              tags$br(),
               uiOutput("grading")
             )
           )
@@ -207,8 +209,6 @@ raText <- function() {
     # Prepare reactive values
 
     tables <- reactiveValues()
-    tables$sourceincr <- 1
-    tables$lastgraded <- 1
     
     observeEvent(input$import, {
       if (input$creres == "Create") {
@@ -216,25 +216,35 @@ raText <- function() {
         # Download or create answers
         if (!is.null(input$answers)) {
           tables$answers <- readxl::read_excel(
-            input$answers$datapath[[1]])
+            input$answers$datapath[[1]]) %>%
+            dplyr::mutate(
+              comments = as.character(NA),
+              evaluation = as.numeric(0)
+            )
           tables$questions <- sort(unique(tables$answers$question_id))
           tables$sources <- unique(tables$answers$source_id)
+          tables$sourceincr <- 1
+          tables$lastgraded <- 1
         } else {
           tables$answers <- data.frame(
             source_id = as.character(NA),
             source_type = as.character(NA),
             question_id = as.character(NA),
-            answer = as.character(NA)
+            answer = as.character(NA),
+            comments = as.character(NA),
+            evaluation = as.numeric(0)
           )
           tables$questions <- c("")
           tables$sources <- c("")
+          tables$sourceincr <- 1
+          tables$lastgraded <- 1
         }
 
         # Download or create criteria
         if (!is.null(input$criteria)) {
           tables$criteria <- readxl::read_excel(
             input$criteria$datapath[[1]]) %>%
-            mutate(
+            dplyr::mutate(
               criterion_scale = factor(
                 criterion_scale,
                 levels = c("presence", "understanding", "intensity")
@@ -265,19 +275,30 @@ raText <- function() {
         }
         
       } else {
-        if (is.null(input$backup)) load(input$backup$datapath)
+        if (!is.null(input$backup)) {
+          load(input$backup$datapath)
+          tables$answers <- project$answers
+          tables$criteria <- project$criteria
+          tables$questions <- project$questions
+          tables$sources <- project$sources
+          tables$sourceincr <- project$sourceincr
+          tables$lastgraded <- project$lastgraded
+          tables$solutions <- project$solutions
+          tables$grades <- project$grades
+        } 
       }
 
+      grading <- tables$criteria %>%
+        dplyr::mutate(grade = 0) %>%
+        group_by(question_id) %>%
+        tidyr::nest()
+      
       tables$grades <- tibble::tibble(
         source_id = tables$sources,
         question_id = list(tables$questions)
       ) %>%
         tidyr::unnest(question_id) %>%
-        dplyr::mutate(
-          grading = list(
-            dplyr::mutate(tables$criteria, grade = 0)
-          )
-        )
+        dplyr::left_join(grading, by = "question_id")
     })
 
 
@@ -321,7 +342,11 @@ raText <- function() {
             question_id == input$slctquest
           ) %>%
           rhandsontable::rhandsontable(
-            height = 500, width = "100%", rowHeaders = NULL, stretchH = "all") %>%
+            height = 500,
+            width = "100%",
+            rowHeaders = NULL,
+            stretchH = "all"
+          ) %>%
           rhandsontable::hot_context_menu(
             allowRowEdit = TRUE,
             allowColEdit = FALSE
@@ -356,22 +381,59 @@ raText <- function() {
         "."
       )
     )
-
-    output$answer <- renderText(
+    
+    output$answer <- renderUI({
+      
       if (!is.null(tables$answers) &
-        !is.null(tables$sourceincr) &
-        !is.null(input$slctquest)) {
-        tables$answers %>%
+          !is.null(tables$sourceincr) &
+          !is.null(input$slctquest)) {
+        
+        selection <- tables$answers %>%
           dplyr::filter(
             source_id == tables$sources[tables$sourceincr],
             question_id == input$slctquest
-          ) %>%
+          )
+        
+        answer <- selection %>%
           dplyr::select(answer) %>%
           unlist() %>%
           as.character()
+        
+        wordcount <- lexR::count_words(answer)
+        
+        comments <- selection %>%
+          dplyr::select(comments) %>%
+          unlist() %>%
+          as.character()
+        
+        evaluation <- selection %>%
+          dplyr::select(evaluation) %>%
+          unlist() %>%
+          as.numeric()
+        
+        ui <- list()
+        ui[[1]] <- renderText(answer)
+        ui[[2]] <- tags$hr()
+        ui[[3]] <- renderText(paste0("Word count: ", wordcount))
+        ui[[4]] <- textAreaInput(
+          "comments",
+          'Comments:',
+          value = comments,
+          height = "200px"
+        ) %>%
+          shiny::tagAppendAttributes(style = 'width: 90%;')
+        ui[[5]] <- numericInput(
+          "evaluation",
+          "Evaluation:",
+          min = 0,
+          max = 10,
+          step = 0.25,
+          value = evaluation
+        )
+        ui
       }
-    )
-
+    })
+    
     output$grading <- renderUI({
       
       criteria <- suppressWarnings(
@@ -384,17 +446,16 @@ raText <- function() {
           source_id == tables$sources[tables$sourceincr],
           question_id == input$slctquest
         ) %>%
-        dplyr::select(grading) %>%
-        tidyr::unnest(grading) %>%
+        dplyr::select(question_id, data) %>%
+        tidyr::unnest(data) %>%
+        dplyr::select(-criterion_label, -criterion_scale) %>%
         dplyr::mutate(criterion_scale = as.character(criterion_scale)) %>%
         dplyr::full_join(
           criteria,
           by = c(
             "question_id",
             "criterion_id",
-            "criterion_nbr",
-            "criterion_label",
-            "criterion_scale"
+            "criterion_nbr"
           )
         ) %>%
         tidyr::replace_na(list(grade = 0))
@@ -440,16 +501,29 @@ raText <- function() {
       ui
     })
     
-    #############
-    # Update data
+    ############################################################################
+    # Update structure and grades
+    
+    
 
-
-
-
-    #########
+    ############################################################################
     # On exit
-
+    
     observeEvent(input$done, {
+      
+      project <- list(
+        answers = tables$answers,
+        criteria = tables$criteria,
+        questions = tables$questions,
+        sources = tables$sources,
+        sourceincr = tables$sourceincr,
+        lastgraded = tables$lastgraded,
+        solutions = tables$solutions,
+        grades = tables$grades
+      )
+      
+      save(project, file = "project.RData")
+      
       stopApp()
     })
   }
