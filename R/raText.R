@@ -1,5 +1,8 @@
-#' Shiny gadget to facilitate grading open questions and essays.
-#' @return Three .csv files: one with students' points, one with updated solutions, one with updated criterias.
+#' @name raText
+#' @title Grade open-ended answers
+#' @author Nicolas Mangin
+#' @description Shiny gadget to facilitate grading open-ended questions and essays.
+#' @return Three .csv files: one with students' points, one with updated solutions, one with updated criteria.
 #' @importFrom miniUI miniPage
 #' @importFrom miniUI gadgetTitleBar
 #' @importFrom miniUI miniTabstripPanel
@@ -35,7 +38,11 @@
 #' @importFrom shiny textOutput
 #' @importFrom shiny htmlOutput
 #' @importFrom shiny HTML
+#' @importFrom shiny radioButtons
+#' @importFrom shiny textAreaInput
 #' @importFrom shinythemes shinytheme
+#' @importFrom readODS read_ods
+#' @importFrom readxl read_excel
 #' @export
 
 
@@ -47,290 +54,405 @@ raText <- function() {
               position:fixed;top: 30%;left: 0%;right: 0%;
            }")
     )),
-    
-    gadgetTitleBar("Grade open questions and essays"),
-    fillCol(
-      flex = c(2,1,6,1,1,1,6,1),
-      fillRow(
-        flex = c(1,1,1,1),
-        fileInput("answers", "Import answers", multiple = FALSE, accept = ".csv"),
-        fileInput("solutions", "Import solutions", multiple = FALSE, accept = ".csv"),
-        fileInput("criteria", "Import criteria", multiple = FALSE, accept = ".csv"),
-        actionButton("import", "Import", style = "margin-top:25px; width:150px;")
-      ),
-      tags$hr(),
-      fillRow(
-        flex = c(2,2),
-        fillCol(
-          flex = c(5,1),
-          uiOutput("solution"),
-          actionButton("updatesolution", "Update solution")
-        ),
-        fillCol(
-          flex = c(5,1),
-          rhandsontable::rHandsontableOutput("criteria"),
-          actionButton("updatecriteria", "Update criteria")
+
+    gadgetTitleBar("Grade open-ended questions"),
+    miniTabstripPanel(
+      miniTabPanel(
+        "Upload",
+        icon = icon("upload"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1, 1, 1, 1, 7),
+            fillRow(
+              flex = c(1, 1, 1),
+              radioButtons(
+                "creres",
+                "Create or resume a project",
+                choices = c("Create", "Resume"),
+                selected = " Create",
+                inline = TRUE
+              ),
+              tags$br(),
+              actionButton(
+                "import",
+                "Import",
+                style = "width:150px;"
+              )
+            ),
+            tags$hr(),
+            conditionalPanel(
+              condition = "input.creres === 'Create'",
+              fillRow(
+                flex = c(1, 1, 1),
+                fileInput(
+                  "answers",
+                  "Import answers",
+                  multiple = FALSE,
+                  accept = c(".xlsx")
+                ),
+                fileInput(
+                  "criteria",
+                  "Import criteria",
+                  multiple = FALSE,
+                  accept = c(".csv", ".xlsx")
+                ),
+                fileInput(
+                  "solutions",
+                  "Import solutions",
+                  multiple = FALSE,
+                  accept = c(".xlsx")
+                )
+              )
+            ),
+            conditionalPanel(
+              condition = "input.creres === 'Resume'",
+              fileInput(
+                "backup",
+                "Import backup",
+                multiple = FALSE,
+                accept = ".RData"
+              )
+            ),
+            tags$br()
+          )
         )
       ),
-      tags$hr(),
-      fillRow(
-        flex = c(2,2,1,1,1,1),
-        uiOutput("slctquest"),
-        actionButton("backstart", "First student", style = "margin-top:25px; width:150px;"),
-        actionButton("prevstud", "Previous student", style = "margin-top:25px; width:150px;"),
-        textOutput("slctstudent"),
-        actionButton("nextstud", "Next student", style = "margin-top:25px; width:150px;"),
-        tags$br()
-      ),
-      tags$hr(),
-      fillRow(
-        flex = c(2,2),
-        textOutput("answer"),
-        fillCol(
-          flex = c(5,1),
-          rhandsontable::rHandsontableOutput("percents"),
-          actionButton("updatepercents", "Update percents")
+
+      miniTabPanel(
+        "Solution",
+        icon = icon("edit"),
+        miniContentPanel(
+          uiOutput("slctquest"),
+          fillRow(
+            flex = c(2, 3),
+            fillCol(
+              flex = c(4, 1),
+              uiOutput("solution"),
+              actionButton(
+                "updatesolution",
+                "Update solution"
+              )
+            ),
+            fillCol(
+              flex = c(4, 1),
+              rhandsontable::rHandsontableOutput("criteria"),
+              actionButton(
+                "updatecriteria",
+                "Update criteria"
+              )
+            )
+          )
         )
       ),
-      fillRow(
-        #flex = c(1,11),
-        #uiOutput("stats")
+
+      miniTabPanel(
+        "Grade",
+        icon = icon("check"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1,9),
+            fillRow(
+              flex = c(1, 1, 1, 1, 1),
+              textOutput("slctsource"),
+              actionButton(
+                "backstart",
+                "First source",
+                style = "width:150px;"
+              ),
+              actionButton(
+                "prevstud",
+                "Previous source",
+                style = "width:150px;"
+              ),
+              actionButton(
+                "nextstud",
+                "Next source",
+                style = "width:150px;"
+              ),
+              actionButton(
+                "lastgraded",
+                "Last graded",
+                style = "width:150px;"
+              )
+            ),
+            fillRow(
+              flex = c(1,1),
+              textOutput("answer"),
+              uiOutput("grading")
+            )
+          )
+        )
+      ),
+
+      miniTabPanel(
+        "Download",
+        icon = icon("download"),
+        miniContentPanel()
       )
     )
   )
-  
-  
+
+
   server <- function(input, output, session) {
-    
+
     # Bind variables
     answer <- NULL
-    questionid <- NULL
+    question_id <- NULL
     solution <- NULL
-    studentid <- NULL
-    textAreaInput <- NULL
-    weight <- NULL
-    
-    ################
-    # Filter list and selection table creation
-    
+    criterion_scale <- NULL
+    question_id <- NULL
+    source_id <- NULL
+
+    ############################################################################
+    # Prepare reactive values
+
     tables <- reactiveValues()
-    tables$studentincr <- 1
-    
-    #############
-    # Import data
+    tables$sourceincr <- 1
+    tables$lastgraded <- 1
     
     observeEvent(input$import, {
-      
-      
-      if (is.null(input$answers)) {
-        if (file.exists("answers/answers.csv")){
-          tables$answers <- as.data.frame(
-            utils::read.csv(
-              file = "answers/answers.csv",
-              stringsAsFactors = FALSE
-            ),
-            stringsAsFactors = FALSE
-          )
+      if (input$creres == "Create") {
+
+        # Download or create answers
+        if (!is.null(input$answers)) {
+          tables$answers <- readxl::read_excel(
+            input$answers$datapath[[1]])
+          tables$questions <- sort(unique(tables$answers$question_id))
+          tables$sources <- unique(tables$answers$source_id)
         } else {
           tables$answers <- data.frame(
-            studentid = as.character(NA),
-            questionid = as.character(NA),
+            source_id = as.character(NA),
+            source_type = as.character(NA),
+            question_id = as.character(NA),
             answer = as.character(NA)
           )
+          tables$questions <- c("")
+          tables$sources <- c("")
         }
-      } else {
-        tables$answers <- as.data.frame(
-          utils::read.csv(
-            file = input$answers$datapath[[1]],
-            stringsAsFactors = FALSE
-          ),
-          stringsAsFactors = FALSE
-        )
-      }
-      
-      stopifnot(nrow(na.omit(tables$answers))>0)
-      
-      if (is.null(input$solutions)) {
-        if (file.exists("parameters/solutions.csv")){
-          tables$solutions <- as.data.frame(
-            utils::read.csv(
-              file = "parameters/solutions.csv",
-              stringsAsFactors = FALSE
-            ),
-            stringsAsFactors = FALSE
+
+        # Download or create criteria
+        if (!is.null(input$criteria)) {
+          tables$criteria <- readxl::read_excel(
+            input$criteria$datapath[[1]]) %>%
+            mutate(
+              criterion_scale = factor(
+                criterion_scale,
+                levels = c("presence", "understanding", "intensity")
+              )
+            )
+        } else {
+          tables$criteria <- data.frame(
+            question_id = unique(tables$answers$question_id),
+            criterion_id = as.character(NA),
+            criterion_nbr = as.numeric(NA),
+            criterion_label = as.character(NA),
+            criterion_scale = factor(
+              NA,
+              levels = c("presence", "understanding", "intensity")
+            )
           )
+        }
+        
+        # Download or create solutions
+        if (!is.null(input$solutions)) {
+          tables$solutions <- readxl::read_excel(
+            input$solutions$datapath[[1]])
         } else {
           tables$solutions <- data.frame(
-            questionid = unique(tables$answers$questionid),
+            question_id = tables$questions,
             solution = as.character(NA)
           )
         }
+        
       } else {
-        tables$solutions <- as.data.frame(
-          utils::read.csv(
-            file = input$solutions$datapath[[1]],
-            stringsAsFactors = FALSE
-          ),
-          stringsAsFactors = FALSE
-        )
+        if (is.null(input$backup)) load(input$backup$datapath)
       }
-      
-      missingquest <- setdiff(unique(tables$answers$questionid), unique(tables$solutions$questionid))
-      if (length(missingquest)>0) for (i in missingquest) {
-        add <- data.frame(
-          questionid = i,
-          solution = as.character(NA)
-        )
-        tables$solutions <- dplyr::bind_rows(tables$solutions, add)
-      }
-      
-      
-      if (is.null(input$criteria)) {
-        if (file.exists("parameters/criteria.csv")){
-          tables$criteria <- as.data.frame(
-            utils::read.csv(
-              file = "parameters/criteria.csv",
-              stringsAsFactors = FALSE
-            ),
-            stringsAsFactors = FALSE
-          )
-        } else {
-          tables$criteria <- data.frame(
-            questionid = unique(tables$answers$questionid),
-            criterion = as.character(NA),
-            weight = as.double(NA)
-          )
-        }
-      } else {
-        tables$criteria <- as.data.frame(
-          utils::read.csv(
-            file = input$criteria$datapath[[1]],
-            stringsAsFactors = FALSE
-          ),
-          stringsAsFactors = FALSE
-        )
-      }
-      
-      missingquest <- setdiff(unique(tables$answers$questionid), unique(tables$criteria$questionid))
-      if (length(missingquest)>0) for (i in missingquest) {
-        add <- data.frame(
-          questionid = i,
-          criterion = as.character(NA),
-          order = 1,
-          weight = 1
-        )
-        tables$solutions <- dplyr::bind_rows(tables$solutions, add)
-      }
-      
-      
-      tables$questions <- sort(unique(tables$answers$questionid))
-      students <- students <- unique(tables$answers$studentid)
-      tables$students <- students[sample(seq_len(length(students)), length(students), replace = FALSE)]
-      
-      tables$percents <- tibble::tibble(
-        studentid = tables$students,
-        questionid = list(tables$questions)
+
+      tables$grades <- tibble::tibble(
+        source_id = tables$sources,
+        question_id = list(tables$questions)
       ) %>%
-        tidyr::unnest(questionid) %>%
-        dplyr::left_join(tables$criteria, by = "questionid") %>%
-        dplyr::select(-weight) %>%
-        dplyr::mutate(percents = 0)
+        tidyr::unnest(question_id) %>%
+        dplyr::mutate(
+          grading = list(
+            dplyr::mutate(tables$criteria, grade = 0)
+          )
+        )
     })
-    
-    
-    ###########
-    # Create UI
+
+
+    ############################################################################
+    # Edit solutions and criteria
+
     output$slctquest <- renderUI({
-      selectInput("slctquest", "Select a question", choices = tables$questions, selected = tables$questions[[1]], width = "75%")
+      selectInput(
+        "slctquest",
+        "Select a question",
+        choices = tables$questions,
+        selected = tables$questions[[1]],
+        width = "100%"
+      )
     })
-    
-    observeEvent(input$backstart, {
-      tables$studentincr <- 1
-    })
-    
-    observeEvent(input$prevstud, {
-      tables$studentincr <- max(1,tables$studentincr - 1)
-    })
-    
-    observeEvent(input$nextstud, {
-      tables$studentincr <- min(tables$studentincr + 1, length(tables$students))
-    })
-    
-    output$slctstudent <- renderText(
-      paste0("Student number ", tables$studentincr, " out of ", length(tables$students), ".")
-    )
-    
+
     output$solution <- renderUI({
-      if (!is.null(tables$solutions) & !is.null(tables$studentincr)){
+      if (!is.null(tables$solutions) & !is.null(input$slctquest)) {
         textsol <- tables$solutions %>%
           dplyr::filter(
-            questionid == input$slctquest
+            question_id == input$slctquest
           ) %>%
           dplyr::select(solution)
         textsol <- textsol$solution[1]
-      } else textsol <- c("")
-      textAreaInput("solution", label = "Solution", value = textsol, width = "800px", height = "200px")
-    })
-    
-    output$answer <- renderText(
-      if (!is.null(tables$answers) & !is.null(tables$studentincr)){
-        tables$answers %>%
-          dplyr::filter(
-            studentid == tables$students[[tables$studentincr]],
-            questionid == input$slctquest
-          ) %>%
-          dplyr::select(answer) %>%
-          unlist() %>% as.character()
+      } else {
+        textsol <- c("")
       }
-      
-    )
-    
+      textAreaInput(
+        "solution",
+        label = "Solution",
+        value = textsol,
+        height = "500px"
+      ) %>%
+        shiny::tagAppendAttributes(style = 'width: 90%;')
+    })
+
     output$criteria <- rhandsontable::renderRHandsontable(
-      if (!is.null(tables$solutions) & !is.null(tables$studentincr)){
+      if (!is.null(tables$criteria) & !is.null(input$slctquest)) {
         tables$criteria %>%
           dplyr::filter(
-            questionid == input$slctquest
+            question_id == input$slctquest
           ) %>%
-          rhandsontable::rhandsontable(height = 250, width = "100%", rowHeaders = NULL) %>%
-          rhandsontable::hot_col("questionid", width = 1) %>%
-          rhandsontable::hot_col("criterion", width = 550) %>%
-          rhandsontable::hot_col("order", width = 50) %>%
-          rhandsontable::hot_col("weight", width = 100, format = "0%") %>%
-          rhandsontable::hot_context_menu(allowRowEdit = TRUE, allowColEdit = FALSE)
+          rhandsontable::rhandsontable(
+            height = 500, width = "100%", rowHeaders = NULL, stretchH = "all") %>%
+          rhandsontable::hot_context_menu(
+            allowRowEdit = TRUE,
+            allowColEdit = FALSE
+          )
       }
     )
-    
-    output$percents <- rhandsontable::renderRHandsontable(
-      if (!is.null(tables$percents) & !is.null(tables$studentincr)){
-        tables$percents %>%
+
+    ############################################################################
+    # Grade
+    observeEvent(input$backstart, {
+      tables$sourceincr <- 1
+    })
+
+    observeEvent(input$prevstud, {
+      tables$sourceincr <- max(1, tables$sourceincr - 1)
+    })
+
+    observeEvent(input$nextstud, {
+      tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
+    })
+
+    observeEvent(input$lastgraded, {
+      tables$sourceincr <- tables$lastgraded
+    })
+
+    output$slctsource <- renderText(
+      paste0(
+        "Answer number ",
+        tables$sourceincr,
+        " out of ",
+        length(tables$sources),
+        "."
+      )
+    )
+
+    output$answer <- renderText(
+      if (!is.null(tables$answers) &
+        !is.null(tables$sourceincr) &
+        !is.null(input$slctquest)) {
+        tables$answers %>%
           dplyr::filter(
-            studentid == tables$students[[tables$studentincr]],
-            questionid == input$slctquest
+            source_id == tables$sources[tables$sourceincr],
+            question_id == input$slctquest
           ) %>%
-          rhandsontable::rhandsontable(height = 250, width = "100%", rowHeaders = NULL) %>%
-          rhandsontable::hot_col("studentid", width = 1) %>%
-          rhandsontable::hot_col("questionid", width = 1) %>%
-          rhandsontable::hot_col("criterion", width = 600) %>%
-          rhandsontable::hot_col("order", width = 1) %>%
-          rhandsontable::hot_col("percents", width = 100, format = "0%") %>%
-          rhandsontable::hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
+          dplyr::select(answer) %>%
+          unlist() %>%
+          as.character()
       }
     )
+
+    output$grading <- renderUI({
+      
+      criteria <- suppressWarnings(
+        rhandsontable::hot_to_r(input$criteria)
+      ) %>%
+        dplyr::mutate(criterion_scale = as.character(criterion_scale))
+      
+      prefilled <- tables$grades %>%
+        dplyr::filter(
+          source_id == tables$sources[tables$sourceincr],
+          question_id == input$slctquest
+        ) %>%
+        dplyr::select(grading) %>%
+        tidyr::unnest(grading) %>%
+        dplyr::mutate(criterion_scale = as.character(criterion_scale)) %>%
+        dplyr::full_join(
+          criteria,
+          by = c(
+            "question_id",
+            "criterion_id",
+            "criterion_nbr",
+            "criterion_label",
+            "criterion_scale"
+          )
+        ) %>%
+        tidyr::replace_na(list(grade = 0))
+      
+      ui <- list()
+      for (i in 1:nrow(prefilled)){
+        
+        if (prefilled$criterion_scale[i] == "presence"){
+          ui[[i]] <- checkboxInput(
+            prefilled$criterion_id[i],
+            prefilled$criterion_label[i],
+            value = prefilled$grade[i]
+          )
+        } else if(prefilled$criterion_scale[i] == "understanding"){
+          
+          selected <- dplyr::case_when(
+            prefilled$grade[i] == 2 ~ "Right",
+            prefilled$grade[i] == 1 ~ "Imprecise",
+            prefilled$grade[i] == 0 ~ "Missing",
+            TRUE ~ "Wrong"
+          )
+          
+          ui[[i]] <- radioButtons (
+            prefilled$criterion_id[i],
+            prefilled$criterion_label[i],
+            choices = c("Right","Imprecise","Missing","Wrong"),
+            selected = selected,
+            inline = TRUE
+          )
+          
+        } else {
+          ui[[i]] <- sliderInput(
+            prefilled$criterion_id[i],
+            prefilled$criterion_label[i],
+            min = -2,
+            max = 2,
+            value = prefilled$grade[i],
+            step = 1
+          )
+        }
+      }
+      
+      ui
+    })
     
     #############
     # Update data
-    
-    
-    
-    
+
+
+
+
     #########
     # On exit
-    
+
     observeEvent(input$done, {
-      
       stopApp()
     })
   }
-  
+
   runGadget(ui, server, viewer = shiny::browserViewer())
 }

@@ -2,13 +2,16 @@
 % Please edit documentation in R/raText.R
 \name{raText}
 \alias{raText}
-\title{Shiny gadget to facilitate grading open questions and essays.}
+\title{Grade open-ended answers}
 \usage{
 raText()
 }
 \value{
-Three .csv files: one with students' points, one with updated solutions, one with updated criterias.
+Three .csv files: one with students' points, one with updated solutions, one with updated criteria.
 }
 \description{
-Shiny gadget to facilitate grading open questions and essays.
+Shiny gadget to facilitate grading open-ended questions and essays.
+}
+\author{
+Nicolas Mangin
 }

@@ -21,7 +21,6 @@ Imports:
   tools,
   tibble,
   stats,
-  utils,
   miniUI,
   shiny,
   dplyr,
@@ -40,4 +39,5 @@ Imports:
   lubridate,
   readODS,
   rhandsontable,
-  ggplot2
+  ggplot2,
+  readxl
