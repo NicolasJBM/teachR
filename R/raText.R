@@ -17,6 +17,7 @@
 #' @importFrom shiny numericInput
 #' @importFrom shiny selectInput
 #' @importFrom shiny checkboxInput
+#' @importFrom shiny sliderInput
 #' @importFrom shiny stopApp
 #' @importFrom shiny runGadget
 #' @importFrom shiny conditionalPanel
@@ -127,20 +128,22 @@ raText <- function() {
           fillRow(
             flex = c(2, 3),
             fillCol(
-              flex = c(4, 1),
-              uiOutput("solution"),
+              flex = c(1, 4),
               actionButton(
                 "updatesolution",
-                "Update solution"
-              )
+                "Update solution",
+                style = "width:90%; background-color:#009933 !important;"
+              ),
+              uiOutput("solution")
             ),
             fillCol(
-              flex = c(4, 1),
-              rhandsontable::rHandsontableOutput("criteria"),
+              flex = c(1, 4),
               actionButton(
                 "updatecriteria",
-                "Update criteria"
-              )
+                "Update criteria",
+                style = "width:100%; background-color:#009933 !important;"
+              ),
+              rhandsontable::rHandsontableOutput("criteria")
             )
           )
         )
@@ -153,27 +156,42 @@ raText <- function() {
           fillCol(
             flex = c(1,9),
             fillRow(
-              flex = c(1, 1, 1, 1, 1),
+              flex = c(1, 1, 1, 1, 1, 1, 1, 1),
               textOutput("slctsource"),
               actionButton(
-                "backstart",
-                "First source",
-                style = "width:150px;"
+                "firstsrc",
+                "First",
+                style = "width:100px;"
               ),
               actionButton(
-                "prevstud",
-                "Previous source",
-                style = "width:150px;"
+                "prevsrc",
+                "Previous",
+                style = "width:100px;"
               ),
               actionButton(
-                "nextstud",
-                "Next source",
-                style = "width:150px;"
+                "reloadsrc",
+                "Reload",
+                style = "width:100px; background-color: #003399;"
+              ),
+              actionButton(
+                "savesrc",
+                "Save",
+                style = "width:100px; background-color:#009933;"
+              ),
+              actionButton(
+                "nextsrc",
+                "Next",
+                style = "width:100px;"
               ),
               actionButton(
                 "lastgraded",
-                "Last graded",
-                style = "width:150px;"
+                "Graded",
+                style = "width:100px;"
+              ),
+              actionButton(
+                "lastsrc",
+                "Last",
+                style = "width:100px;"
               )
             ),
             fillRow(
@@ -204,6 +222,10 @@ raText <- function() {
     criterion_scale <- NULL
     question_id <- NULL
     source_id <- NULL
+    criterion_id <- NULL
+    criterion_label <- NULL
+    data <- NULL
+    grade <- NULL
 
     ############################################################################
     # Prepare reactive values
@@ -254,7 +276,9 @@ raText <- function() {
           tables$criteria <- data.frame(
             question_id = unique(tables$answers$question_id),
             criterion_id = as.character(NA),
-            criterion_nbr = as.numeric(NA),
+            criterion_nbr = as.character(NA),
+            criterion_language = as.character(NA),
+            criterion_order = as.numeric(NA),
             criterion_label = as.character(NA),
             criterion_scale = factor(
               NA,
@@ -289,6 +313,7 @@ raText <- function() {
       }
 
       grading <- tables$criteria %>%
+        dplyr::select(question_id, criterion_id) %>%
         dplyr::mutate(grade = 0) %>%
         group_by(question_id) %>%
         tidyr::nest()
@@ -334,6 +359,16 @@ raText <- function() {
       ) %>%
         shiny::tagAppendAttributes(style = 'width: 90%;')
     })
+    
+    observeEvent(input$updatesolution, {
+      replacement <- input$solution
+      new_solution <- tables$solutions %>%
+        dplyr::mutate(solution = dplyr::case_when(
+          question_id != input$slctquest ~ solution,
+          TRUE ~ replacement
+        ))
+      tables$solutions <- new_solution
+    })
 
     output$criteria <- rhandsontable::renderRHandsontable(
       if (!is.null(tables$criteria) & !is.null(input$slctquest)) {
@@ -353,23 +388,116 @@ raText <- function() {
           )
       }
     )
+    
+    observeEvent(input$updatecriteria, {
+      keep_criteria <- filter(tables$criteria, question_id != input$slctquest)
+      replacement <- rhandsontable::hot_to_r(input$criteria)
+      new_criteria <- dplyr::bind_rows(keep_criteria, replacement)
+      tables$criteria <- new_criteria
+    })
 
     ############################################################################
     # Grade
-    observeEvent(input$backstart, {
+    observeEvent(input$firstsrc, {
       tables$sourceincr <- 1
     })
 
-    observeEvent(input$prevstud, {
+    observeEvent(input$prevsrc, {
       tables$sourceincr <- max(1, tables$sourceincr - 1)
     })
+    
+    observeEvent(input$savesrc, {
 
-    observeEvent(input$nextstud, {
+      criteria <- tables$criteria %>%
+        dplyr::filter(question_id == input$slctquest)
+      
+      keep_quest <- tables$grades %>%
+        dplyr::filter(question_id != input$slctquest)
+      
+      keep_from_source <- tables$grades %>%
+        dplyr::filter(
+          question_id == input$slctquest,
+          source_id != tables$sources[tables$sourceincr]
+        )
+      
+      crit <- c()
+      grad <- c()
+      for (i in 1:nrow(criteria)) {
+        
+        inid <- as.character(criteria$criterion_id[i])
+        crit <- c(crit, inid)
+        
+        if (criteria$criterion_scale[i] == "understanding"){
+          txt <- input[[inid]]
+          num <- as.numeric(dplyr::case_when(
+            txt == "Right" ~ 2,
+            txt == "Imprecise" ~ 1,
+            txt == "Missing" ~ 0,
+            TRUE ~ -1 
+          ))
+          grad <- c(grad, num)
+        } else {
+          num <- as.numeric(input[[inid]])
+          grad <- c(grad, num)
+        }
+      }
+      
+      add <- tibble::tibble(
+        criterion_id = crit,
+        grade = grad
+      )
+      
+      change_from_source <- tibble::tibble(
+        question_id = input$slctquest,
+        source_id = tables$sources[tables$sourceincr],
+        data = list(add)
+      )
+      
+      new_grades <- keep_quest %>%
+        dplyr::bind_rows(keep_from_source) %>%
+        dplyr::bind_rows(change_from_source)
+      
+      tables$grades <- new_grades
+      
+      new_answers <- tables$answers %>%
+        dplyr::mutate(
+          comments = dplyr::case_when(
+            question_id != input$slctquest ~ comments,
+            source_id != tables$sources[tables$sourceincr] ~ comments,
+            TRUE ~ input$comments
+          ),
+          evaluation = dplyr::case_when(
+            question_id != input$slctquest ~ evaluation,
+            source_id != tables$sources[tables$sourceincr] ~ evaluation,
+            TRUE ~ input$evaluation
+          )
+        )
+      tables$answers <- new_answers
+      
+      tables$lastgraded <- tables$sourceincr
+      project <- list(
+        answers = tables$answers,
+        criteria = tables$criteria,
+        questions = tables$questions,
+        sources = tables$sources,
+        sourceincr = tables$sourceincr,
+        lastgraded = tables$lastgraded,
+        solutions = tables$solutions,
+        grades = tables$grades
+      )
+      save(project, file = "project.RData")
+    })
+    
+    observeEvent(input$nextsrc, {
       tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
     })
 
     observeEvent(input$lastgraded, {
       tables$sourceincr <- tables$lastgraded
+    })
+    
+    observeEvent(input$lastsrc, {
+      tables$sourceincr <- length(tables$sources)
     })
 
     output$slctsource <- renderText(
@@ -422,7 +550,7 @@ raText <- function() {
           height = "200px"
         ) %>%
           shiny::tagAppendAttributes(style = 'width: 90%;')
-        ui[[5]] <- numericInput(
+        ui[[5]] <- sliderInput(
           "evaluation",
           "Evaluation:",
           min = 0,
@@ -436,9 +564,12 @@ raText <- function() {
     
     output$grading <- renderUI({
       
+      input$reload
+      
       criteria <- suppressWarnings(
         rhandsontable::hot_to_r(input$criteria)
       ) %>%
+        dplyr::select(criterion_id, criterion_label, criterion_scale) %>%
         dplyr::mutate(criterion_scale = as.character(criterion_scale))
       
       prefilled <- tables$grades %>%
@@ -446,17 +577,12 @@ raText <- function() {
           source_id == tables$sources[tables$sourceincr],
           question_id == input$slctquest
         ) %>%
-        dplyr::select(question_id, data) %>%
+        dplyr::select(data) %>%
         tidyr::unnest(data) %>%
-        dplyr::select(-criterion_label, -criterion_scale) %>%
-        dplyr::mutate(criterion_scale = as.character(criterion_scale)) %>%
-        dplyr::full_join(
+        dplyr::select(criterion_id, grade) %>%
+        dplyr::right_join(
           criteria,
-          by = c(
-            "question_id",
-            "criterion_id",
-            "criterion_nbr"
-          )
+          by ="criterion_id"
         ) %>%
         tidyr::replace_na(list(grade = 0))
       
@@ -481,7 +607,7 @@ raText <- function() {
           ui[[i]] <- radioButtons (
             prefilled$criterion_id[i],
             prefilled$criterion_label[i],
-            choices = c("Right","Imprecise","Missing","Wrong"),
+            choices = c("Wrong","Missing","Imprecise","Right"),
             selected = selected,
             inline = TRUE
           )
@@ -502,7 +628,7 @@ raText <- function() {
     })
     
     ############################################################################
-    # Update structure and grades
+    # Export
     
     
 
@@ -521,7 +647,6 @@ raText <- function() {
         solutions = tables$solutions,
         grades = tables$grades
       )
-      
       save(project, file = "project.RData")
       
       stopApp()
