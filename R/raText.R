@@ -241,7 +241,7 @@ raText <- function() {
             input$answers$datapath[[1]]) %>%
             dplyr::mutate(
               comments = as.character(NA),
-              evaluation = as.numeric(0)
+              evaluation = as.double(0.00)
             )
           tables$questions <- sort(unique(tables$answers$question_id))
           tables$sources <- unique(tables$answers$source_id)
@@ -254,7 +254,7 @@ raText <- function() {
             question_id = as.character(NA),
             answer = as.character(NA),
             comments = as.character(NA),
-            evaluation = as.numeric(0)
+            evaluation = as.double(0.00)
           )
           tables$questions <- c("")
           tables$sources <- c("")
@@ -265,13 +265,7 @@ raText <- function() {
         # Download or create criteria
         if (!is.null(input$criteria)) {
           tables$criteria <- readxl::read_excel(
-            input$criteria$datapath[[1]]) %>%
-            dplyr::mutate(
-              criterion_scale = factor(
-                criterion_scale,
-                levels = c("presence", "understanding", "intensity")
-              )
-            )
+            input$criteria$datapath[[1]])
         } else {
           tables$criteria <- data.frame(
             question_id = unique(tables$answers$question_id),
@@ -280,10 +274,7 @@ raText <- function() {
             criterion_language = as.character(NA),
             criterion_order = as.numeric(NA),
             criterion_label = as.character(NA),
-            criterion_scale = factor(
-              NA,
-              levels = c("presence", "understanding", "intensity")
-            )
+            criterion_scale = as.character(NA)
           )
         }
         
@@ -294,9 +285,23 @@ raText <- function() {
         } else {
           tables$solutions <- data.frame(
             question_id = tables$questions,
-            solution = as.character(NA)
+            solution = as.character(NA),
+            points = as.double(10)
           )
         }
+        
+        grading <- tables$criteria %>%
+          dplyr::select(question_id, criterion_id) %>%
+          dplyr::mutate(grade = 0) %>%
+          group_by(question_id) %>%
+          tidyr::nest()
+        
+        tables$grades <- tibble::tibble(
+          source_id = tables$sources,
+          question_id = list(tables$questions)
+        ) %>%
+          tidyr::unnest(question_id) %>%
+          dplyr::left_join(grading, by = "question_id")
         
       } else {
         if (!is.null(input$backup)) {
@@ -311,19 +316,6 @@ raText <- function() {
           tables$grades <- project$grades
         } 
       }
-
-      grading <- tables$criteria %>%
-        dplyr::select(question_id, criterion_id) %>%
-        dplyr::mutate(grade = 0) %>%
-        group_by(question_id) %>%
-        tidyr::nest()
-      
-      tables$grades <- tibble::tibble(
-        source_id = tables$sources,
-        question_id = list(tables$questions)
-      ) %>%
-        tidyr::unnest(question_id) %>%
-        dplyr::left_join(grading, by = "question_id")
     })
 
 
@@ -376,6 +368,12 @@ raText <- function() {
           dplyr::filter(
             question_id == input$slctquest
           ) %>%
+          dplyr::mutate(
+            criterion_scale = factor(
+              criterion_scale,
+              levels = c("presence","understanding","intensity")
+            )
+          ) %>%
           rhandsontable::rhandsontable(
             height = 500,
             width = "100%",
@@ -390,9 +388,15 @@ raText <- function() {
     )
     
     observeEvent(input$updatecriteria, {
-      keep_criteria <- filter(tables$criteria, question_id != input$slctquest)
-      replacement <- rhandsontable::hot_to_r(input$criteria)
-      new_criteria <- dplyr::bind_rows(keep_criteria, replacement)
+      keep_criteria <- filter(
+        tables$criteria,
+        question_id != input$slctquest
+      ) %>%
+        dplyr::mutate(criterion_scale = as.character(criterion_scale))
+      replacement <- rhandsontable::hot_to_r(input$criteria) %>%
+        dplyr::mutate(criterion_scale = as.character(criterion_scale))
+      new_criteria <- dplyr::bind_rows(keep_criteria, replacement) %>%
+        dplyr::arrange(question_id, criterion_order)
       tables$criteria <- new_criteria
     })
 
@@ -460,6 +464,7 @@ raText <- function() {
       tables$grades <- new_grades
       
       new_answers <- tables$answers %>%
+        
         dplyr::mutate(
           comments = dplyr::case_when(
             question_id != input$slctquest ~ comments,
@@ -469,12 +474,13 @@ raText <- function() {
           evaluation = dplyr::case_when(
             question_id != input$slctquest ~ evaluation,
             source_id != tables$sources[tables$sourceincr] ~ evaluation,
-            TRUE ~ input$evaluation
+            TRUE ~ as.double(input$evaluation)
           )
         )
       tables$answers <- new_answers
       
       tables$lastgraded <- tables$sourceincr
+      
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,
@@ -539,6 +545,11 @@ raText <- function() {
           unlist() %>%
           as.numeric()
         
+        points <- tables$solutions %>%
+          dplyr::filter(question_id == input$slctquest) %>%
+          dplyr::select(points) %>%
+          as.numeric()
+        
         ui <- list()
         ui[[1]] <- renderText(answer)
         ui[[2]] <- tags$hr()
@@ -554,7 +565,7 @@ raText <- function() {
           "evaluation",
           "Evaluation:",
           min = 0,
-          max = 10,
+          max = points,
           step = 0.25,
           value = evaluation
         )
@@ -569,6 +580,7 @@ raText <- function() {
       criteria <- suppressWarnings(
         rhandsontable::hot_to_r(input$criteria)
       ) %>%
+        dplyr::arrange(criterion_order) %>%
         dplyr::select(criterion_id, criterion_label, criterion_scale) %>%
         dplyr::mutate(criterion_scale = as.character(criterion_scale))
       
@@ -579,9 +591,11 @@ raText <- function() {
         ) %>%
         dplyr::select(data) %>%
         tidyr::unnest(data) %>%
-        dplyr::select(criterion_id, grade) %>%
-        dplyr::right_join(
-          criteria,
+        dplyr::select(criterion_id, grade)
+      
+      prefilled <- criteria %>%
+        dplyr::left_join(
+          prefilled,
           by ="criterion_id"
         ) %>%
         tidyr::replace_na(list(grade = 0))
