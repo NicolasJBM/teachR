@@ -126,9 +126,9 @@ raText <- function() {
         miniContentPanel(
           uiOutput("slctquest"),
           fillRow(
-            flex = c(2, 3),
+            flex = c(2, 4),
             fillCol(
-              flex = c(1, 4),
+              flex = c(1, 9),
               actionButton(
                 "updatesolution",
                 "Update solution",
@@ -137,7 +137,7 @@ raText <- function() {
               uiOutput("solution")
             ),
             fillCol(
-              flex = c(1, 4),
+              flex = c(1, 9),
               actionButton(
                 "updatecriteria",
                 "Update criteria",
@@ -150,13 +150,13 @@ raText <- function() {
       ),
 
       miniTabPanel(
-        "Grade",
-        icon = icon("check"),
+        "Assess",
+        icon = icon("balance-scale"),
         miniContentPanel(
           fillCol(
-            flex = c(1,9),
+            flex = c(1, 9),
             fillRow(
-              flex = c(1, 1, 1, 1, 1, 1, 1, 1),
+              flex = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
               textOutput("slctsource"),
               actionButton(
                 "firstsrc",
@@ -192,16 +192,32 @@ raText <- function() {
                 "lastsrc",
                 "Last",
                 style = "width:100px;"
-              )
+              ),
+              actionButton(
+                "gotosrc",
+                "Go to",
+                style = "width:100px;"
+              ),
+              uiOutput("slctsrc")
             ),
             fillRow(
-              flex = c(5,1,4),
-              uiOutput("answer"),
+              flex = c(7, 1, 4),
+              fillCol(
+                flex = c(1, 9),
+                uiOutput("slctcriterion"),
+                uiOutput("answer")
+              ),
               tags$br(),
               uiOutput("grading")
             )
           )
         )
+      ),
+
+      miniTabPanel(
+        "Check",
+        icon = icon("ruler"),
+        miniContentPanel()
       ),
 
       miniTabPanel(
@@ -226,19 +242,23 @@ raText <- function() {
     criterion_label <- NULL
     data <- NULL
     grade <- NULL
+    criterion_keywords <- NULL
+    criterion_order <- NULL
+    
 
     ############################################################################
     # Prepare reactive values
 
     tables <- reactiveValues()
-    
+
     observeEvent(input$import, {
       if (input$creres == "Create") {
 
         # Download or create answers
         if (!is.null(input$answers)) {
           tables$answers <- readxl::read_excel(
-            input$answers$datapath[[1]]) %>%
+            input$answers$datapath[[1]]
+          ) %>%
             dplyr::mutate(
               comments = as.character(NA),
               evaluation = as.double(0.00)
@@ -265,7 +285,8 @@ raText <- function() {
         # Download or create criteria
         if (!is.null(input$criteria)) {
           tables$criteria <- readxl::read_excel(
-            input$criteria$datapath[[1]])
+            input$criteria$datapath[[1]]
+          )
         } else {
           tables$criteria <- data.frame(
             question_id = unique(tables$answers$question_id),
@@ -274,14 +295,16 @@ raText <- function() {
             criterion_language = as.character(NA),
             criterion_order = as.numeric(NA),
             criterion_label = as.character(NA),
-            criterion_scale = as.character(NA)
+            criterion_scale = as.character(NA),
+            criterion_keywords = as.character(NA)
           )
         }
-        
+
         # Download or create solutions
         if (!is.null(input$solutions)) {
           tables$solutions <- readxl::read_excel(
-            input$solutions$datapath[[1]])
+            input$solutions$datapath[[1]]
+          )
         } else {
           tables$solutions <- data.frame(
             question_id = tables$questions,
@@ -289,20 +312,19 @@ raText <- function() {
             points = as.double(10)
           )
         }
-        
+
         grading <- tables$criteria %>%
           dplyr::select(question_id, criterion_id) %>%
           dplyr::mutate(grade = 0) %>%
           group_by(question_id) %>%
           tidyr::nest()
-        
+
         tables$grades <- tibble::tibble(
           source_id = tables$sources,
           question_id = list(tables$questions)
         ) %>%
           tidyr::unnest(question_id) %>%
           dplyr::left_join(grading, by = "question_id")
-        
       } else {
         if (!is.null(input$backup)) {
           load(input$backup$datapath)
@@ -314,7 +336,7 @@ raText <- function() {
           tables$lastgraded <- project$lastgraded
           tables$solutions <- project$solutions
           tables$grades <- project$grades
-        } 
+        }
       }
     })
 
@@ -347,11 +369,11 @@ raText <- function() {
         "solution",
         label = "Solution",
         value = textsol,
-        height = "500px"
+        height = "600px"
       ) %>%
-        shiny::tagAppendAttributes(style = 'width: 90%;')
+        shiny::tagAppendAttributes(style = "width: 90%;")
     })
-    
+
     observeEvent(input$updatesolution, {
       replacement <- input$solution
       new_solution <- tables$solutions %>%
@@ -371,11 +393,11 @@ raText <- function() {
           dplyr::mutate(
             criterion_scale = factor(
               criterion_scale,
-              levels = c("presence","understanding","intensity")
+              levels = c("presence", "understanding", "intensity")
             )
           ) %>%
           rhandsontable::rhandsontable(
-            height = 500,
+            height = 600,
             width = "100%",
             rowHeaders = NULL,
             stretchH = "all"
@@ -386,7 +408,7 @@ raText <- function() {
           )
       }
     )
-    
+
     observeEvent(input$updatecriteria, {
       keep_criteria <- filter(
         tables$criteria,
@@ -409,35 +431,33 @@ raText <- function() {
     observeEvent(input$prevsrc, {
       tables$sourceincr <- max(1, tables$sourceincr - 1)
     })
-    
-    observeEvent(input$savesrc, {
 
+    observeEvent(input$savesrc, {
       criteria <- tables$criteria %>%
         dplyr::filter(question_id == input$slctquest)
-      
+
       keep_quest <- tables$grades %>%
         dplyr::filter(question_id != input$slctquest)
-      
+
       keep_from_source <- tables$grades %>%
         dplyr::filter(
           question_id == input$slctquest,
           source_id != tables$sources[tables$sourceincr]
         )
-      
+
       crit <- c()
       grad <- c()
-      for (i in 1:nrow(criteria)) {
-        
+      for (i in seq_len(nrow(criteria))) {
         inid <- as.character(criteria$criterion_id[i])
         crit <- c(crit, inid)
-        
-        if (criteria$criterion_scale[i] == "understanding"){
+
+        if (criteria$criterion_scale[i] == "understanding") {
           txt <- input[[inid]]
           num <- as.numeric(dplyr::case_when(
             txt == "Right" ~ 2,
             txt == "Imprecise" ~ 1,
             txt == "Missing" ~ 0,
-            TRUE ~ -1 
+            TRUE ~ -1
           ))
           grad <- c(grad, num)
         } else {
@@ -445,26 +465,26 @@ raText <- function() {
           grad <- c(grad, num)
         }
       }
-      
+
       add <- tibble::tibble(
         criterion_id = crit,
         grade = grad
       )
-      
+
       change_from_source <- tibble::tibble(
         question_id = input$slctquest,
         source_id = tables$sources[tables$sourceincr],
         data = list(add)
       )
-      
+
       new_grades <- keep_quest %>%
         dplyr::bind_rows(keep_from_source) %>%
         dplyr::bind_rows(change_from_source)
-      
+
       tables$grades <- new_grades
-      
+
       new_answers <- tables$answers %>%
-        
+
         dplyr::mutate(
           comments = dplyr::case_when(
             question_id != input$slctquest ~ comments,
@@ -478,9 +498,9 @@ raText <- function() {
           )
         )
       tables$answers <- new_answers
-      
+
       tables$lastgraded <- tables$sourceincr
-      
+
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,
@@ -493,7 +513,7 @@ raText <- function() {
       )
       save(project, file = "project.RData")
     })
-    
+
     observeEvent(input$nextsrc, {
       tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
     })
@@ -501,9 +521,23 @@ raText <- function() {
     observeEvent(input$lastgraded, {
       tables$sourceincr <- tables$lastgraded
     })
-    
+
     observeEvent(input$lastsrc, {
       tables$sourceincr <- length(tables$sources)
+    })
+
+    output$slctsrc <- renderUI({
+      numericInput(
+        "goto",
+        "Source",
+        min = 1,
+        max = length(tables$sources),
+        value = tables$sourceincr
+      )
+    })
+
+    observeEvent(input$gotosrc, {
+      tables$sourceincr <- input$goto
     })
 
     output$slctsource <- renderText(
@@ -515,75 +549,142 @@ raText <- function() {
         "."
       )
     )
-    
-    output$answer <- renderUI({
-      
+
+
+    output$slctcriterion <- renderUI({
+      criteria <- tables$criteria %>%
+        dplyr::filter(
+          question_id == input$slctquest,
+          !is.null(criterion_keywords),
+          !is.na(criterion_keywords),
+          criterion_keywords != ""
+        ) %>%
+        dplyr::select(criterion_label) %>%
+        unlist() %>%
+        as.character()
+
+      selectInput(
+        "slctcrit",
+        "Select keywords to highlight:",
+        choices = c("", criteria),
+        selected = "",
+        width = "100%"
+      )
+    })
+
+    output$viewanswer <- renderUI({
       if (!is.null(tables$answers) &
-          !is.null(tables$sourceincr) &
-          !is.null(input$slctquest)) {
-        
+        !is.null(tables$sourceincr) &
+        !is.null(input$slctquest) &
+        !is.null(input$slctcrit)) {
+        answer <- tables$answers %>%
+          dplyr::filter(
+            source_id == tables$sources[tables$sourceincr],
+            question_id == input$slctquest
+          ) %>%
+          dplyr::select(answer) %>%
+          unlist() %>%
+          as.character()
+
+
+        if (input$slctcrit != "") {
+          pattern <- tables$criteria %>%
+            dplyr::filter(
+              question_id == input$slctquest,
+              criterion_label == input$slctcrit
+            ) %>%
+            dplyr::select(criterion_keywords) %>%
+            unlist() %>%
+            as.character() %>%
+            stringr::str_replace_all(", ", "|")
+
+          pattern <- paste0(
+            "(?:^|[:punct:]|[:space:])",
+            pattern,
+            "(?:[:punct:]|[:space:]|$)"
+          )
+
+          answer <- stringr::str_view_all(answer, pattern, match = TRUE)
+          answer <- gsub(
+            "<span class='match'>",
+            '<font color="red"><b>',
+            answer$x$html
+          )
+          answer <- gsub("</span>", "</b></font>", answer)
+        }
+      } else {
+        answer <- ""
+      }
+      HTML(answer)
+    })
+
+
+    output$answer <- renderUI({
+      if (!is.null(tables$answers) &
+        !is.null(tables$sourceincr) &
+        !is.null(input$slctquest)) {
         selection <- tables$answers %>%
           dplyr::filter(
             source_id == tables$sources[tables$sourceincr],
             question_id == input$slctquest
           )
-        
+
         answer <- selection %>%
           dplyr::select(answer) %>%
           unlist() %>%
           as.character()
-        
+
         wordcount <- lexR::count_words(answer)
-        
+
         comments <- selection %>%
           dplyr::select(comments) %>%
           unlist() %>%
           as.character()
-        
+
         evaluation <- selection %>%
           dplyr::select(evaluation) %>%
           unlist() %>%
           as.numeric()
-        
+
         points <- tables$solutions %>%
           dplyr::filter(question_id == input$slctquest) %>%
           dplyr::select(points) %>%
           as.numeric()
-        
+
         ui <- list()
-        ui[[1]] <- renderText(answer)
+        ui[[1]] <- uiOutput("viewanswer")
         ui[[2]] <- tags$hr()
         ui[[3]] <- renderText(paste0("Word count: ", wordcount))
         ui[[4]] <- textAreaInput(
           "comments",
-          'Comments:',
+          "Comments:",
           value = comments,
           height = "200px"
         ) %>%
-          shiny::tagAppendAttributes(style = 'width: 90%;')
+          shiny::tagAppendAttributes(style = "width: 100%;")
         ui[[5]] <- sliderInput(
           "evaluation",
           "Evaluation:",
           min = 0,
           max = points,
           step = 0.25,
-          value = evaluation
+          value = evaluation,
+          width = "100%"
         )
         ui
       }
     })
-    
+
     output$grading <- renderUI({
-      
       input$reload
-      
+
       criteria <- suppressWarnings(
         rhandsontable::hot_to_r(input$criteria)
       ) %>%
         dplyr::arrange(criterion_order) %>%
         dplyr::select(criterion_id, criterion_label, criterion_scale) %>%
         dplyr::mutate(criterion_scale = as.character(criterion_scale))
-      
+
       prefilled <- tables$grades %>%
         dplyr::filter(
           source_id == tables$sources[tables$sourceincr],
@@ -592,40 +693,37 @@ raText <- function() {
         dplyr::select(data) %>%
         tidyr::unnest(data) %>%
         dplyr::select(criterion_id, grade)
-      
+
       prefilled <- criteria %>%
         dplyr::left_join(
           prefilled,
-          by ="criterion_id"
+          by = "criterion_id"
         ) %>%
         tidyr::replace_na(list(grade = 0))
-      
+
       ui <- list()
-      for (i in 1:nrow(prefilled)){
-        
-        if (prefilled$criterion_scale[i] == "presence"){
+      for (i in seq_len(nrow(prefilled))) {
+        if (prefilled$criterion_scale[i] == "presence") {
           ui[[i]] <- checkboxInput(
             prefilled$criterion_id[i],
             prefilled$criterion_label[i],
             value = prefilled$grade[i]
           )
-        } else if(prefilled$criterion_scale[i] == "understanding"){
-          
+        } else if (prefilled$criterion_scale[i] == "understanding") {
           selected <- dplyr::case_when(
             prefilled$grade[i] == 2 ~ "Right",
             prefilled$grade[i] == 1 ~ "Imprecise",
             prefilled$grade[i] == 0 ~ "Missing",
             TRUE ~ "Wrong"
           )
-          
-          ui[[i]] <- radioButtons (
+
+          ui[[i]] <- radioButtons(
             prefilled$criterion_id[i],
             prefilled$criterion_label[i],
-            choices = c("Wrong","Missing","Imprecise","Right"),
+            choices = c("Wrong", "Missing", "Imprecise", "Right"),
             selected = selected,
             inline = TRUE
           )
-          
         } else {
           ui[[i]] <- sliderInput(
             prefilled$criterion_id[i],
@@ -637,20 +735,19 @@ raText <- function() {
           )
         }
       }
-      
+
       ui
     })
-    
+
     ############################################################################
     # Export
-    
-    
+
+
 
     ############################################################################
     # On exit
-    
+
     observeEvent(input$done, {
-      
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,
@@ -662,7 +759,7 @@ raText <- function() {
         grades = tables$grades
       )
       save(project, file = "project.RData")
-      
+
       stopApp()
     })
   }
