@@ -215,11 +215,29 @@ raText <- function() {
           )
         )
       ),
-
+      
+      miniTabPanel(
+        "Best-of",
+        icon = icon("grin-squint-tears"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1,11),
+            actionButton(
+              "updatebestof",
+              "Update",
+              style = "width:100%;"
+            ),
+            rHandsontableOutput("bestof")
+          )
+        )
+      ),
+      
       miniTabPanel(
         "Check",
         icon = icon("ruler"),
-        miniContentPanel()
+        miniContentPanel(
+          
+        )
       ),
 
       miniTabPanel(
@@ -332,6 +350,11 @@ raText <- function() {
         ) %>%
           tidyr::unnest(question_id) %>%
           dplyr::left_join(grading, by = "question_id")
+        
+        tables$bestof <- tibble::tibble(
+          source_id = as.numeric(NA),
+          quote = as.character(NA))
+        
       } else {
         if (!is.null(input$backup)) {
           load(input$backup$datapath)
@@ -343,6 +366,7 @@ raText <- function() {
           tables$lastgraded <- project$lastgraded
           tables$solutions <- project$solutions
           tables$grades <- project$grades
+          tables$bestof <- project$bestof
         }
       }
     })
@@ -526,7 +550,8 @@ raText <- function() {
         sourceincr = tables$sourceincr,
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
-        grades = tables$grades
+        grades = tables$grades,
+        bestof = tables$bestof
       )
       save(project, file = "project.RData")
     })
@@ -765,7 +790,27 @@ raText <- function() {
     })
 
 
-
+    ############################################################################
+    # Best of
+    
+    output$bestof <- rhandsontable::renderRHandsontable({
+      tables$bestof %>%
+        rhandsontable::rhandsontable(
+          height = 600,
+          width = "100%",
+          rowHeaders = NULL,
+          stretchH = "all"
+        ) %>%
+        rhandsontable::hot_context_menu(
+          allowRowEdit = TRUE,
+          allowColEdit = FALSE
+        )
+    })
+    
+    observeEvent(input$updatebestof, {
+      tables$bestof <- rhandsontable::hot_to_r(input$bestof)
+    })
+    
     ############################################################################
     # Checks
 
@@ -808,7 +853,8 @@ raText <- function() {
         sourceincr = tables$sourceincr,
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
-        grades = tables$grades
+        grades = tables$grades,
+        bestof = tables$bestof
       )
       save(project, file = "project.RData")
 
