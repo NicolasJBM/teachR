@@ -48,9 +48,11 @@
 #' @export
 
 
+
 raText <- function() {
   ui <- miniPage(
     theme = shinythemes::shinytheme("flatly"),
+
     tags$head(tags$style(
       HTML(".shiny-notification {
               position:fixed;top: 30%;left: 0%;right: 0%;
@@ -223,13 +225,16 @@ raText <- function() {
       miniTabPanel(
         "Download",
         icon = icon("download"),
-        miniContentPanel()
+        miniContentPanel(
+          plotOutput("distribution")
+        )
       )
     )
   )
 
 
   server <- function(input, output, session) {
+
 
     # Bind variables
     answer <- NULL
@@ -244,12 +249,14 @@ raText <- function() {
     grade <- NULL
     criterion_keywords <- NULL
     criterion_order <- NULL
-    
+
+
 
     ############################################################################
     # Prepare reactive values
 
     tables <- reactiveValues()
+
 
     observeEvent(input$import, {
       if (input$creres == "Create") {
@@ -341,6 +348,7 @@ raText <- function() {
     })
 
 
+
     ############################################################################
     # Edit solutions and criteria
 
@@ -353,6 +361,7 @@ raText <- function() {
         width = "100%"
       )
     })
+
 
     output$solution <- renderUI({
       if (!is.null(tables$solutions) & !is.null(input$slctquest)) {
@@ -374,6 +383,7 @@ raText <- function() {
         shiny::tagAppendAttributes(style = "width: 90%;")
     })
 
+
     observeEvent(input$updatesolution, {
       replacement <- input$solution
       new_solution <- tables$solutions %>%
@@ -383,6 +393,7 @@ raText <- function() {
         ))
       tables$solutions <- new_solution
     })
+
 
     output$criteria <- rhandsontable::renderRHandsontable(
       if (!is.null(tables$criteria) & !is.null(input$slctquest)) {
@@ -409,6 +420,7 @@ raText <- function() {
       }
     )
 
+
     observeEvent(input$updatecriteria, {
       keep_criteria <- filter(
         tables$criteria,
@@ -422,15 +434,20 @@ raText <- function() {
       tables$criteria <- new_criteria
     })
 
+
+
     ############################################################################
     # Grade
+
     observeEvent(input$firstsrc, {
       tables$sourceincr <- 1
     })
 
+
     observeEvent(input$prevsrc, {
       tables$sourceincr <- max(1, tables$sourceincr - 1)
     })
+
 
     observeEvent(input$savesrc, {
       criteria <- tables$criteria %>%
@@ -514,17 +531,21 @@ raText <- function() {
       save(project, file = "project.RData")
     })
 
+
     observeEvent(input$nextsrc, {
       tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
     })
+
 
     observeEvent(input$lastgraded, {
       tables$sourceincr <- tables$lastgraded
     })
 
+
     observeEvent(input$lastsrc, {
       tables$sourceincr <- length(tables$sources)
     })
+
 
     output$slctsrc <- renderUI({
       numericInput(
@@ -536,9 +557,11 @@ raText <- function() {
       )
     })
 
+
     observeEvent(input$gotosrc, {
       tables$sourceincr <- input$goto
     })
+
 
     output$slctsource <- renderText(
       paste0(
@@ -571,6 +594,7 @@ raText <- function() {
         width = "100%"
       )
     })
+
 
     output$viewanswer <- renderUI({
       if (!is.null(tables$answers) &
@@ -675,6 +699,7 @@ raText <- function() {
       }
     })
 
+
     output$grading <- renderUI({
       input$reload
 
@@ -739,10 +764,37 @@ raText <- function() {
       ui
     })
 
+
+
+    ############################################################################
+    # Checks
+
+    # Count of criteria keywords
+    
+    # Criteria prediction
+    
+    # Factor analysis
+    
+    # Evaluation prediction
+
+
     ############################################################################
     # Export
 
+    # Grade distribution
+    output$distribution <- renderPlot({
+      tables$answers %>%
+        na.omit() %>%
+        dplyr::count(evaluation) %>%
+        ggplot2::ggplot(ggplot2::aes(x = evaluation, y = n)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::xlab("Grade") +
+        ggplot2::ylab("Count")
+    })
 
+    
+    # Download
+    
 
     ############################################################################
     # On exit
