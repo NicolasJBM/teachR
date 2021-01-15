@@ -600,32 +600,37 @@ raText <- function() {
 
 
     output$slctcriterion <- renderUI({
-      criteria <- tables$criteria %>%
-        dplyr::filter(
-          question_id == input$slctquest,
-          !is.null(criterion_keywords),
-          !is.na(criterion_keywords),
-          criterion_keywords != ""
-        ) %>%
-        dplyr::select(criterion_label) %>%
-        unlist() %>%
-        as.character()
-
-      selectInput(
-        "slctcrit",
-        "Select keywords to highlight:",
-        choices = c("", criteria),
-        selected = "",
-        width = "100%"
-      )
+      
+      if (tables$answers$format[[1]] == "video") {
+        tags$br()
+      } else {
+        criteria <- tables$criteria %>%
+          dplyr::filter(
+            question_id == input$slctquest,
+            !is.null(criterion_keywords),
+            !is.na(criterion_keywords),
+            criterion_keywords != ""
+          ) %>%
+          dplyr::select(criterion_label) %>%
+          unlist() %>%
+          as.character()
+        
+        selectInput(
+          "slctcrit",
+          "Select keywords to highlight:",
+          choices = c("", criteria),
+          selected = "",
+          width = "100%"
+        )
+      }
     })
 
 
     output$viewanswer <- renderUI({
       if (!is.null(tables$answers) &
         !is.null(tables$sourceincr) &
-        !is.null(input$slctquest) &
-        !is.null(input$slctcrit)) {
+        !is.null(input$slctquest)) {
+        
         answer <- tables$answers %>%
           dplyr::filter(
             source_id == tables$sources[tables$sourceincr],
@@ -634,37 +639,39 @@ raText <- function() {
           dplyr::select(answer) %>%
           unlist() %>%
           as.character()
-
-
-        if (input$slctcrit != "") {
-          pattern <- tables$criteria %>%
-            dplyr::filter(
-              question_id == input$slctquest,
-              criterion_label == input$slctcrit
-            ) %>%
-            dplyr::select(criterion_keywords) %>%
-            unlist() %>%
-            as.character() %>%
-            stringr::str_replace_all(", ", "|")
-
-          pattern <- paste0(
-            "(?:^|[:punct:]|[:space:])",
-            pattern,
-            "(?:[:punct:]|[:space:]|$)"
-          )
-
-          answer <- stringr::str_view_all(answer, pattern, match = TRUE)
-          answer <- gsub(
-            "<span class='match'>",
-            '<font color="red"><b>',
-            answer$x$html
-          )
-          answer <- gsub("</span>", "</b></font>", answer)
+        
+        if (!is.null(input$slctcrit)){
+          if (input$slctcrit != "") {
+            pattern <- tables$criteria %>%
+              dplyr::filter(
+                question_id == input$slctquest,
+                criterion_label == input$slctcrit
+              ) %>%
+              dplyr::select(criterion_keywords) %>%
+              unlist() %>%
+              as.character() %>%
+              stringr::str_replace_all(", ", "|")
+            
+            pattern <- paste0(
+              "(?:^|[:punct:]|[:space:])",
+              pattern,
+              "(?:[:punct:]|[:space:]|$)"
+            )
+            
+            answer <- stringr::str_view_all(answer, pattern, match = TRUE)
+            answer <- gsub(
+              "<span class='match'>",
+              '<font color="red"><b>',
+              answer$x$html
+            )
+            answer <- gsub("</span>", "</b></font>", answer)
+            answer <- gsub("\n", "<br>", answer)
+            HTML(answer)
+          } else HTML("")
+        } else {
+          tags$iframe(src=answer, width=840, height = 472)
         }
-      } else {
-        answer <- ""
-      }
-      HTML(answer)
+      } else HTML("")
     })
 
 
@@ -677,7 +684,7 @@ raText <- function() {
             source_id == tables$sources[tables$sourceincr],
             question_id == input$slctquest
           )
-
+        
         answer <- selection %>%
           dplyr::select(answer) %>%
           unlist() %>%
@@ -816,9 +823,12 @@ raText <- function() {
 
     # Count of criteria keywords
     
-    # Criteria prediction
+    
+    # Criteria prediction base on keywords
+    
     
     # Factor analysis
+    
     
     # Evaluation prediction
 
