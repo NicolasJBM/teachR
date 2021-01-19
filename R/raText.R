@@ -130,12 +130,13 @@ raText <- function() {
           fillRow(
             flex = c(2, 4),
             fillCol(
-              flex = c(1, 9),
+              flex = c(1, 1, 9),
               actionButton(
                 "updatesolution",
                 "Update solution",
                 style = "width:90%; background-color:#009933 !important;"
               ),
+              uiOutput("question"),
               uiOutput("solution")
             ),
             fillCol(
@@ -236,7 +237,19 @@ raText <- function() {
         "Check",
         icon = icon("ruler"),
         miniContentPanel(
-          
+          actionButton("checkquestion", "Check/Update"),
+          fillRow(
+            flex = c(1,1),
+            fillCol(
+              dataTableOutput("checktable")
+            ),
+            fillCol(
+              flex = c(4,1,4),
+              plotOutput("correlations"),
+              uiOutput("select_dim"),
+              plotOutput("scatterplot", brush = "slctpoint")
+            )
+          )
         )
       ),
 
@@ -297,6 +310,7 @@ raText <- function() {
             source_id = as.character(NA),
             source_type = as.character(NA),
             question_id = as.character(NA),
+            format = "text",
             answer = as.character(NA),
             comments = as.character(NA),
             evaluation = as.double(0.00)
@@ -355,6 +369,9 @@ raText <- function() {
           source_id = as.numeric(NA),
           quote = as.character(NA))
         
+        tables$details <- list()
+        tables$scores <- list()
+        
       } else {
         if (!is.null(input$backup)) {
           load(input$backup$datapath)
@@ -367,6 +384,8 @@ raText <- function() {
           tables$solutions <- project$solutions
           tables$grades <- project$grades
           tables$bestof <- project$bestof
+          tables$details <- project$details
+          tables$scores <- project$scores
         }
       }
     })
@@ -386,6 +405,19 @@ raText <- function() {
       )
     })
 
+    output$question <- renderText({
+      if (!is.null(tables$solutions) & !is.null(input$slctquest)) {
+        textquest <- tables$solutions %>%
+          dplyr::filter(
+            question_id == input$slctquest
+          ) %>%
+          dplyr::select(question_label)
+        textquest <- textquest$question_label[1]
+      } else {
+        textquest <- c("")
+      }
+      textquest
+    })
 
     output$solution <- renderUI({
       if (!is.null(tables$solutions) & !is.null(input$slctquest)) {
@@ -402,7 +434,7 @@ raText <- function() {
         "solution",
         label = "Solution",
         value = textsol,
-        height = "600px"
+        height = "500px"
       ) %>%
         shiny::tagAppendAttributes(style = "width: 90%;")
     })
@@ -551,7 +583,9 @@ raText <- function() {
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
         grades = tables$grades,
-        bestof = tables$bestof
+        bestof = tables$bestof,
+        details = tables$details,
+        scores = tables$scores
       )
       save(project, file = "project.RData")
     })
@@ -628,8 +662,8 @@ raText <- function() {
 
     output$viewanswer <- renderUI({
       if (!is.null(tables$answers) &
-        !is.null(tables$sourceincr) &
-        !is.null(input$slctquest)) {
+          !is.null(tables$sourceincr) &
+          !is.null(input$slctquest)) {
         
         answer <- tables$answers %>%
           dplyr::filter(
@@ -667,7 +701,10 @@ raText <- function() {
             answer <- gsub("</span>", "</b></font>", answer)
             answer <- gsub("\n", "<br>", answer)
             HTML(answer)
-          } else HTML("")
+          } else {
+            answer <- gsub("\n", "<br>", answer)
+            HTML(answer)
+          }
         } else {
           tags$iframe(src=answer, width=840, height = 472)
         }
@@ -821,17 +858,213 @@ raText <- function() {
     ############################################################################
     # Checks
 
-    # Count of criteria keywords
+    # Produce metrics on demand for the current question
+    observeEvent(input$checkquestion, {
+      
+      if (!is.null(input$slctquest)){
+        
+        format <- tables$answers %>%
+          dplyr::filter(question_id == input$slctquest)
+        format <- format$format[[1]]
+        
+        criteria <- tables$criteria %>%
+          dplyr::filter(question_id == input$slctquest)
+        
+        grades <- tables$grades %>%
+          tidyr::unnest(data) %>%
+          dplyr::filter(question_id == input$slctquest) %>%
+          dplyr::select(-question_id) %>%
+          dplyr::filter(criterion_id %in% criteria$criterion_id)
+        
+        if (nrow(criteria) > 1 & nrow(grades) > 1){
+          
+          aggreg <- grades %>%
+            dplyr::group_by(source_id) %>%
+            dplyr::summarise(
+              SUM = sum(grade),
+              AVG = mean(grade)
+            )
+          
+          discrete <- grades %>%
+            dplyr::mutate(criterion_id = paste0(criterion_id, "_grade")) %>%
+            tidyr::pivot_wider(names_from = "criterion_id", values_from = "grade") %>%
+            dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
+          
+          binary <- discrete %>%
+            dplyr::mutate_if(is.numeric, function(x) as.numeric(x>0))
+          names(binary) <- stringr::str_replace_all(names(binary), "_grade", "_acceptable")
+          
+          addressed <- discrete %>%
+            dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x)>0))
+          names(addressed) <- stringr::str_replace_all(names(addressed), "_grade", "_addressed")
+          
+          library(psych)
+          pca <- psych::pca(dplyr::select_if(discrete, is.numeric), 1)
+          pca <- tibble::tibble(
+            source_id = discrete$source_id,
+            PCA = as.numeric(pca$scores)
+          )
+          fa <- psych::fa(dplyr::select_if(discrete, is.numeric), 1)
+          fa <- tibble::tibble(
+            source_id = discrete$source_id,
+            FAC = as.numeric(fa$scores)
+          )
+          options(warn=-1)
+          irt <- psych::irt.fa(dplyr::select_if(binary, is.numeric), plot = FALSE)
+          irt <- psych::scoreIrt(irt, dplyr::select_if(binary, is.numeric))
+          irt <- tibble::tibble(
+            source_id = binary$source_id,
+            IRT = irt$theta1
+          )
+          options(warn=0)
+          
+          
+          scores <- tables$answers %>%
+            dplyr::filter(question_id == input$slctquest) %>%
+            dplyr::select(source_id, evaluation) %>%
+            dplyr::left_join(aggreg, by = "source_id") %>%
+            dplyr::left_join(pca, by = "source_id") %>%
+            dplyr::left_join(fa, by = "source_id") %>%
+            dplyr::left_join(irt, by = "source_id")
+          
+          if (format == "text"){
+            keywords <- criteria %>%
+              dplyr::select(criterion_id, criterion_keywords) %>%
+              na.omit() %>%
+              dplyr::mutate(
+                criterion_id = paste0(criterion_id, "_keywords"),
+                criterion_keywords = purrr::map_chr(criterion_keywords, stringr::str_replace_all, ", ", "|")
+              )
+            
+            kwcounts <- tables$answers %>%
+              dplyr::filter(question_id == input$slctquest) %>%
+              dplyr::select(source_id, answer) %>%
+              dplyr::mutate(keywords = list(keywords)) %>%
+              tidyr::unnest(keywords) %>%
+              dplyr::mutate(count = purrr::map2_int(answer, criterion_keywords, stringr::str_count)) %>%
+              dplyr::select(source_id, criterion_id, count) %>%
+              tidyr::pivot_wider(names_from = criterion_id, values_from = count)
+            
+            
+            details <- discrete %>%
+              dplyr::left_join(binary, by = "source_id") %>%
+              dplyr::left_join(addressed, by = "source_id") %>%
+              dplyr::left_join(kwcounts, by = "source_id") %>%
+              tidyr::pivot_longer(cols = !dplyr::matches("source_id")) %>%
+              tidyr::separate(name, into = c("criterion_id", "type"), sep = "_") %>%
+              tidyr::pivot_wider(names_from = "type", values_from = "value", values_fill = NA)
+            
+            
+            add2score <- details %>%
+              dplyr::group_by(source_id) %>%
+              dplyr::summarize(KWD = sum(keywords, na.rm = TRUE))
+            
+            scores <- scores %>%
+              dplyr::left_join(add2score, by = "source_id")
+          } else {
+            scores <- scores %>%
+              dplyr::mutate(KWD = 0)
+          }
+          
+          tables$details[[input$slctquest]] <- details %>%
+            dplyr::mutate(question_id = input$slctquest) %>%
+            dplyr::select(source_id, question_id, dplyr::everything())
+          
+          tables$scores[[input$slctquest]] <- scores %>%
+            dplyr::mutate(question_id = input$slctquest) %>%
+            dplyr::select(source_id, question_id, dplyr::everything())
+          
+        }
+      }
+    })
+    
+    # Display graphs and tables
+    
+    basescatterplot <- reactive({
+      increments <- tibble::tibble(
+        source_id = tables$sources,
+        increment = seq_len(length(tables$sources))
+      )
+      tables$scores[[input$slctquest]] %>%
+        dplyr::select(source_id, x = input$slctx, y = input$slcty) %>%
+        dplyr::left_join(increments, by = "source_id")
+    })
+    
+    output$checktable <- renderDataTable({
+      if (!is.null(input$slctquest)){
+        tables$details[[input$slctquest]] %>%
+          dplyr::left_join(tables$criteria, by = "criterion_id") %>%
+          dplyr::left_join(basescatterplot(), by = "source_id") %>%
+          dplyr::select(source = increment, criterion_label, addressed, keywords) %>%
+          dplyr::arrange(addressed, -keywords)
+      }
+    })
     
     
-    # Criteria prediction base on keywords
-    
-    
-    # Factor analysis
-    
-    
-    # Evaluation prediction
+    output$correlations <- renderPlot({
+      if (!is.null(input$slctquest)){
+        if (!is.null(tables$scores[[input$slctquest]])){
+          psych::pairs.panels(
+            dplyr::select_if(
+              tables$scores[[input$slctquest]],
+              is.numeric
+            )
+          )
+        }
+      }
+    })
 
+    
+    output$select_dim <- renderUI({
+      if (!is.null(input$slctquest)){
+        if (!is.null(tables$scores[[input$slctquest]])){
+          choices <- c("evaluation","SUM","AVG","PCA","FAC","IRT","KWD")
+          ui <- list(
+            fillRow(
+              flex = c(1,1),
+              selectInput(
+                "slctx",
+                "Select x-axis",
+                choices = choices,
+                selected = "SUM"
+              ),
+              selectInput(
+                "slcty",
+                "Select y-axis",
+                choices = choices,
+                selected = "evaluation"
+              )
+            )
+          )
+          ui
+        }
+      }
+    })
+    
+    output$scatterplot <- renderPlot({
+      if (!is.null(input$slctx) & !is.null(input$slcty)){
+        ggplot2::ggplot(basescatterplot(), ggplot2::aes(
+          x = x, y = y, label = increment
+          )) +
+          ggplot2::geom_label() +
+          ggplot2::geom_smooth(method = "lm") +
+          ggplot2::xlab(input$slctx) +
+          ggplot2::ylab(input$slcty)
+      }
+    })
+    
+        observeEvent(input$slctpoint, {
+      selection <- basescatterplot() %>%
+        dplyr::filter(
+          x <= input$slctpoint$xmax,
+          x >= input$slctpoint$xmin,
+          y <= input$slctpoint$ymax,
+          y >= input$slctpoint$ymin
+        )
+      
+      if (nrow(selection) > 0) tables$sourceincr <- selection$increment[[1]]
+    })
+    
 
     ############################################################################
     # Export
@@ -864,7 +1097,9 @@ raText <- function() {
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
         grades = tables$grades,
-        bestof = tables$bestof
+        bestof = tables$bestof,
+        details = tables$details,
+        scores = tables$scores
       )
       save(project, file = "project.RData")
 
