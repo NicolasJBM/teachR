@@ -43,8 +43,11 @@
 #' @importFrom shiny textAreaInput
 #' @importFrom shinythemes shinytheme
 #' @importFrom readODS read_ods
+#' @importFrom dplyr count
 #' @importFrom readxl read_excel
 #' @importFrom lexR count_words
+#' @importFrom psych pca
+#' @importFrom psych fa
 #' @export
 
 
@@ -216,13 +219,13 @@ raText <- function() {
           )
         )
       ),
-      
+
       miniTabPanel(
         "Best-of",
         icon = icon("grin-squint-tears"),
         miniContentPanel(
           fillCol(
-            flex = c(1,11),
+            flex = c(1, 11),
             actionButton(
               "updatebestof",
               "Update",
@@ -232,19 +235,19 @@ raText <- function() {
           )
         )
       ),
-      
+
       miniTabPanel(
         "Check",
         icon = icon("ruler"),
         miniContentPanel(
           actionButton("checkquestion", "Check/Update"),
           fillRow(
-            flex = c(1,1),
+            flex = c(1, 1),
             fillCol(
               dataTableOutput("checktable")
             ),
             fillCol(
-              flex = c(4,1,4),
+              flex = c(4, 1, 4),
               plotOutput("correlations"),
               uiOutput("select_dim"),
               plotOutput("scatterplot", brush = "slctpoint")
@@ -280,7 +283,11 @@ raText <- function() {
     grade <- NULL
     criterion_keywords <- NULL
     criterion_order <- NULL
-
+    name <- NULL
+    increment <- NULL
+    x <- NULL
+    y <- NULL
+    question_label <- NULL
 
 
     ############################################################################
@@ -364,14 +371,14 @@ raText <- function() {
         ) %>%
           tidyr::unnest(question_id) %>%
           dplyr::left_join(grading, by = "question_id")
-        
+
         tables$bestof <- tibble::tibble(
           source_id = as.numeric(NA),
-          quote = as.character(NA))
-        
+          quote = as.character(NA)
+        )
+
         tables$details <- list()
         tables$scores <- list()
-        
       } else {
         if (!is.null(input$backup)) {
           load(input$backup$datapath)
@@ -460,7 +467,7 @@ raText <- function() {
           dplyr::mutate(
             criterion_scale = factor(
               criterion_scale,
-              levels = c("presence", "understanding", "intensity")
+              levels = c("logical", "qualitative", "percentage")
             )
           ) %>%
           rhandsontable::rhandsontable(
@@ -487,7 +494,17 @@ raText <- function() {
         dplyr::mutate(criterion_scale = as.character(criterion_scale))
       new_criteria <- dplyr::bind_rows(keep_criteria, replacement) %>%
         dplyr::arrange(question_id, criterion_order)
+
+      keep_in_grades <- tables$grades
+      for (i in seq_len(nrow(keep_in_grades))) {
+        keep_in_grades$data[[i]] <- dplyr::filter(
+          keep_in_grades$data[[i]],
+          criterion_id %in% new_criteria$criterion_id
+        )
+      }
+
       tables$criteria <- new_criteria
+      tables$grades <- keep_in_grades
     })
 
 
@@ -524,13 +541,13 @@ raText <- function() {
         inid <- as.character(criteria$criterion_id[i])
         crit <- c(crit, inid)
 
-        if (criteria$criterion_scale[i] == "understanding") {
+        if (criteria$criterion_scale[i] == "qualitative") {
           txt <- input[[inid]]
           num <- as.numeric(dplyr::case_when(
-            txt == "Right" ~ 2,
-            txt == "Imprecise" ~ 1,
+            txt == "Right" ~ 1,
+            txt == "Imprecise" ~ 0.5,
             txt == "Missing" ~ 0,
-            TRUE ~ -1
+            TRUE ~ -0.5
           ))
           grad <- c(grad, num)
         } else {
@@ -634,37 +651,37 @@ raText <- function() {
 
 
     output$slctcriterion <- renderUI({
-      
       if (tables$answers$format[[1]] == "video") {
         tags$br()
       } else {
-        criteria <- tables$criteria %>%
-          dplyr::filter(
-            question_id == input$slctquest,
-            !is.null(criterion_keywords),
-            !is.na(criterion_keywords),
-            criterion_keywords != ""
-          ) %>%
-          dplyr::select(criterion_label) %>%
-          unlist() %>%
-          as.character()
-        
-        selectInput(
-          "slctcrit",
-          "Select keywords to highlight:",
-          choices = c("", criteria),
-          selected = "",
-          width = "100%"
-        )
+        if (!is.null(input$slctquest)){
+          criteria <- tables$criteria %>%
+            dplyr::filter(
+              question_id == input$slctquest,
+              !is.null(criterion_keywords),
+              !is.na(criterion_keywords),
+              criterion_keywords != ""
+            ) %>%
+            dplyr::select(criterion_label) %>%
+            unlist() %>%
+            as.character()
+          
+          selectInput(
+            "slctcrit",
+            "Select keywords to highlight:",
+            choices = c("", criteria),
+            selected = "",
+            width = "100%"
+          )
+        } else tags$br()
       }
     })
 
 
     output$viewanswer <- renderUI({
       if (!is.null(tables$answers) &
-          !is.null(tables$sourceincr) &
-          !is.null(input$slctquest)) {
-        
+        !is.null(tables$sourceincr) &
+        !is.null(input$slctquest)) {
         answer <- tables$answers %>%
           dplyr::filter(
             source_id == tables$sources[tables$sourceincr],
@@ -673,8 +690,8 @@ raText <- function() {
           dplyr::select(answer) %>%
           unlist() %>%
           as.character()
-        
-        if (!is.null(input$slctcrit)){
+
+        if (!is.null(input$slctcrit)) {
           if (input$slctcrit != "") {
             pattern <- tables$criteria %>%
               dplyr::filter(
@@ -685,13 +702,13 @@ raText <- function() {
               unlist() %>%
               as.character() %>%
               stringr::str_replace_all(", ", "|")
-            
+
             pattern <- paste0(
               "(?:^|[:punct:]|[:space:])",
               pattern,
               "(?:[:punct:]|[:space:]|$)"
             )
-            
+
             answer <- stringr::str_view_all(answer, pattern, match = TRUE)
             answer <- gsub(
               "<span class='match'>",
@@ -706,9 +723,11 @@ raText <- function() {
             HTML(answer)
           }
         } else {
-          tags$iframe(src=answer, width=840, height = 472)
+          tags$iframe(src = answer, width = 840, height = 472)
         }
-      } else HTML("")
+      } else {
+        HTML("")
+      }
     })
 
 
@@ -721,7 +740,7 @@ raText <- function() {
             source_id == tables$sources[tables$sourceincr],
             question_id == input$slctquest
           )
-        
+
         answer <- selection %>%
           dplyr::select(answer) %>%
           unlist() %>%
@@ -772,71 +791,73 @@ raText <- function() {
     output$grading <- renderUI({
       input$reload
 
-      criteria <- suppressWarnings(
-        rhandsontable::hot_to_r(input$criteria)
-      ) %>%
-        dplyr::arrange(criterion_order) %>%
-        dplyr::select(criterion_id, criterion_label, criterion_scale) %>%
-        dplyr::mutate(criterion_scale = as.character(criterion_scale))
-
-      prefilled <- tables$grades %>%
-        dplyr::filter(
-          source_id == tables$sources[tables$sourceincr],
-          question_id == input$slctquest
+      if (!is.null(input$slctquest)) {
+        criteria <- suppressWarnings(
+          rhandsontable::hot_to_r(input$criteria)
         ) %>%
-        dplyr::select(data) %>%
-        tidyr::unnest(data) %>%
-        dplyr::select(criterion_id, grade)
+          dplyr::arrange(criterion_order) %>%
+          dplyr::select(criterion_id, criterion_label, criterion_scale) %>%
+          dplyr::mutate(criterion_scale = as.character(criterion_scale))
 
-      prefilled <- criteria %>%
-        dplyr::left_join(
-          prefilled,
-          by = "criterion_id"
-        ) %>%
-        tidyr::replace_na(list(grade = 0))
+        prefilled <- tables$grades %>%
+          dplyr::filter(
+            source_id == tables$sources[tables$sourceincr],
+            question_id == input$slctquest
+          ) %>%
+          dplyr::select(data) %>%
+          tidyr::unnest(data) %>%
+          dplyr::select(criterion_id, grade)
 
-      ui <- list()
-      for (i in seq_len(nrow(prefilled))) {
-        if (prefilled$criterion_scale[i] == "presence") {
-          ui[[i]] <- checkboxInput(
-            prefilled$criterion_id[i],
-            prefilled$criterion_label[i],
-            value = prefilled$grade[i]
-          )
-        } else if (prefilled$criterion_scale[i] == "understanding") {
-          selected <- dplyr::case_when(
-            prefilled$grade[i] == 2 ~ "Right",
-            prefilled$grade[i] == 1 ~ "Imprecise",
-            prefilled$grade[i] == 0 ~ "Missing",
-            TRUE ~ "Wrong"
-          )
+        prefilled <- criteria %>%
+          dplyr::left_join(
+            prefilled,
+            by = "criterion_id"
+          ) %>%
+          tidyr::replace_na(list(grade = 0))
 
-          ui[[i]] <- radioButtons(
-            prefilled$criterion_id[i],
-            prefilled$criterion_label[i],
-            choices = c("Wrong", "Missing", "Imprecise", "Right"),
-            selected = selected,
-            inline = TRUE
-          )
-        } else {
-          ui[[i]] <- sliderInput(
-            prefilled$criterion_id[i],
-            prefilled$criterion_label[i],
-            min = -2,
-            max = 2,
-            value = prefilled$grade[i],
-            step = 1
-          )
+        ui <- list()
+        for (i in seq_len(nrow(prefilled))) {
+          if (prefilled$criterion_scale[i] == "logical") {
+            ui[[i]] <- checkboxInput(
+              prefilled$criterion_id[i],
+              prefilled$criterion_label[i],
+              value = prefilled$grade[i]
+            )
+          } else if (prefilled$criterion_scale[i] == "qualitative") {
+            selected <- dplyr::case_when(
+              prefilled$grade[i] == 1 ~ "Right",
+              prefilled$grade[i] == 0.5 ~ "Imprecise",
+              prefilled$grade[i] == 0 ~ "Missing",
+              TRUE ~ "Wrong"
+            )
+
+            ui[[i]] <- radioButtons(
+              prefilled$criterion_id[i],
+              prefilled$criterion_label[i],
+              choices = c("Wrong", "Missing", "Imprecise", "Right"),
+              selected = selected,
+              inline = TRUE
+            )
+          } else {
+            ui[[i]] <- sliderInput(
+              prefilled$criterion_id[i],
+              prefilled$criterion_label[i],
+              min = 0,
+              max = 1,
+              value = prefilled$grade[i],
+              step = 0.25
+            )
+          }
         }
-      }
 
-      ui
+        ui
+      }
     })
 
 
     ############################################################################
     # Best of
-    
+
     output$bestof <- rhandsontable::renderRHandsontable({
       tables$bestof %>%
         rhandsontable::rhandsontable(
@@ -850,160 +871,198 @@ raText <- function() {
           allowColEdit = FALSE
         )
     })
-    
+
     observeEvent(input$updatebestof, {
       tables$bestof <- rhandsontable::hot_to_r(input$bestof)
     })
-    
+
     ############################################################################
     # Checks
 
     # Produce metrics on demand for the current question
     observeEvent(input$checkquestion, {
-      
-      if (!is.null(input$slctquest)){
-        
+      if (!is.null(input$slctquest)) {
         format <- tables$answers %>%
           dplyr::filter(question_id == input$slctquest)
         format <- format$format[[1]]
-        
+
         criteria <- tables$criteria %>%
           dplyr::filter(question_id == input$slctquest)
-        
+
         grades <- tables$grades %>%
           tidyr::unnest(data) %>%
           dplyr::filter(question_id == input$slctquest) %>%
           dplyr::select(-question_id) %>%
           dplyr::filter(criterion_id %in% criteria$criterion_id)
-        
-        if (nrow(criteria) > 1 & nrow(grades) > 1){
-          
+
+        if (nrow(criteria) > 1 & nrow(grades) > 1) {
           aggreg <- grades %>%
             dplyr::group_by(source_id) %>%
             dplyr::summarise(
               SUM = sum(grade),
               AVG = mean(grade)
             )
-          
+
           discrete <- grades %>%
             dplyr::mutate(criterion_id = paste0(criterion_id, "_grade")) %>%
-            tidyr::pivot_wider(names_from = "criterion_id", values_from = "grade") %>%
+            tidyr::pivot_wider(
+              names_from = "criterion_id", values_from = "grade"
+            ) %>%
             dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
-          
+
           binary <- discrete %>%
-            dplyr::mutate_if(is.numeric, function(x) as.numeric(x>0))
-          names(binary) <- stringr::str_replace_all(names(binary), "_grade", "_acceptable")
-          
+            dplyr::mutate_if(is.numeric, function(x) as.numeric(x > 0))
+          names(binary) <- stringr::str_replace_all(
+            names(binary), "_grade", "_acceptable"
+          )
+
           addressed <- discrete %>%
-            dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x)>0))
-          names(addressed) <- stringr::str_replace_all(names(addressed), "_grade", "_addressed")
-          
-          library(psych)
-          pca <- psych::pca(dplyr::select_if(discrete, is.numeric), 1)
-          pca <- tibble::tibble(
-            source_id = discrete$source_id,
-            PCA = as.numeric(pca$scores)
+            dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x) > 0))
+          names(addressed) <- stringr::str_replace_all(
+            names(addressed), "_grade", "_addressed"
           )
-          fa <- psych::fa(dplyr::select_if(discrete, is.numeric), 1)
-          fa <- tibble::tibble(
-            source_id = discrete$source_id,
-            FAC = as.numeric(fa$scores)
-          )
-          options(warn=-1)
-          irt <- psych::irt.fa(dplyr::select_if(binary, is.numeric), plot = FALSE)
-          irt <- psych::scoreIrt(irt, dplyr::select_if(binary, is.numeric))
-          irt <- tibble::tibble(
-            source_id = binary$source_id,
-            IRT = irt$theta1
-          )
-          options(warn=0)
-          
-          
+
+          options(warn = -1)
+
+          if (nrow(discrete) > length(discrete) + 1) {
+
+            pca <- suppressWarnings(
+              suppressMessages(
+                psych::pca(dplyr::select_if(discrete, is.numeric), 1)
+              )
+            )
+            pca <- tibble::tibble(
+              source_id = discrete$source_id,
+              PCA = as.numeric(pca$scores)
+            )
+
+            fa <- suppressWarnings(
+              suppressMessages(
+                psych::fa(dplyr::select_if(discrete, is.numeric), 1)
+              )
+            )
+            fa <- tibble::tibble(
+              source_id = discrete$source_id,
+              FAC = as.numeric(fa$scores)
+            )
+          } else {
+            pca <- tibble::tibble(
+              source_id = discrete$source_id,
+              PCA = 0
+            )
+
+            fa <- tibble::tibble(
+              source_id = discrete$source_id,
+              FAC = 0
+            )
+          }
+
+          options(warn = 0)
+
           scores <- tables$answers %>%
             dplyr::filter(question_id == input$slctquest) %>%
             dplyr::select(source_id, evaluation) %>%
             dplyr::left_join(aggreg, by = "source_id") %>%
             dplyr::left_join(pca, by = "source_id") %>%
-            dplyr::left_join(fa, by = "source_id") %>%
-            dplyr::left_join(irt, by = "source_id")
-          
-          if (format == "text"){
+            dplyr::left_join(fa, by = "source_id")
+
+          if (format == "text") {
             keywords <- criteria %>%
               dplyr::select(criterion_id, criterion_keywords) %>%
               na.omit() %>%
+              dplyr::filter(nchar(criterion_keywords) > 2) %>%
               dplyr::mutate(
                 criterion_id = paste0(criterion_id, "_keywords"),
-                criterion_keywords = purrr::map_chr(criterion_keywords, stringr::str_replace_all, ", ", "|")
+                criterion_keywords = purrr::map_chr(
+                  criterion_keywords, stringr::str_replace_all, ", ", "|"
+                )
               )
-            
+
             kwcounts <- tables$answers %>%
               dplyr::filter(question_id == input$slctquest) %>%
               dplyr::select(source_id, answer) %>%
               dplyr::mutate(keywords = list(keywords)) %>%
               tidyr::unnest(keywords) %>%
-              dplyr::mutate(count = purrr::map2_int(answer, criterion_keywords, stringr::str_count)) %>%
+              dplyr::mutate(count = purrr::map2_int(
+                answer, criterion_keywords, stringr::str_count
+              )) %>%
               dplyr::select(source_id, criterion_id, count) %>%
               tidyr::pivot_wider(names_from = criterion_id, values_from = count)
-            
-            
+
             details <- discrete %>%
               dplyr::left_join(binary, by = "source_id") %>%
               dplyr::left_join(addressed, by = "source_id") %>%
               dplyr::left_join(kwcounts, by = "source_id") %>%
               tidyr::pivot_longer(cols = !dplyr::matches("source_id")) %>%
-              tidyr::separate(name, into = c("criterion_id", "type"), sep = "_") %>%
-              tidyr::pivot_wider(names_from = "type", values_from = "value", values_fill = NA)
-            
-            
+              tidyr::separate(
+                name,
+                into = c("criterion_id", "type"), sep = "_"
+              ) %>%
+              tidyr::pivot_wider(
+                names_from = "type", values_from = "value", values_fill = NA
+              )
+
             add2score <- details %>%
               dplyr::group_by(source_id) %>%
               dplyr::summarize(KWD = sum(keywords, na.rm = TRUE))
-            
+
             scores <- scores %>%
               dplyr::left_join(add2score, by = "source_id")
           } else {
             scores <- scores %>%
               dplyr::mutate(KWD = 0)
           }
-          
+
           tables$details[[input$slctquest]] <- details %>%
             dplyr::mutate(question_id = input$slctquest) %>%
             dplyr::select(source_id, question_id, dplyr::everything())
-          
+
           tables$scores[[input$slctquest]] <- scores %>%
             dplyr::mutate(question_id = input$slctquest) %>%
             dplyr::select(source_id, question_id, dplyr::everything())
-          
         }
       }
     })
-    
+
     # Display graphs and tables
-    
+
     basescatterplot <- reactive({
-      increments <- tibble::tibble(
-        source_id = tables$sources,
-        increment = seq_len(length(tables$sources))
-      )
-      tables$scores[[input$slctquest]] %>%
-        dplyr::select(source_id, x = input$slctx, y = input$slcty) %>%
-        dplyr::left_join(increments, by = "source_id")
-    })
-    
-    output$checktable <- renderDataTable({
-      if (!is.null(input$slctquest)){
-        tables$details[[input$slctquest]] %>%
-          dplyr::left_join(tables$criteria, by = "criterion_id") %>%
-          dplyr::left_join(basescatterplot(), by = "source_id") %>%
-          dplyr::select(source = increment, criterion_label, addressed, keywords) %>%
-          dplyr::arrange(addressed, -keywords)
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$scores[[input$slctquest]])) {
+          increments <- tibble::tibble(
+            source_id = tables$sources,
+            increment = seq_len(length(tables$sources))
+          )
+          tables$scores[[input$slctquest]] %>%
+            dplyr::select(source_id, x = input$slctx, y = input$slcty) %>%
+            dplyr::left_join(increments, by = "source_id")
+        }
       }
     })
-    
-    
+
+    output$checktable <- renderDataTable({
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$details[[input$slctquest]])) {
+          tables$details[[input$slctquest]] %>%
+            dplyr::left_join(tables$criteria, by = "criterion_id") %>%
+            dplyr::left_join(basescatterplot(), by = "source_id") %>%
+            dplyr::select(
+              source = increment, criterion_label, addressed, keywords
+            ) %>%
+            na.omit() %>%
+            dplyr::filter(
+              (addressed == 0 & keywords > 0) |
+                (addressed > 0 & keywords == 0)
+            ) %>%
+            dplyr::arrange(addressed, -keywords)
+        }
+      }
+    })
+
+
     output$correlations <- renderPlot({
-      if (!is.null(input$slctquest)){
-        if (!is.null(tables$scores[[input$slctquest]])){
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$scores[[input$slctquest]])) {
           psych::pairs.panels(
             dplyr::select_if(
               tables$scores[[input$slctquest]],
@@ -1014,14 +1073,14 @@ raText <- function() {
       }
     })
 
-    
+
     output$select_dim <- renderUI({
-      if (!is.null(input$slctquest)){
-        if (!is.null(tables$scores[[input$slctquest]])){
-          choices <- c("evaluation","SUM","AVG","PCA","FAC","IRT","KWD")
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$scores[[input$slctquest]])) {
+          choices <- c("evaluation", "SUM", "AVG", "PCA", "FAC", "KWD")
           ui <- list(
             fillRow(
-              flex = c(1,1),
+              flex = c(1, 1),
               selectInput(
                 "slctx",
                 "Select x-axis",
@@ -1040,31 +1099,38 @@ raText <- function() {
         }
       }
     })
-    
+
     output$scatterplot <- renderPlot({
-      if (!is.null(input$slctx) & !is.null(input$slcty)){
-        ggplot2::ggplot(basescatterplot(), ggplot2::aes(
-          x = x, y = y, label = increment
+      if (!is.null(input$slctx) &
+        !is.null(input$slcty) &
+        !is.null(basescatterplot())) {
+        basescatterplot() %>%
+          na.omit() %>%
+          ggplot2::ggplot(ggplot2::aes(
+            x = x, y = y, label = increment
           )) +
           ggplot2::geom_label() +
-          ggplot2::geom_smooth(method = "lm") +
+          ggplot2::geom_smooth(method = "lm", formula = y ~ x) +
           ggplot2::xlab(input$slctx) +
           ggplot2::ylab(input$slcty)
       }
     })
-    
-        observeEvent(input$slctpoint, {
-      selection <- basescatterplot() %>%
-        dplyr::filter(
-          x <= input$slctpoint$xmax,
-          x >= input$slctpoint$xmin,
-          y <= input$slctpoint$ymax,
-          y >= input$slctpoint$ymin
-        )
-      
-      if (nrow(selection) > 0) tables$sourceincr <- selection$increment[[1]]
+
+
+    observeEvent(input$slctpoint, {
+      if (!is.null(basescatterplot())) {
+        selection <- basescatterplot() %>%
+          dplyr::filter(
+            x <= input$slctpoint$xmax,
+            x >= input$slctpoint$xmin,
+            y <= input$slctpoint$ymax,
+            y >= input$slctpoint$ymin
+          )
+
+        if (nrow(selection) > 0) tables$sourceincr <- selection$increment[[1]]
+      }
     })
-    
+
 
     ############################################################################
     # Export
@@ -1073,6 +1139,9 @@ raText <- function() {
     output$distribution <- renderPlot({
       tables$answers %>%
         na.omit() %>%
+        dplyr::group_by(source_id) %>%
+        dplyr::summarize(evaluation = sum(evaluation)) %>%
+        dplyr::ungroup() %>%
         dplyr::count(evaluation) %>%
         ggplot2::ggplot(ggplot2::aes(x = evaluation, y = n)) +
         ggplot2::geom_bar(stat = "identity") +
@@ -1080,9 +1149,9 @@ raText <- function() {
         ggplot2::ylab("Count")
     })
 
-    
+
     # Download
-    
+
 
     ############################################################################
     # On exit

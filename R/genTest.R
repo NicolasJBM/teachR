@@ -57,7 +57,6 @@
 #' @importFrom tidyr spread
 #' @importFrom tidyr nest
 #' @importFrom tidyr unnest
-#' @importFrom lubridate today
 #' @importFrom tibble rownames_to_column
 #' @importFrom exams exams2canvas
 #' @importFrom exams exams2openolat
@@ -149,7 +148,7 @@ genTest <- function() {
             dateInput(
               inputId = "date",
               label = "Date:",
-              value = lubridate::today()
+              value = Sys.Date()
             ),
             fileInput(
               "studentlist",
