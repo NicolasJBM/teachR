@@ -669,8 +669,8 @@ raText <- function() {
           selectInput(
             "slctcrit",
             "Select keywords to highlight:",
-            choices = c("", criteria),
-            selected = "",
+            choices = c("None", "All", criteria),
+            selected = "None",
             width = "100%"
           )
         } else tags$br()
@@ -692,7 +692,39 @@ raText <- function() {
           as.character()
 
         if (!is.null(input$slctcrit)) {
-          if (input$slctcrit != "") {
+          
+          if (input$slctcrit == "None"){
+            
+            answer <- answer
+            
+          } else if (input$slctcrit == "All"){
+            
+            pattern <- tables$criteria %>%
+              dplyr::select(criterion_keywords) %>%
+              dplyr::filter(nchar(criterion_keywords) > 1) %>%
+              unlist() %>%
+              as.character() %>%
+              stringr::str_replace_all(", ", "|") %>%
+              paste(collapse = "|")
+            
+            pattern <- paste0(
+              "(?:^|[:punct:]|[:space:])",
+              pattern,
+              "(?:[:punct:]|[:space:]|$)"
+            )
+            answer <- gsub("</span>", "</b></font>", answer)
+            answer <- gsub("\n", "<br>", answer)
+            answer <- stringr::str_view_all(answer, pattern, match = TRUE)
+            answer <- gsub(
+              "<span class='match'>",
+              '<font color="red"><b>',
+              answer$x$html
+            )
+            answer <- gsub("</span>", "</b></font>", answer)
+            answer <- gsub("\n", "<br>", answer)
+            
+          } else {
+            
             pattern <- tables$criteria %>%
               dplyr::filter(
                 question_id == input$slctquest,
@@ -702,13 +734,12 @@ raText <- function() {
               unlist() %>%
               as.character() %>%
               stringr::str_replace_all(", ", "|")
-
+            
             pattern <- paste0(
               "(?:^|[:punct:]|[:space:])",
               pattern,
               "(?:[:punct:]|[:space:]|$)"
             )
-
             answer <- stringr::str_view_all(answer, pattern, match = TRUE)
             answer <- gsub(
               "<span class='match'>",
@@ -717,11 +748,11 @@ raText <- function() {
             )
             answer <- gsub("</span>", "</b></font>", answer)
             answer <- gsub("\n", "<br>", answer)
-            HTML(answer)
-          } else {
-            answer <- gsub("\n", "<br>", answer)
-            HTML(answer)
+            
           }
+          
+          HTML(answer)
+          
         } else {
           tags$iframe(src = answer, width = 840, height = 472)
         }
@@ -910,12 +941,6 @@ raText <- function() {
             ) %>%
             dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
 
-          binary <- discrete %>%
-            dplyr::mutate_if(is.numeric, function(x) as.numeric(x > 0))
-          names(binary) <- stringr::str_replace_all(
-            names(binary), "_grade", "_acceptable"
-          )
-
           addressed <- discrete %>%
             dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x) > 0))
           names(addressed) <- stringr::str_replace_all(
@@ -990,7 +1015,6 @@ raText <- function() {
               tidyr::pivot_wider(names_from = criterion_id, values_from = count)
 
             details <- discrete %>%
-              dplyr::left_join(binary, by = "source_id") %>%
               dplyr::left_join(addressed, by = "source_id") %>%
               dplyr::left_join(kwcounts, by = "source_id") %>%
               tidyr::pivot_longer(cols = !dplyr::matches("source_id")) %>%
