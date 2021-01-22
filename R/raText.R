@@ -1181,6 +1181,19 @@ raText <- function() {
     # On exit
 
     observeEvent(input$done, {
+      
+      write.csv(tables$criteria, "criteria_out.csv", row.names = FALSE)
+      write.csv(tables$solutions, "solutions_out.csv", row.names = FALSE)
+      write.csv(
+        dplyr::mutate(
+          tidyr::unnest(tables$grades, data),
+          weight = 1
+        ),
+        "grades_out.csv",
+        row.names = FALSE
+      )
+      write.csv(tables$bestof, "bestof_out.csv", row.names = FALSE)
+      
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,
