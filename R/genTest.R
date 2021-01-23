@@ -630,8 +630,7 @@ genTest <- function() {
         if (input$typeanswer == "text") {
           questions <- dplyr::filter(
             questions, type %in% c(
-              "4 Computation", "5 Question",
-              "6 Problem", "7 Essay", "8 Case"
+              "4 Computation", "5 Question", "6 Problem"
             )
           )
         }
@@ -1228,8 +1227,6 @@ genTest <- function() {
         create_folder(test_name, "/2_test/rmd")
         create_folder(test_name, "/2_test/tmp")
         create_folder(test_name, "/3_answers")
-        create_folder(test_name, "/3_answers/raw")
-        create_folder(test_name, "/3_answers/structure")
         create_folder(test_name, "/4_matrix")
         create_folder(test_name, "/4_matrix/raw")
         create_folder(test_name, "/4_matrix/calibrated")
@@ -1269,7 +1266,7 @@ genTest <- function() {
             dplyr::filter(language == lang)
           write.csv(students, file = paste0(
             wd,
-            "/3_answers/structure/",
+            "/3_answers/",
             lang,
             "_students.csv"
           ), row.names = FALSE)
@@ -1295,36 +1292,71 @@ genTest <- function() {
             dplyr::left_join(test, by = "question_id")
           write.csv(questions, file = paste0(
             wd,
-            "/3_answers/structure/",
+            "/3_answers/",
             lang,
-            "_questions.csv"
+            "_test_",
+            input$typeanswer,
+            ".csv"
           ), row.names = FALSE)
 
           # Save criteria for open questions
           incProgress(amount = incr, detail = paste0(lang, ": criteria list"))
           if (input$typeanswer == "text") {
+            
+            solution <- teachR::get_pkg_data(
+              input$pkgname,
+              "str_question_labels"
+            ) %>%
+              dplyr::filter(
+                question_id %in% tables$test$question_id
+              ) %>%
+              dplyr::select(
+                question_id,
+                question_label,
+                solution
+              ) %>%
+              dplyr::left_join(
+                dplyr::select(
+                  tables$test,
+                  question_id,
+                  points
+                ),
+                by = "questionid"
+              )
+            readODS::write_ods(solution, paste0(
+              wd,
+              "/3_answers/",
+              lang,
+              "_solutions_",
+              input$typeanswer,
+              ".ods"
+            ), row.names = FALSE)
+            
+            
             criteria <- teachR::get_pkg_data(
               input$pkgname,
               "str_question_criteria"
             ) %>%
               dplyr::filter(
-                question_id %in% tables$test$question_id,
-                criterion_language == lang
+                question_id %in% tables$test$question_id
               ) %>%
               dplyr::select(
-                question_id,
                 criterion_id,
-                criterion_nbr,
                 criterion_order,
-                criterion_label
+                question_id,
+                criterion_label,
+                criterion_scale
               )
-            write.csv(criteria, file = paste0(
+            readODS::write_ods(criteria, paste0(
               wd,
-              "/3_answers/structure/",
+              "/3_answers/",
               lang,
-              "_criteria.csv"
+              "_criteria_",
+              input$typeanswer,
+              ".ods"
             ), row.names = FALSE)
           }
+          
 
           # Prepare list of questions
           incProgress(
@@ -1366,7 +1398,13 @@ genTest <- function() {
             exams::exams2blackboard(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_blackboard_", lang),
+              name = paste0(
+                test_name,
+                "_blackboard_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1388,7 +1426,13 @@ genTest <- function() {
             exams::exams2canvas(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_canvas_", lang),
+              name = paste0(
+                test_name,
+                "_canvas_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1410,7 +1454,13 @@ genTest <- function() {
             exams::exams2moodle(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_moodle_", lang),
+              name = paste0(
+                test_name,
+                "_moodle_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1432,7 +1482,13 @@ genTest <- function() {
             exams::exams2openolat(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_openolat_", lang),
+              name = paste0(
+                test_name,
+                "_openolat_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1454,7 +1510,13 @@ genTest <- function() {
             exams::exams2arsnova(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_arsnova_", lang),
+              name = paste0(
+                test_name,
+                "_arsnova_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1476,7 +1538,13 @@ genTest <- function() {
             exams::exams2tcexam(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_tcexam_", lang),
+              name = paste0(
+                test_name,
+                "_tcexam_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1498,7 +1566,13 @@ genTest <- function() {
             exams::exams2html(
               file = unlist(test_parameters$files),
               n = 1,
-              name = paste0(test_name, "_html_", lang),
+              name = paste0(
+                test_name,
+                "_html_",
+                input$typeanswer,
+                "_",
+                lang
+              ),
               dir = outdir,
               edir = rmddir,
               tdir = tmpdir,
@@ -1593,7 +1667,15 @@ genTest <- function() {
                 )
               }
 
-              version_name <- paste0(test_name, "_pdf_", version_id, "_", lang)
+              version_name <- paste0(
+                test_name,
+                "_pdf_",
+                input$typeanswer,
+                "_",
+                lang,
+                "_",
+                version_id
+              )
 
               template_test <- dplyr::case_when(
                 input$typeanswer == "choice" ~
