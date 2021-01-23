@@ -153,5 +153,10 @@ calibRate <- function() {
     })
   }
   
-  runGadget(ui, server, viewer = dialogViewer(dialogName = "genexam", width = 1800, height = 1200))
+  runGadget(
+    ui,
+    server,
+    viewer = dialogViewer(
+      dialogName = "genexam", width = 1800, height = 1200)
+    )
 }

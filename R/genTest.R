@@ -495,12 +495,12 @@ genTest <- function() {
     type <- NULL
     criterion_id <- NULL
     criterion_label <- NULL
-    criterion_language <- NULL
-    criterion_nbr <- NULL
     criterion_order <- NULL
     V1 <- NULL
     data <- NULL
     pkg <- NULL
+    criterion_scale <- NULL
+    question_label <- NULL
 
     # Create reactive values
     tables <- reactiveValues()
@@ -603,15 +603,15 @@ genTest <- function() {
         # Select published questions (exclude "design" and "review" stages)
         questions <- teachR::get_pkg_data(tables$pkgname, "str_base") %>%
           dplyr::filter(stage == "public")
-        
+
         # Select questions available in appropriate languages
         questions <- questions %>%
           dplyr::filter(question_nbr %in% tables$in_all_languages)
-        
+
         # Selection of questions which are not excluded
         questions <- questions %>%
           dplyr::filter(!(question_id %in% tables$exclusion$question_id))
-        
+
         # Selection of questions in appropriate format
         if (input$typeanswer == "choice") {
           questions <- dplyr::filter(
@@ -620,13 +620,13 @@ genTest <- function() {
             )
           )
         }
-        
+
         if (input$typeanswer == "number") {
           questions <- dplyr::filter(
             questions, type %in% c("4 Computation")
           )
         }
-        
+
         if (input$typeanswer == "text") {
           questions <- dplyr::filter(
             questions, type %in% c(
@@ -904,7 +904,7 @@ genTest <- function() {
             paste0(input$slctdisp, ".html"),
             package = tables$pkgname
           )
-          if (file.exists(htmldoc)){
+          if (file.exists(htmldoc)) {
             page <- xml2::read_html(htmldoc)
             withMathJax(HTML(as.character(rvest::html_node(page, "body"))))
           }
@@ -1302,7 +1302,6 @@ genTest <- function() {
           # Save criteria for open questions
           incProgress(amount = incr, detail = paste0(lang, ": criteria list"))
           if (input$typeanswer == "text") {
-            
             solution <- teachR::get_pkg_data(
               input$pkgname,
               "str_question_labels"
@@ -1331,8 +1330,8 @@ genTest <- function() {
               input$typeanswer,
               ".ods"
             ), row.names = FALSE)
-            
-            
+
+
             criteria <- teachR::get_pkg_data(
               input$pkgname,
               "str_question_criteria"
@@ -1356,7 +1355,7 @@ genTest <- function() {
               ".ods"
             ), row.names = FALSE)
           }
-          
+
 
           # Prepare list of questions
           incProgress(
@@ -1377,7 +1376,7 @@ genTest <- function() {
               rmddir, "/test_parameters.RData"
             )
           )
-          
+
           # Initialize specifications
           test_or_solution <- "test"
           type_table <- "html"

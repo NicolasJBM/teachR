@@ -152,7 +152,7 @@ generate_structure <- function() {
   save(str_statements, file = "data/str_statements.RData")
   rm(str_statements)
 
-  
+
   # create alternatives database
   str_alternatives <- str_alt_labels %>%
     dplyr::left_join(str_alt_choices, by = "alternative_id") %>%
@@ -172,7 +172,7 @@ generate_structure <- function() {
       topic_order,
       subsection_id,
       subsection_order,
-      section_id,        
+      section_id,
       section_order,
       chapter_id,
       chapter_order,
@@ -183,36 +183,44 @@ generate_structure <- function() {
     )
   save(str_alternatives, file = "data/str_alternatives.RData")
   rm(str_alternatives)
-  
+
   save(str_question_labels, file = "data/str_question_labels.RData")
   save(str_question_criteria, file = "data/str_question_criteria.RData")
-  
+
   # Create labels database
   languages <- c("EN", "FR", "DE", "ES", "IT", "NL")
   chapters_lab <- readODS::read_ods(
-    "data-raw/structure/1b_chapters_labels.ods") %>%
+    "data-raw/structure/1b_chapters_labels.ods"
+  ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
-      values_to = "chapter_label")
+      values_to = "chapter_label"
+    )
   sections_lab <- readODS::read_ods(
-    "data-raw/structure/2b_sections_labels.ods") %>%
+    "data-raw/structure/2b_sections_labels.ods"
+  ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
-      values_to = "section_label")
+      values_to = "section_label"
+    )
   subsections_lab <- readODS::read_ods(
-    "data-raw/structure/3b_subsections_labels.ods") %>%
+    "data-raw/structure/3b_subsections_labels.ods"
+  ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
-      values_to = "subsection_label")
+      values_to = "subsection_label"
+    )
   topics_lab <- readODS::read_ods(
-    "data-raw/structure/4b_topics_labels.ods") %>%
+    "data-raw/structure/4b_topics_labels.ods"
+  ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
-      values_to = "topic_label")
+      values_to = "topic_label"
+    )
   str_labels <- structure %>%
     dplyr::left_join(topics_lab, by = "topic_id") %>%
     dplyr::left_join(subsections_lab, by = c("subsection_id", "language")) %>%

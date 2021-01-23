@@ -650,7 +650,7 @@ raText <- function() {
       if (tables$answers$format[[1]] == "video") {
         tags$br()
       } else {
-        if (!is.null(input$slctquest)){
+        if (!is.null(input$slctquest)) {
           criteria <- tables$criteria %>%
             dplyr::filter(
               question_id == input$slctquest,
@@ -661,7 +661,7 @@ raText <- function() {
             dplyr::select(criterion_label) %>%
             unlist() %>%
             as.character()
-          
+
           selectInput(
             "slctcrit",
             "Select keywords to highlight:",
@@ -669,7 +669,9 @@ raText <- function() {
             selected = "None",
             width = "100%"
           )
-        } else tags$br()
+        } else {
+          tags$br()
+        }
       }
     })
 
@@ -688,13 +690,9 @@ raText <- function() {
           as.character()
 
         if (!is.null(input$slctcrit)) {
-          
-          if (input$slctcrit == "None"){
-            
+          if (input$slctcrit == "None") {
             answer <- answer
-            
-          } else if (input$slctcrit == "All"){
-            
+          } else if (input$slctcrit == "All") {
             pattern <- tables$criteria %>%
               dplyr::select(criterion_keywords) %>%
               dplyr::filter(nchar(criterion_keywords) > 1) %>%
@@ -702,7 +700,7 @@ raText <- function() {
               as.character() %>%
               stringr::str_replace_all(", ", "|") %>%
               paste(collapse = "|")
-            
+
             pattern <- paste0(
               "(?:^|[:punct:]|[:space:])",
               pattern,
@@ -718,9 +716,7 @@ raText <- function() {
             )
             answer <- gsub("</span>", "</b></font>", answer)
             answer <- gsub("\n", "<br>", answer)
-            
           } else {
-            
             pattern <- tables$criteria %>%
               dplyr::filter(
                 question_id == input$slctquest,
@@ -730,7 +726,7 @@ raText <- function() {
               unlist() %>%
               as.character() %>%
               stringr::str_replace_all(", ", "|")
-            
+
             pattern <- paste0(
               "(?:^|[:punct:]|[:space:])",
               pattern,
@@ -744,11 +740,9 @@ raText <- function() {
             )
             answer <- gsub("</span>", "</b></font>", answer)
             answer <- gsub("\n", "<br>", answer)
-            
           }
-          
+
           HTML(answer)
-          
         } else {
           tags$iframe(src = answer, width = 840, height = 472)
         }
@@ -946,7 +940,6 @@ raText <- function() {
           options(warn = -1)
 
           if (nrow(discrete) > length(discrete) + 1) {
-
             pca <- suppressWarnings(
               suppressMessages(
                 psych::pca(dplyr::select_if(discrete, is.numeric), 1)
@@ -1177,7 +1170,6 @@ raText <- function() {
     # On exit
 
     observeEvent(input$done, {
-      
       readODS::write_ods(tables$criteria, "criteria_out.ods")
       readODS::write_ods(tables$solutions, "solutions_out.ods")
       readODS::write_ods(
@@ -1188,7 +1180,7 @@ raText <- function() {
         "grades_out.ods"
       )
       readODS::write_ods(tables$bestof, "bestof_out.ods")
-      
+
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,

@@ -36,7 +36,9 @@ retrieve_parameters <- function(ex_name, pkgname) {
     questionid <- exercise$question_id[1]
     if (exercise$showexname[1]) {
       showexname <- paste0(exname, " - ")
-    } else showexname <- ""
+    } else {
+      showexname <- ""
+    }
 
     if (exercise$show_difficulty[1]) {
       if (exercise$show_points[1]) {
