@@ -62,9 +62,9 @@ generate_structure <- function() {
   sections <- readODS::read_ods("data-raw/structure/2a_sections.ods")
   subsections <- readODS::read_ods("data-raw/structure/3a_subsections.ods")
   topics <- readODS::read_ods("data-raw/structure/4a_topics.ods")
-  str_questions <- readODS::read_ods("data-raw/structure/5_questions.ods")
+  str_base <- readODS::read_ods("data-raw/structure/5_base.ods")
   str_statements <- readODS::read_ods("data-raw/structure/6_statements.ods")
-  str_alt_questions <- readODS::read_ods("data-raw/structure/7a_alternatives_questions.ods")
+  str_alt_labels <- readODS::read_ods("data-raw/structure/7a_alternatives_labels.ods")
   str_alt_choices <- readODS::read_ods("data-raw/structure/7b_alternatives_choices.ods")
   str_question_labels <- readODS::read_ods("data-raw/structure/8a_question_labels.ods")
   str_question_criteria <- readODS::read_ods("data-raw/structure/8b_question_criteria.ods")
@@ -87,7 +87,7 @@ generate_structure <- function() {
         TRUE ~ chapter_id
       )
     ) %>%
-    dplyr::mutate(field_id = substr(str_questions$question_id[1], 1, 2)) %>%
+    dplyr::mutate(field_id = substr(str_base$question_id[1], 1, 2)) %>%
     tidyr::unite(
       "topic_code",
       field_id, chapter_order,
@@ -98,8 +98,8 @@ generate_structure <- function() {
     )
   rm(chapters, sections, subsections, topics)
 
-  # create question database
-  str_questions <- str_questions %>%
+  # create test database
+  str_base <- str_base %>%
     dplyr::left_join(structure, by = "topic_id") %>%
     dplyr::select(
       question_id,
@@ -125,8 +125,8 @@ generate_structure <- function() {
       field_id,
       topic_code
     )
-  save(str_questions, file = "data/str_questions.RData")
-  rm(str_questions)
+  save(str_base, file = "data/str_base.RData")
+  rm(str_base)
 
   # Create statements database
   str_statements <- str_statements %>%
@@ -154,7 +154,7 @@ generate_structure <- function() {
 
   
   # create alternatives database
-  str_alternatives <- str_alt_questions %>%
+  str_alternatives <- str_alt_labels %>%
     dplyr::left_join(str_alt_choices, by = "alternative_id") %>%
     dplyr::left_join(structure, by = "topic_id") %>%
     dplyr::select(

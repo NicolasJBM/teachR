@@ -583,7 +583,7 @@ genTest <- function() {
     # Retrieve questions from package
     observeEvent(input$getpkg, {
       tables$pkgname <- input$pkgname
-      questions <- teachR::get_pkg_data(tables$pkgname, "str_questions") %>%
+      questions <- teachR::get_pkg_data(tables$pkgname, "str_base") %>%
         dplyr::filter(stage == "public")
       in_all_languages <- questions %>%
         dplyr::select(question_nbr, question_language) %>%
@@ -601,7 +601,7 @@ genTest <- function() {
       if (tables$pkgname != "") {
 
         # Select published questions (exclude "design" and "review" stages)
-        questions <- teachR::get_pkg_data(tables$pkgname, "str_questions") %>%
+        questions <- teachR::get_pkg_data(tables$pkgname, "str_base") %>%
           dplyr::filter(stage == "public")
         
         # Select questions available in appropriate languages
@@ -1214,7 +1214,7 @@ genTest <- function() {
             questions = purrr::map(
               pkg,
               get_pkg_data,
-              "str_questions"
+              "str_base"
             )
           ) %>%
           tidyr::unnest(questions)
@@ -1305,7 +1305,7 @@ genTest <- function() {
           if (input$typeanswer == "text") {
             criteria <- teachR::get_pkg_data(
               input$pkgname,
-              "str_open_criteria"
+              "str_question_criteria"
             ) %>%
               dplyr::filter(
                 question_id %in% tables$test$question_id,
@@ -1729,7 +1729,7 @@ filter_data <- function(dataset, variable, filt, type) {
 }
 
 
-# Function to append str_questions to base_test
+# Function to append str_base to base_test
 append_questions <- function(x, pkgname, lang) {
   bloom <- NULL
   chapter <- NULL
@@ -1751,7 +1751,7 @@ append_questions <- function(x, pkgname, lang) {
   topic_label <- NULL
   type <- NULL
 
-  questions <- teachR::get_pkg_data(pkgname, "str_questions")
+  questions <- teachR::get_pkg_data(pkgname, "str_base")
   labels <- teachR::get_pkg_data(pkgname, "str_labels") %>%
     dplyr::filter(language == lang) %>%
     dplyr::select(

@@ -19,12 +19,12 @@ library(stringr)
 
 ################################################################################
 # Selection
-str_questions <-
-  eval(parse(text = paste0(pkgname,"::","str_questions")))
+str_base <-
+  eval(parse(text = paste0(pkgname,"::","str_base")))
 str_alternatives <-
   eval(parse(text = paste0(pkgname,"::","str_alternatives")))
 
-filters <- str_questions %>%
+filters <- str_base %>%
   dplyr::filter(question_id == questionid) %>%
   dplyr::select(filter_variable, filter_value, question_language)
 
