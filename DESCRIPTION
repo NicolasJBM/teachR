@@ -36,6 +36,5 @@ Imports:
   gtools,
   rhandsontable,
   ggplot2,
-  readxl,
   lexR,
   psych

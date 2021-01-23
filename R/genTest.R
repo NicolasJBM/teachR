@@ -630,7 +630,7 @@ genTest <- function() {
         if (input$typeanswer == "text") {
           questions <- dplyr::filter(
             questions, type %in% c(
-              "4 Computation", "5 Interrogation",
+              "4 Computation", "5 Question",
               "6 Problem", "7 Essay", "8 Case"
             )
           )

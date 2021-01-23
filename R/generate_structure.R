@@ -66,7 +66,8 @@ generate_structure <- function() {
   str_statements <- readODS::read_ods("data-raw/structure/6_statements.ods")
   str_alt_questions <- readODS::read_ods("data-raw/structure/7a_alternatives_questions.ods")
   str_alt_choices <- readODS::read_ods("data-raw/structure/7b_alternatives_choices.ods")
-  str_open_criteria <- readODS::read_ods("data-raw/structure/8_open_criteria.ods")
+  str_question_labels <- readODS::read_ods("data-raw/structure/8a_question_labels.ods")
+  str_question_criteria <- readODS::read_ods("data-raw/structure/8b_question_criteria.ods")
 
   structure <- topics %>%
     dplyr::left_join(subsections, by = "subsection_id") %>%
@@ -183,7 +184,8 @@ generate_structure <- function() {
   save(str_alternatives, file = "data/str_alternatives.RData")
   rm(str_alternatives)
   
-  save(str_open_criteria, file = "data/str_open_criteria.RData")
+  save(str_question_labels, file = "data/str_question_labels.RData")
+  save(str_question_criteria, file = "data/str_question_criteria.RData")
   
   # Create labels database
   languages <- c("EN", "FR", "DE", "ES", "IT", "NL")

@@ -44,7 +44,6 @@
 #' @importFrom shinythemes shinytheme
 #' @importFrom readODS read_ods
 #' @importFrom dplyr count
-#' @importFrom readxl read_excel
 #' @importFrom lexR count_words
 #' @importFrom psych pca
 #' @importFrom psych fa
@@ -95,19 +94,19 @@ raText <- function() {
                   "answers",
                   "Import answers",
                   multiple = FALSE,
-                  accept = c(".xlsx")
+                  accept = c("ods")
                 ),
                 fileInput(
                   "criteria",
                   "Import criteria",
                   multiple = FALSE,
-                  accept = c(".csv", ".xlsx")
+                  accept = c(".ods")
                 ),
                 fileInput(
                   "solutions",
                   "Import solutions",
                   multiple = FALSE,
-                  accept = c(".xlsx")
+                  accept = c(".ods")
                 )
               )
             ),
@@ -301,7 +300,7 @@ raText <- function() {
 
         # Download or create answers
         if (!is.null(input$answers)) {
-          tables$answers <- readxl::read_excel(
+          tables$answers <- readODS::read_ods(
             input$answers$datapath[[1]]
           ) %>%
             dplyr::mutate(
@@ -315,7 +314,6 @@ raText <- function() {
         } else {
           tables$answers <- data.frame(
             source_id = as.character(NA),
-            source_type = as.character(NA),
             question_id = as.character(NA),
             format = "text",
             answer = as.character(NA),
@@ -330,16 +328,14 @@ raText <- function() {
 
         # Download or create criteria
         if (!is.null(input$criteria)) {
-          tables$criteria <- readxl::read_excel(
+          tables$criteria <- readODS::read_ods(
             input$criteria$datapath[[1]]
           )
         } else {
           tables$criteria <- data.frame(
-            question_id = unique(tables$answers$question_id),
             criterion_id = as.character(NA),
-            criterion_nbr = as.character(NA),
-            criterion_language = as.character(NA),
             criterion_order = as.numeric(NA),
+            question_id = unique(tables$answers$question_id),
             criterion_label = as.character(NA),
             criterion_scale = as.character(NA),
             criterion_keywords = as.character(NA)
@@ -348,7 +344,7 @@ raText <- function() {
 
         # Download or create solutions
         if (!is.null(input$solutions)) {
-          tables$solutions <- readxl::read_excel(
+          tables$solutions <- readODS::read_ods(
             input$solutions$datapath[[1]]
           )
         } else {
@@ -1182,17 +1178,16 @@ raText <- function() {
 
     observeEvent(input$done, {
       
-      write.csv(tables$criteria, "criteria_out.csv", row.names = FALSE)
-      write.csv(tables$solutions, "solutions_out.csv", row.names = FALSE)
-      write.csv(
+      readODS::write_ods(tables$criteria, "criteria_out.ods")
+      readODS::write_ods(tables$solutions, "solutions_out.ods")
+      readODS::write_ods(
         dplyr::mutate(
           tidyr::unnest(tables$grades, data),
           weight = 1
         ),
-        "grades_out.csv",
-        row.names = FALSE
+        "grades_out.ods"
       )
-      write.csv(tables$bestof, "bestof_out.csv", row.names = FALSE)
+      readODS::write_ods(tables$bestof, "bestof_out.ods")
       
       project <- list(
         answers = tables$answers,
