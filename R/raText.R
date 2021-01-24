@@ -45,6 +45,13 @@
 #' @importFrom readODS read_ods
 #' @importFrom dplyr count
 #' @importFrom lexR count_words
+#' @importFrom lexR clean_ascii
+#' @importFrom purrr map_chr
+#' @importFrom dplyr mutate_if
+#' @importFrom dplyr mutate
+#' @importFrom dplyr case_when
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
 #' @importFrom psych pca
 #' @importFrom psych fa
 #' @export
@@ -256,10 +263,15 @@ raText <- function() {
       ),
 
       miniTabPanel(
-        "Download",
+        "Export",
         icon = icon("download"),
         miniContentPanel(
-          plotOutput("distribution")
+          plotOutput("distribution"),
+          fillRow(
+            flex = c(1, 1),
+            textInput("part", "Name of the part: ", value = "part"),
+            actionButton("exportods", "Export files")
+          )
         )
       )
     )
@@ -287,6 +299,8 @@ raText <- function() {
     x <- NULL
     y <- NULL
     question_label <- NULL
+    part <- NULL
+    type <- NULL
 
 
     ############################################################################
@@ -1164,23 +1178,56 @@ raText <- function() {
 
 
     # Download
+    observeEvent(input$exportods, {
+      solutions <- tables$solutions %>%
+        dplyr::mutate_if(
+          is.character,
+          function(x) purrr::map_chr(x, lexR::clean_ascii)
+        )
+      criteria <- tables$criteria %>%
+        dplyr::mutate_if(
+          is.character,
+          function(x) purrr::map_chr(x, lexR::clean_ascii)
+        )
+      grades <- tables$grades %>%
+        tidyr::unnest(data) %>%
+        dplyr::mutate(type = "text", part = input$part) %>%
+        dplyr::select(
+          source_id, part, question_id, criterion_id, type, grade
+        ) %>%
+        dplyr::mutate_if(
+          is.character,
+          function(x) purrr::map_chr(x, lexR::clean_ascii)
+        )
+      bestof <- tables$bestof %>%
+        dplyr::mutate_if(
+          is.character,
+          function(x) purrr::map_chr(x, lexR::clean_ascii)
+        )
+
+      readODS::write_ods(
+        criteria,
+        paste0("criteria_", input$part, ".ods")
+      )
+      readODS::write_ods(
+        solutions,
+        paste0("solutions_", input$part, ".ods")
+      )
+      readODS::write_ods(
+        grades,
+        paste0("grades_", input$part, ".ods")
+      )
+      readODS::write_ods(
+        bestof,
+        paste0("bestof_", input$part, ".ods")
+      )
+    })
 
 
     ############################################################################
     # On exit
 
     observeEvent(input$done, {
-      readODS::write_ods(tables$criteria, "criteria_out.ods")
-      readODS::write_ods(tables$solutions, "solutions_out.ods")
-      readODS::write_ods(
-        dplyr::mutate(
-          tidyr::unnest(tables$grades, data),
-          weight = 1
-        ),
-        "grades_out.ods"
-      )
-      readODS::write_ods(tables$bestof, "bestof_out.ods")
-
       project <- list(
         answers = tables$answers,
         criteria = tables$criteria,
