@@ -96,7 +96,7 @@ raText <- function() {
             conditionalPanel(
               condition = "input.creres === 'Create'",
               fillRow(
-                flex = c(1, 1, 1),
+                flex = c(1, 1, 1, 1),
                 fileInput(
                   "answers",
                   "Import answers",
@@ -112,6 +112,12 @@ raText <- function() {
                 fileInput(
                   "solutions",
                   "Import solutions",
+                  multiple = FALSE,
+                  accept = c(".ods")
+                ),
+                fileInput(
+                  "groups",
+                  "Import groups",
                   multiple = FALSE,
                   accept = c(".ods")
                 )
@@ -368,6 +374,18 @@ raText <- function() {
             points = as.double(10)
           )
         }
+        
+        # Download or create groups
+        if (!is.null(input$groups)) {
+          tables$groups <- readODS::read_ods(
+            input$groups$datapath[[1]]
+          )
+        } else {
+          tables$groups <- data.frame(
+            student_id = tables$sources,
+            source_id = tables$sources
+          )
+        }
 
         grading <- tables$criteria %>%
           dplyr::select(question_id, criterion_id) %>%
@@ -400,6 +418,7 @@ raText <- function() {
           tables$lastgraded <- project$lastgraded
           tables$solutions <- project$solutions
           tables$grades <- project$grades
+          tables$groups <- project$groups
           tables$bestof <- project$bestof
           tables$details <- project$details
           tables$scores <- project$scores
@@ -610,6 +629,7 @@ raText <- function() {
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
         grades = tables$grades,
+        groups = tables$groups,
         bestof = tables$bestof,
         details = tables$details,
         scores = tables$scores
@@ -1179,16 +1199,8 @@ raText <- function() {
 
     # Download
     observeEvent(input$exportods, {
+      
       solutions <- tables$solutions %>%
-        dplyr::mutate(type = "text", part = input$part) %>%
-        dplyr::mutate_if(
-          is.character,
-          function(x) purrr::map_chr(x, lexR::clean_ascii)
-        ) %>%
-        dplyr::select(
-          part, question_id, criterion_id, criterion_order, criterion_label
-        )
-      criteria <- tables$criteria %>%
         dplyr::mutate(type = "text", part = input$part) %>%
         dplyr::mutate_if(
           is.character,
@@ -1197,11 +1209,28 @@ raText <- function() {
         dplyr::select(
           question_id, question_label, solution, points
         )
+      
+      criteria <- tables$criteria %>%
+        dplyr::mutate(type = "text", part = input$part) %>%
+        dplyr::mutate_if(
+          is.character,
+          function(x) purrr::map_chr(x, lexR::clean_ascii)
+        ) %>%
+        dplyr::select(
+          part, question_id, criterion_id, criterion_order, criterion_label
+        )
+      
+      groups <- tables$groups %>%
+        dplyr::group_by(source_id) %>%
+        tidyr::nest()
+      
       grades <- tables$grades %>%
         tidyr::unnest(data) %>%
         dplyr::mutate(type = "text", part = input$part) %>%
+        dplyr::left_join(groups, by = "source_id") %>%
+        tidyr::unnest(data) %>%
         dplyr::select(
-          source_id, part, question_id, criterion_id, type, grade
+          student_id, part, question_id, criterion_id, type, grade
         ) %>%
         dplyr::mutate_if(
           is.character,
@@ -1245,6 +1274,7 @@ raText <- function() {
         lastgraded = tables$lastgraded,
         solutions = tables$solutions,
         grades = tables$grades,
+        groups = tables$groups,
         bestof = tables$bestof,
         details = tables$details,
         scores = tables$scores

@@ -139,13 +139,17 @@ calibRate <- function() {
         tidyr::nest() %>%
         dplyr::left_join(
           dplyr::select(
-            solutions, question_id, weight = points
+            solutions, question_id, points
           ),
           by = "question_id"
         ) %>%
-        dplyr::mutate(divide = purrr::map_int(data, nrow)) %>%
+        dplyr::mutate(
+          weight = points,
+          divide = purrr::map_int(data, nrow)
+        ) %>%
+        dplyr::mutate(points = points / divide) %>%
         dplyr::mutate(weight = weight / divide) %>%
-        dplyr::select(question_id, data, weight) %>%
+        dplyr::select(question_id, data, weight, points) %>%
         tidyr::unnest(data) %>%
         dplyr::ungroup()
       tables$criteria <- criteria
@@ -170,19 +174,19 @@ calibRate <- function() {
     })
     
     scores <- reactive({
-      scores <- tables$grades %>%
+      tables$grades %>%
         dplyr::left_join(
           dplyr::select(
             tables$criteria,
-            criterion_id, weight
+            criterion_id, weight, points
           ),
           by = "criterion_id"
         ) %>%
-        dplyr::mutate(score = grade * weight) %>%
-        dplyr::group_by(source_id, question_id) %>%
+        dplyr::mutate(score = round(grade * weight, 2)) %>%
+        dplyr::group_by(student_id, question_id) %>%
         dplyr::summarise(
           score = sum(score, na.rm = TRUE),
-          total = sum(weight, na.rm = TRUE)) %>%
+          total = sum(points, na.rm = TRUE)) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(
           score = dplyr::case_when(
@@ -190,15 +194,12 @@ calibRate <- function() {
             TRUE ~ total
           )
         )
-      
-      write.csv(scores, "scores.csv")
-      scores
     })
     
     output$distribution <- renderPlot({
       
       distrib <- scores() %>%
-        dplyr::group_by(source_id) %>%
+        dplyr::group_by(student_id) %>%
         dplyr::summarise(
           score = sum(score, na.rm = TRUE),
           total = sum(total, na.rm = TRUE)) %>%
@@ -229,6 +230,8 @@ calibRate <- function() {
     # On exit
 
     observeEvent(input$done, {
+      readODS::write_ods(tables$criteria, "weights.ods")
+      readODS::write_ods(scores(), "scores.ods")
       stopApp()
     })
   }
