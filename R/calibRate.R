@@ -53,13 +53,54 @@ calibRate <- function() {
       miniTabPanel(
         "Import",
         icon = icon("sliders"),
-        miniContentPanel()
+        miniContentPanel(
+          fillRow(
+            flex = c(1,1,1,1),
+            fileInput(
+              "getsolutions",
+              "Select solution files",
+              multiple = TRUE,
+              accept = ".ods"
+            ),
+            fileInput(
+              "getcriteria",
+              "Select criteria files",
+              multiple = TRUE,
+              accept = ".ods"
+            ),
+            fileInput(
+              "getgrades",
+              "Select grades files",
+              multiple = TRUE,
+              accept = ".ods"
+            ),
+            actionButton("import", "Import files")
+          )
+        )
       ),
 
       miniTabPanel(
-        "Balance",
+        "Weights",
         icon = icon("balance-scale"),
-        miniContentPanel()
+        miniContentPanel(
+          fillCol(
+            flex = c(1,1),
+            fillRow(
+              flex = c(5,1),
+              rHandsontableOutput("dispcriteria"),
+              actionButton("updateweights", "Update")
+            ),
+            plotOutput("distribution")
+          )
+        )
+      ),
+      
+      miniTabPanel(
+        "Analyses",
+        icon = icon("balance-scale"),
+        miniContentPanel(
+          
+        )
       )
     )
   )
@@ -71,6 +112,116 @@ calibRate <- function() {
 
 
     ################
+    tables <- reactiveValues()
+    
+    observeEvent(input$import, {
+      
+      solutions <- list()
+      for (i in seq_len(nrow(input$getsolutions))){
+        solutions[[i]] <- readODS::read_ods(input$getsolutions$datapath[[i]])
+      }
+      solutions <- dplyr::bind_rows(solutions)
+      tables$solutions <- solutions
+      
+      grades <- list()
+      for (i in seq_len(nrow(input$getgrades))){
+        grades[[i]] <- readODS::read_ods(input$getgrades$datapath[[i]])
+      }
+      grades <- dplyr::bind_rows(grades)
+      tables$grades <- grades
+      
+      criteria <- list()
+      for (i in seq_len(nrow(input$getcriteria))){
+        criteria[[i]] <- readODS::read_ods(input$getcriteria$datapath[[i]])
+      }
+      criteria <- dplyr::bind_rows(criteria) %>%
+        dplyr::group_by(question_id) %>%
+        tidyr::nest() %>%
+        dplyr::left_join(
+          dplyr::select(
+            solutions, question_id, weight = points
+          ),
+          by = "question_id"
+        ) %>%
+        dplyr::mutate(divide = purrr::map_int(data, nrow)) %>%
+        dplyr::mutate(weight = weight / divide) %>%
+        dplyr::select(question_id, data, weight) %>%
+        tidyr::unnest(data) %>%
+        dplyr::ungroup()
+      tables$criteria <- criteria
+      
+    })
+    
+    output$dispcriteria <- renderRHandsontable({
+      tables$criteria %>%
+        rhandsontable::rhandsontable(
+          height = 400,
+          width = "100%",
+          stretchH = "all"
+        ) %>%
+        rhandsontable::hot_context_menu(
+          allowRowEdit = FALSE,
+          allowColEdit = FALSE
+        )
+    })
+    
+    observeEvent(input$updateweights, {
+      tables$criteria <- rhandsontable::hot_to_r(input$dispcriteria)
+    })
+    
+    scores <- reactive({
+      scores <- tables$grades %>%
+        dplyr::left_join(
+          dplyr::select(
+            tables$criteria,
+            criterion_id, weight
+          ),
+          by = "criterion_id"
+        ) %>%
+        dplyr::mutate(score = grade * weight) %>%
+        dplyr::group_by(source_id, question_id) %>%
+        dplyr::summarise(
+          score = sum(score, na.rm = TRUE),
+          total = sum(weight, na.rm = TRUE)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(
+          score = dplyr::case_when(
+            score <= total ~ score,
+            TRUE ~ total
+          )
+        )
+      
+      write.csv(scores, "scores.csv")
+      scores
+    })
+    
+    output$distribution <- renderPlot({
+      
+      distrib <- scores() %>%
+        dplyr::group_by(source_id) %>%
+        dplyr::summarise(
+          score = sum(score, na.rm = TRUE),
+          total = sum(total, na.rm = TRUE)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(
+          score = dplyr::case_when(
+            score <= total ~ score,
+            TRUE ~ total
+          )
+        ) %>%
+        dplyr::mutate(score = round(score,0)) %>%
+        dplyr::group_by(score) %>%
+        dplyr::count() %>%
+        dplyr::filter(score > 0)
+      
+      distrib %>%
+        ggplot2::ggplot(
+        ggplot2::aes(x = score, y = n)
+      ) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::xlab("Credits") +
+        ggplot2::ylab("Count")
+    })
 
 
 
