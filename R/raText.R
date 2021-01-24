@@ -1180,14 +1180,22 @@ raText <- function() {
     # Download
     observeEvent(input$exportods, {
       solutions <- tables$solutions %>%
+        dplyr::mutate(type = "text", part = input$part) %>%
         dplyr::mutate_if(
           is.character,
           function(x) purrr::map_chr(x, lexR::clean_ascii)
+        ) %>%
+        dplyr::select(
+          part, question_id, criterion_id, criterion_order, criterion_label
         )
       criteria <- tables$criteria %>%
+        dplyr::mutate(type = "text", part = input$part) %>%
         dplyr::mutate_if(
           is.character,
           function(x) purrr::map_chr(x, lexR::clean_ascii)
+        ) %>%
+        dplyr::select(
+          question_id, question_label, solution, points
         )
       grades <- tables$grades %>%
         tidyr::unnest(data) %>%
