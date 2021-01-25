@@ -88,6 +88,7 @@
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 geom_bar
 #' @importFrom ggplot2 coord_flip
+#' @importFrom WriteXLS WriteXLS
 #' @export
 
 
@@ -1322,13 +1323,13 @@ genTest <- function() {
                 ),
                 by = "questionid"
               )
-            readODS::write_ods(solution, paste0(
+            WriteXLS::WriteXLS(solution, paste0(
               wd,
               "/3_answers/",
               lang,
               "_solutions_",
               input$typeanswer,
-              ".ods"
+              ".xlsx"
             ), row.names = FALSE)
 
 
@@ -1346,13 +1347,13 @@ genTest <- function() {
                 criterion_label,
                 criterion_scale
               )
-            readODS::write_ods(criteria, paste0(
+            WriteXLS::WriteXLS(criteria, paste0(
               wd,
               "/3_answers/",
               lang,
               "_criteria_",
               input$typeanswer,
-              ".ods"
+              ".xlsx"
             ), row.names = FALSE)
           }
 

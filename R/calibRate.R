@@ -111,6 +111,16 @@ calibRate <- function() {
   server <- function(input, output, session) {
 
     # Bind variables
+    criterion_id <- NULL
+    data <- NULL
+    divide <- NULL
+    grade <- NULL
+    points <- NULL
+    question_id <- NULL
+    score <- NULL
+    student_id <- NULL
+    total <- NULL
+    weight <- NULL
 
 
     ################

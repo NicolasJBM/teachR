@@ -8,7 +8,7 @@
 #' @importFrom dplyr select
 #' @importFrom dplyr all_of
 #' @importFrom tidyr pivot_longer
-#' @importFrom readODS read_ods
+#' @importFrom readxl read_excel
 #' @export
 
 
@@ -58,16 +58,16 @@ generate_structure <- function() {
   question <- NULL
 
   # Create general structure
-  chapters <- readODS::read_ods("data-raw/structure/1a_chapters.ods")
-  sections <- readODS::read_ods("data-raw/structure/2a_sections.ods")
-  subsections <- readODS::read_ods("data-raw/structure/3a_subsections.ods")
-  topics <- readODS::read_ods("data-raw/structure/4a_topics.ods")
-  str_base <- readODS::read_ods("data-raw/structure/5_base.ods")
-  str_statements <- readODS::read_ods("data-raw/structure/6_statements.ods")
-  str_alt_labels <- readODS::read_ods("data-raw/structure/7a_alternatives_labels.ods")
-  str_alt_choices <- readODS::read_ods("data-raw/structure/7b_alternatives_choices.ods")
-  str_question_labels <- readODS::read_ods("data-raw/structure/8a_question_labels.ods")
-  str_question_criteria <- readODS::read_ods("data-raw/structure/8b_question_criteria.ods")
+  chapters <- readxl::read_excel("data-raw/structure/1a_chapters.xlsx")
+  sections <- readxl::read_excel("data-raw/structure/2a_sections.xlsx")
+  subsections <- readxl::read_excel("data-raw/structure/3a_subsections.xlsx")
+  topics <- readxl::read_excel("data-raw/structure/4a_topics.xlsx")
+  str_base <- readxl::read_excel("data-raw/structure/5_base.xlsx")
+  str_statements <- readxl::read_excel("data-raw/structure/6_statements.xlsx")
+  str_alt_labels <- readxl::read_excel("data-raw/structure/7a_alternatives_labels.xlsx")
+  str_alt_choices <- readxl::read_excel("data-raw/structure/7b_alternatives_choices.xlsx")
+  str_question_labels <- readxl::read_excel("data-raw/structure/8a_question_labels.xlsx")
+  str_question_criteria <- readxl::read_excel("data-raw/structure/8b_question_criteria.xlsx")
 
   structure <- topics %>%
     dplyr::left_join(subsections, by = "subsection_id") %>%
@@ -189,32 +189,32 @@ generate_structure <- function() {
 
   # Create labels database
   languages <- c("EN", "FR", "DE", "ES", "IT", "NL")
-  chapters_lab <- readODS::read_ods(
-    "data-raw/structure/1b_chapters_labels.ods"
+  chapters_lab <- readxl::read_excel(
+    "data-raw/structure/1b_chapters_labels.xlsx"
   ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
       values_to = "chapter_label"
     )
-  sections_lab <- readODS::read_ods(
-    "data-raw/structure/2b_sections_labels.ods"
+  sections_lab <- readxl::read_excel(
+    "data-raw/structure/2b_sections_labels.xlsx"
   ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
       values_to = "section_label"
     )
-  subsections_lab <- readODS::read_ods(
-    "data-raw/structure/3b_subsections_labels.ods"
+  subsections_lab <- readxl::read_excel(
+    "data-raw/structure/3b_subsections_labels.xlsx"
   ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
       names_to = "language",
       values_to = "subsection_label"
     )
-  topics_lab <- readODS::read_ods(
-    "data-raw/structure/4b_topics_labels.ods"
+  topics_lab <- readxl::read_excel(
+    "data-raw/structure/4b_topics_labels.xlsx"
   ) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(languages),
