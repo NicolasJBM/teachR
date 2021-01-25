@@ -99,9 +99,31 @@ calibRate <- function() {
       
       miniTabPanel(
         "Analyses",
-        icon = icon("balance-scale"),
+        icon = icon("calculator"),
         miniContentPanel(
-          
+          fillCol(
+            flex = c(2,6),
+            fillRow(
+              flex = c(1,2,3,1,1),
+              uiOutput("slctpart"),
+              uiOutput("slctquest"),
+              uiOutput("slctcrit"),
+              selectInput(
+                "slctana",
+                "Analysis:",
+                choices = c("PCA","IRT"),
+                selected = "PCA",
+                multiple = FALSE,
+                width = "100%"
+              ),
+              actionButton("run", "Run analysis")
+            ),
+            fillRow(
+              flex = c(1,3),
+              dataTableOutput("table"),
+              plotOutput("plot", width = "90%", height = "600px")
+            )
+          )
         )
       )
     )
@@ -121,9 +143,17 @@ calibRate <- function() {
     student_id <- NULL
     total <- NULL
     weight <- NULL
+    MR1 <- NULL
+    PC1 <- NULL
+    difficulty <- NULL
+    discrimination <- NULL
+    loadings <- NULL
+    part <- NULL
 
 
-    ################
+    ############################################################################
+    # Import
+    
     tables <- reactiveValues()
     
     observeEvent(input$import, {
@@ -165,8 +195,12 @@ calibRate <- function() {
         tidyr::unnest(data) %>%
         dplyr::ungroup()
       tables$criteria <- criteria
-      
+      tables$analysis <- NA
     })
+    
+    
+    ############################################################################
+    # Adjust
     
     output$dispcriteria <- renderRHandsontable({
       tables$criteria %>%
@@ -200,6 +234,7 @@ calibRate <- function() {
           score = sum(score, na.rm = TRUE),
           total = sum(points, na.rm = TRUE)) %>%
         dplyr::ungroup() %>%
+        dplyr::mutate(score = round(score*4,0)/4) %>%
         dplyr::mutate(
           score = dplyr::case_when(
             score <= total ~ score,
@@ -237,8 +272,109 @@ calibRate <- function() {
     })
 
 
+    ############################################################################
+    # Analyses
+    
+    output$slctpart <- renderUI({
+      selectInput(
+        "slctpart",
+        "Parts:",
+        choices = unique(tables$grades$part),
+        selected = unique(tables$grades$part),
+        multiple = TRUE,
+        width = "100%"
+      )
+    })
+    
+    output$slctquest <- renderUI({
+      if (!is.null(input$slctpart)){
+        base <- dplyr::filter(tables$grades, part %in% input$slctpart)
+        selectInput(
+          "slctquest",
+          "Questions:",
+          choices = unique(base$question_id),
+          selected = unique(base$question_id),
+          multiple = TRUE,
+          width = "100%"
+        )
+      }
+    })
 
-    #################
+    output$slctcrit <- renderUI({
+      if (!is.null(input$slctquest)){
+        base <- dplyr::filter(tables$grades, question_id %in% input$slctquest)
+        selectInput(
+          "slctcrit",
+          "Criteria:",
+          choices = unique(base$criterion_id),
+          selected = unique(base$criterion_id),
+          multiple = TRUE,
+          width = "100%"
+        )
+      }
+    })
+    
+    observeEvent(input$run, {
+      
+      base_analysis <- tables$grades %>%
+        dplyr::filter(criterion_id %in% input$slctcrit) %>%
+        dplyr::select(student_id, criterion_id, grade) %>%
+        tidyr::pivot_wider(
+          names_from = "criterion_id",
+          values_from = "grade"
+        ) %>%
+        dplyr::select(-student_id)
+      
+      if (input$slctana == "PCA"){
+        pc <- psych::principal(base_analysis)
+        tables$analysis <- as.data.frame(pc$loadings[]) %>%
+          tibble::rownames_to_column("criterion_id") %>%
+          dplyr::select(criterion_id, loadings = PC1)
+        
+      } else {
+        
+        irt <- psych::irt.fa(
+          dplyr::mutate_all(
+            base_analysis,
+            function(x) as.numeric(x > 0)
+          )
+        )
+        
+        tables$analysis <- irt$irt$discrimination %>%
+          as.data.frame() %>%
+          tibble::rownames_to_column("criterion_id") %>%
+          dplyr::mutate(difficulty = irt$irt$difficulty[[1]]) %>%
+          dplyr::select(criterion_id, difficulty, discrimination = MR1)
+        
+      }
+    })
+    
+    output$table <- renderDataTable({
+      if (length(tables$analysis) > 1) tables$analysis
+    })
+    
+    output$plot <- renderPlot({
+      if (length(tables$analysis) > 1){
+        if (input$slctana == "PCA" & "loadings" %in% names(tables$analysis)){
+          tables$analysis %>%
+            ggplot2::ggplot(ggplot2::aes(x = criterion_id, y = loadings)) +
+            ggplot2::geom_bar(stat = "identity") +
+            ggplot2::coord_flip()
+        } else {
+          if ("difficulty" %in% names(tables$analysis)){
+            tables$analysis %>%
+              ggplot2::ggplot(ggplot2::aes(
+                x = difficulty,
+                y = discrimination,
+                label = criterion_id
+              )) +
+              ggplot2::geom_label()
+          }
+        }
+      }
+    })
+    
+    ############################################################################
     # On exit
 
     observeEvent(input$done, {
