@@ -36,6 +36,8 @@
 #' @importFrom shiny htmlOutput
 #' @importFrom shiny HTML
 #' @importFrom shinythemes shinytheme
+#' @importFrom readxl read_xlsx
+#' @importFrom WriteXLS WriteXLS
 #' @export
 
 
@@ -60,19 +62,19 @@ calibRate <- function() {
               "getsolutions",
               "Select solution files",
               multiple = TRUE,
-              accept = ".ods"
+              accept = ".xlsx"
             ),
             fileInput(
               "getcriteria",
               "Select criteria files",
               multiple = TRUE,
-              accept = ".ods"
+              accept = ".xlsx"
             ),
             fileInput(
               "getgrades",
               "Select grades files",
               multiple = TRUE,
-              accept = ".ods"
+              accept = ".xlsx"
             ),
             actionButton("import", "Import files")
           )
@@ -118,21 +120,21 @@ calibRate <- function() {
       
       solutions <- list()
       for (i in seq_len(nrow(input$getsolutions))){
-        solutions[[i]] <- readODS::read_ods(input$getsolutions$datapath[[i]])
+        solutions[[i]] <- readxl::read_excel(input$getsolutions$datapath[[i]])
       }
       solutions <- dplyr::bind_rows(solutions)
       tables$solutions <- solutions
       
       grades <- list()
       for (i in seq_len(nrow(input$getgrades))){
-        grades[[i]] <- readODS::read_ods(input$getgrades$datapath[[i]])
+        grades[[i]] <- readxl::read_excel(input$getgrades$datapath[[i]])
       }
       grades <- dplyr::bind_rows(grades)
       tables$grades <- grades
       
       criteria <- list()
       for (i in seq_len(nrow(input$getcriteria))){
-        criteria[[i]] <- readODS::read_ods(input$getcriteria$datapath[[i]])
+        criteria[[i]] <- readxl::read_excel(input$getcriteria$datapath[[i]])
       }
       criteria <- dplyr::bind_rows(criteria) %>%
         dplyr::group_by(question_id) %>%
@@ -230,8 +232,8 @@ calibRate <- function() {
     # On exit
 
     observeEvent(input$done, {
-      readODS::write_ods(tables$criteria, "weights.ods")
-      readODS::write_ods(scores(), "scores.ods")
+      WriteXLS::WriteXLS(tables$criteria, "weights.xlsx")
+      WriteXLS::WriteXLS(scores(), "scores.xlsx")
       stopApp()
     })
   }

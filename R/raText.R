@@ -42,7 +42,8 @@
 #' @importFrom shiny radioButtons
 #' @importFrom shiny textAreaInput
 #' @importFrom shinythemes shinytheme
-#' @importFrom readODS read_ods
+#' @importFrom readxl read_xlsx
+#' @importFrom WriteXLS WriteXLS
 #' @importFrom dplyr count
 #' @importFrom lexR count_words
 #' @importFrom lexR clean_ascii
@@ -101,25 +102,25 @@ raText <- function() {
                   "answers",
                   "Import answers",
                   multiple = FALSE,
-                  accept = c("ods")
+                  accept = c(".xlsx")
                 ),
                 fileInput(
                   "criteria",
                   "Import criteria",
                   multiple = FALSE,
-                  accept = c(".ods")
+                  accept = c(".xlsx")
                 ),
                 fileInput(
                   "solutions",
                   "Import solutions",
                   multiple = FALSE,
-                  accept = c(".ods")
+                  accept = c(".xlsx")
                 ),
                 fileInput(
                   "groups",
                   "Import groups",
                   multiple = FALSE,
-                  accept = c(".ods")
+                  accept = c(".xlsx")
                 )
               )
             ),
@@ -276,7 +277,7 @@ raText <- function() {
           fillRow(
             flex = c(1, 1),
             textInput("part", "Name of the part: ", value = "part"),
-            actionButton("exportods", "Export files")
+            actionButton("exportxlsx", "Export files")
           )
         )
       )
@@ -294,6 +295,7 @@ raText <- function() {
     criterion_scale <- NULL
     question_id <- NULL
     source_id <- NULL
+    student_id <- NULL
     criterion_id <- NULL
     criterion_label <- NULL
     data <- NULL
@@ -320,7 +322,7 @@ raText <- function() {
 
         # Download or create answers
         if (!is.null(input$answers)) {
-          tables$answers <- readODS::read_ods(
+          tables$answers <- readxl::read_excel(
             input$answers$datapath[[1]]
           ) %>%
             dplyr::mutate(
@@ -348,7 +350,7 @@ raText <- function() {
 
         # Download or create criteria
         if (!is.null(input$criteria)) {
-          tables$criteria <- readODS::read_ods(
+          tables$criteria <- readxl::read_excel(
             input$criteria$datapath[[1]]
           )
         } else {
@@ -364,7 +366,7 @@ raText <- function() {
 
         # Download or create solutions
         if (!is.null(input$solutions)) {
-          tables$solutions <- readODS::read_ods(
+          tables$solutions <- readxl::read_excel(
             input$solutions$datapath[[1]]
           )
         } else {
@@ -377,7 +379,7 @@ raText <- function() {
         
         # Download or create groups
         if (!is.null(input$groups)) {
-          tables$groups <- readODS::read_ods(
+          tables$groups <- readxl::read_excel(
             input$groups$datapath[[1]]
           )
         } else {
@@ -1198,7 +1200,7 @@ raText <- function() {
 
 
     # Download
-    observeEvent(input$exportods, {
+    observeEvent(input$exportxlsx, {
       
       solutions <- tables$solutions %>%
         dplyr::mutate(type = "text", part = input$part) %>%
@@ -1242,21 +1244,21 @@ raText <- function() {
           function(x) purrr::map_chr(x, lexR::clean_ascii)
         )
 
-      readODS::write_ods(
+      WriteXLS::WriteXLS(
         criteria,
-        paste0("criteria_", input$part, ".ods")
+        paste0("criteria_", input$part, ".xlsx")
       )
-      readODS::write_ods(
+      WriteXLS::WriteXLS(
         solutions,
-        paste0("solutions_", input$part, ".ods")
+        paste0("solutions_", input$part, ".xlsx")
       )
-      readODS::write_ods(
+      WriteXLS::WriteXLS(
         grades,
-        paste0("grades_", input$part, ".ods")
+        paste0("grades_", input$part, ".xlsx")
       )
-      readODS::write_ods(
+      WriteXLS::WriteXLS(
         bestof,
-        paste0("bestof_", input$part, ".ods")
+        paste0("bestof_", input$part, ".xlsx")
       )
     })
 

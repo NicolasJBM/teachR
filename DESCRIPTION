@@ -23,6 +23,8 @@ Imports:
   dplyr,
   stats,
   tidyr,
+  readxl,
+  WriteXLS,
   readODS,
   miniUI,
   shiny,
