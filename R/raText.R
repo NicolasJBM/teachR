@@ -322,9 +322,22 @@ raText <- function() {
 
         # Download or create answers
         if (!is.null(input$answers)) {
-          tables$answers <- readxl::read_excel(
+          answers <- readxl::read_excel(
             input$answers$datapath[[1]]
-          ) %>%
+          )
+          
+          tables$answers <- answers %>%
+            tidyr::pivot_wider(
+              names_from = "question_id",
+              values_from = "answer",
+              values_fill = ""
+            ) %>%
+            tidyr::pivot_longer(
+              cols = unique(answers$question_id),
+              names_to = "question_id",
+              values_to = "answer"
+            ) %>%
+            tidyr::replace_na(list(answer = "")) %>%
             dplyr::mutate(
               comments = as.character(NA),
               evaluation = as.double(0.00)
