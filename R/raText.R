@@ -55,6 +55,7 @@
 #' @importFrom dplyr select
 #' @importFrom psych pca
 #' @importFrom psych fa
+#' @importFrom stats sd
 #' @export
 
 
