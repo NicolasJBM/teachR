@@ -991,7 +991,15 @@ raText <- function() {
           if (nrow(discrete) > length(discrete) + 1) {
             pca <- suppressWarnings(
               suppressMessages(
-                psych::pca(dplyr::select_if(discrete, is.numeric), 1)
+                psych::pca(
+                  dplyr::select_if(
+                    dplyr::select_if(
+                      discrete, is.numeric
+                    ),
+                    function(x) sd(x) != 0
+                  ),
+                  1
+                )
               )
             )
             pca <- tibble::tibble(
@@ -1001,7 +1009,14 @@ raText <- function() {
 
             fa <- suppressWarnings(
               suppressMessages(
-                psych::fa(dplyr::select_if(discrete, is.numeric), 1)
+                psych::fa(
+                  dplyr::select_if(
+                    dplyr::select_if(
+                      discrete, is.numeric
+                    ),
+                    function(x) sd(x) != 0
+                  ),
+                1)
               )
             )
             fa <- tibble::tibble(
