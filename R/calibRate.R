@@ -57,13 +57,8 @@ calibRate <- function() {
         icon = icon("sliders"),
         miniContentPanel(
           fillRow(
-            flex = c(1,1,1,1),
-            fileInput(
-              "getsolutions",
-              "Select solution files",
-              multiple = TRUE,
-              accept = ".xlsx"
-            ),
+            flex = c(1, 1, 1, 1, 1),
+            checkboxInput("weighted", "Weighted criteria", value = FALSE),
             fileInput(
               "getcriteria",
               "Select criteria files",
@@ -73,6 +68,12 @@ calibRate <- function() {
             fileInput(
               "getgrades",
               "Select grades files",
+              multiple = TRUE,
+              accept = ".xlsx"
+            ),
+            fileInput(
+              "getsolutions",
+              "Select solution files",
               multiple = TRUE,
               accept = ".xlsx"
             ),
@@ -86,32 +87,44 @@ calibRate <- function() {
         icon = icon("balance-scale"),
         miniContentPanel(
           fillCol(
-            flex = c(1,1),
+            flex = c(5, 1, 4),
+            rHandsontableOutput("dispcriteria"),
             fillRow(
-              flex = c(5,1),
-              rHandsontableOutput("dispcriteria"),
-              actionButton("updateweights", "Update")
+              flex = c(1, 1, 1, 1, 1, 1),
+              actionButton("updateweights", "Update"),
+              numericInput(
+                "threshold",
+                "Passing grade",
+                min = 0,
+                value = 50,
+                max = 100,
+                step = 0.5
+              ),
+              textOutput("maxweight"),
+              textOutput("maxpoints"),
+              textOutput("studnbr"),
+              textOutput("passrate")
             ),
             plotOutput("distribution")
           )
         )
       ),
-      
+
       miniTabPanel(
         "Analyses",
         icon = icon("calculator"),
         miniContentPanel(
           fillCol(
-            flex = c(2,6),
+            flex = c(2, 6),
             fillRow(
-              flex = c(1,2,3,1,1),
+              flex = c(1, 2, 3, 1, 1),
               uiOutput("slctpart"),
               uiOutput("slctquest"),
               uiOutput("slctcrit"),
               selectInput(
                 "slctana",
                 "Analysis:",
-                choices = c("PCA","IRT"),
+                choices = c("PCA", "IRT"),
                 selected = "PCA",
                 multiple = FALSE,
                 width = "100%"
@@ -119,9 +132,13 @@ calibRate <- function() {
               actionButton("run", "Run analysis")
             ),
             fillRow(
-              flex = c(1,3),
+              flex = c(1, 3),
               dataTableOutput("table"),
-              plotOutput("plot", width = "90%", height = "600px")
+              fillCol(
+                flex = c(3, 1),
+                plotOutput("plot", width = "90%", height = "600px"),
+                plotOutput("subdistribution", width = "90%", height = "200px")
+              )
             )
           )
         )
@@ -149,59 +166,76 @@ calibRate <- function() {
     discrimination <- NULL
     loadings <- NULL
     part <- NULL
+    pass <- NULL
 
 
     ############################################################################
     # Import
-    
+
     tables <- reactiveValues()
-    
+
     observeEvent(input$import, {
-      
       solutions <- list()
-      for (i in seq_len(nrow(input$getsolutions))){
+      for (i in seq_len(nrow(input$getsolutions))) {
         solutions[[i]] <- readxl::read_excel(input$getsolutions$datapath[[i]])
       }
       solutions <- dplyr::bind_rows(solutions)
       tables$solutions <- solutions
-      
+
       grades <- list()
-      for (i in seq_len(nrow(input$getgrades))){
+      for (i in seq_len(nrow(input$getgrades))) {
         grades[[i]] <- readxl::read_excel(input$getgrades$datapath[[i]])
       }
       grades <- dplyr::bind_rows(grades)
-      tables$grades <- grades
-      
-      criteria <- list()
-      for (i in seq_len(nrow(input$getcriteria))){
-        criteria[[i]] <- readxl::read_excel(input$getcriteria$datapath[[i]])
-      }
-      criteria <- dplyr::bind_rows(criteria) %>%
-        dplyr::group_by(question_id) %>%
+
+      grades <- grades %>%
+        dplyr::group_by(question_id, part) %>%
         tidyr::nest() %>%
-        dplyr::left_join(
-          dplyr::select(
-            solutions, question_id, points
-          ),
-          by = "question_id"
-        ) %>%
         dplyr::mutate(
-          weight = points,
-          divide = purrr::map_int(data, nrow)
+          data = purrr::map(data, add_missing)
         ) %>%
-        dplyr::mutate(points = points / divide) %>%
-        dplyr::mutate(weight = weight / divide) %>%
-        dplyr::select(question_id, data, weight, points) %>%
         tidyr::unnest(data) %>%
         dplyr::ungroup()
+
+      tables$grades <- grades
+
+      criteria <- list()
+      for (i in seq_len(nrow(input$getcriteria))) {
+        criteria[[i]] <- readxl::read_excel(input$getcriteria$datapath[[i]])
+      }
+
+      if (input$weighted == FALSE) {
+        criteria <- dplyr::bind_rows(criteria) %>%
+          dplyr::group_by(question_id) %>%
+          tidyr::nest() %>%
+          dplyr::left_join(
+            dplyr::select(
+              solutions, question_id, points
+            ),
+            by = "question_id"
+          ) %>%
+          dplyr::mutate(
+            weight = points,
+            divide = purrr::map_int(data, nrow)
+          ) %>%
+          dplyr::mutate(points = points / divide) %>%
+          dplyr::mutate(weight = weight / divide) %>%
+          dplyr::select(question_id, data, weight, points) %>%
+          tidyr::unnest(data) %>%
+          dplyr::ungroup()
+      } else {
+        criteria <- dplyr::bind_rows(criteria)
+      }
+
       tables$criteria <- criteria
       tables$analysis <- NA
+      tables$subdistribution <- NA
     })
-    
-    
+
+
     ############################################################################
     # Adjust
-    
+
     output$dispcriteria <- renderRHandsontable({
       tables$criteria %>%
         rhandsontable::rhandsontable(
@@ -214,11 +248,11 @@ calibRate <- function() {
           allowColEdit = FALSE
         )
     })
-    
+
     observeEvent(input$updateweights, {
       tables$criteria <- rhandsontable::hot_to_r(input$dispcriteria)
     })
-    
+
     scores <- reactive({
       tables$grades %>%
         dplyr::left_join(
@@ -232,49 +266,96 @@ calibRate <- function() {
         dplyr::group_by(student_id, question_id) %>%
         dplyr::summarise(
           score = sum(score, na.rm = TRUE),
-          total = sum(points, na.rm = TRUE)) %>%
+          total = sum(points, na.rm = TRUE)
+        ) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(score = round(score*4,0)/4) %>%
+        dplyr::mutate(
+          score = round(score * 4, 0) / 4,
+          total = round(total * 4, 0) / 4
+        ) %>%
         dplyr::mutate(
           score = dplyr::case_when(
+            score < 0 ~ 0,
             score <= total ~ score,
+            total == 0 ~ score,
             TRUE ~ total
           )
         )
     })
+
+    credits <- reactive({
+      if (!is.null(scores()) & !is.null(input$threshold)) {
+        scores() %>%
+          dplyr::group_by(student_id) %>%
+          dplyr::summarise(
+            credits = sum(score, na.rm = TRUE),
+            total = sum(total, na.rm = TRUE)
+          ) %>%
+          dplyr::ungroup() %>%
+          dplyr::mutate(
+            credits = dplyr::case_when(
+              credits < 0 ~ 0,
+              credits <= total ~ credits,
+              total == 0 ~ credits,
+              TRUE ~ total
+            )
+          ) %>%
+          dplyr::filter(credits > 0)
+      }
+    })
+
+    output$maxweight <- renderText({
+      maxweight <- round(sum(tables$criteria$weight),2)
+      paste0("Total weights: ", maxweight)
+    })
+
+    output$maxpoints <- renderText({
+      maxpoints <- round(sum(tables$criteria$points),0)
+      paste0("Total points: ", maxpoints)
+    })
+
+    output$studnbr <- renderText({
+      total <- nrow(credits())
+      paste0("Number of students: ", total)
+    })
     
+    output$passrate <- renderText({
+      if (!is.null(credits()) & !is.null(input$threshold)) {
+        nbr <- sum(
+          as.numeric(
+            credits()$credits > input$threshold
+          ),
+          na.rm = TRUE
+        )
+        total <- nrow(credits())
+        pct <- round(100 * nbr / total, 0)
+        paste0("Success rate: ", pct, "%")
+      } else {
+        ""
+      }
+    })
+
     output$distribution <- renderPlot({
-      
-      distrib <- scores() %>%
-        dplyr::group_by(student_id) %>%
-        dplyr::summarise(
-          score = sum(score, na.rm = TRUE),
-          total = sum(total, na.rm = TRUE)) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(
-          score = dplyr::case_when(
-            score <= total ~ score,
-            TRUE ~ total
-          )
-        ) %>%
-        dplyr::mutate(score = round(score,0)) %>%
-        dplyr::group_by(score) %>%
-        dplyr::count() %>%
-        dplyr::filter(score > 0)
-      
-      distrib %>%
-        ggplot2::ggplot(
-        ggplot2::aes(x = score, y = n)
-      ) +
-        ggplot2::geom_bar(stat = "identity") +
-        ggplot2::xlab("Credits") +
-        ggplot2::ylab("Count")
+      if (!is.null(credits()) & !is.null(input$threshold)) {
+        credits() %>%
+          dplyr::mutate(credits = round(credits, 0)) %>%
+          dplyr::group_by(credits) %>%
+          dplyr::count() %>%
+          dplyr::mutate(pass = credits >= input$threshold) %>%
+          ggplot2::ggplot(
+            ggplot2::aes(x = credits, y = n, fill = pass)
+          ) +
+          ggplot2::geom_bar(stat = "identity") +
+          ggplot2::xlab("Credits") +
+          ggplot2::ylab("Count") +
+          ggplot2::scale_fill_manual(values = c("red", "green"))
+      }
     })
 
 
     ############################################################################
     # Analyses
-    
+
     output$slctpart <- renderUI({
       selectInput(
         "slctpart",
@@ -285,15 +366,15 @@ calibRate <- function() {
         width = "100%"
       )
     })
-    
+
     output$slctquest <- renderUI({
-      if (!is.null(input$slctpart)){
-        base <- dplyr::filter(tables$grades, part %in% input$slctpart)
+      if (!is.null(input$slctpart)) {
+        parts <- dplyr::filter(tables$grades, part %in% input$slctpart)
         selectInput(
           "slctquest",
           "Questions:",
-          choices = unique(base$question_id),
-          selected = unique(base$question_id),
+          choices = unique(parts$question_id),
+          selected = unique(parts$question_id),
           multiple = TRUE,
           width = "100%"
         )
@@ -301,67 +382,105 @@ calibRate <- function() {
     })
 
     output$slctcrit <- renderUI({
-      if (!is.null(input$slctquest)){
-        base <- dplyr::filter(tables$grades, question_id %in% input$slctquest)
+      if (!is.null(input$slctquest)) {
+        criteria <- dplyr::filter(
+          tables$grades,
+          question_id %in% input$slctquest
+        )
         selectInput(
           "slctcrit",
           "Criteria:",
-          choices = unique(base$criterion_id),
-          selected = unique(base$criterion_id),
+          choices = unique(criteria$criterion_id),
+          selected = unique(criteria$criterion_id),
           multiple = TRUE,
           width = "100%"
         )
       }
     })
+
+
+    
+    
+    
+    
+    
+    
     
     observeEvent(input$run, {
-      
       base_analysis <- tables$grades %>%
         dplyr::filter(criterion_id %in% input$slctcrit) %>%
-        dplyr::select(student_id, criterion_id, grade) %>%
+        dplyr::select(student_id, criterion_id, grade)
+      
+      tables$subdistribution <- base_analysis %>%
+        dplyr::left_join(
+          dplyr::select(
+            tables$criteria,
+            criterion_id, weight, points
+          ),
+          by = "criterion_id"
+        ) %>%
+        dplyr::mutate(score = round(grade * weight, 2)) %>%
+        dplyr::group_by(student_id) %>%
+        dplyr::summarise(
+          credits = round(sum(score, na.rm = TRUE), 0),
+          total = round(sum(total, na.rm = TRUE), 0)
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(
+          credits = dplyr::case_when(
+            credits < 0 ~ 0,
+            credits <= total ~ credits,
+            total == 0 ~ credits,
+            TRUE ~ total
+          )
+        ) %>%
+        dplyr::filter(credits > 0) %>%
+        dplyr::group_by(credits) %>%
+        dplyr::count()
+      
+      base_analysis <- base_analysis %>%
         tidyr::pivot_wider(
           names_from = "criterion_id",
-          values_from = "grade"
+          values_from = "grade",
+          values_fill = 0
         ) %>%
-        dplyr::select(-student_id)
+        dplyr::select(-student_id) %>%
+        dplyr::select_if(function(x) stats::sd(x) != 0)
       
-      if (input$slctana == "PCA"){
+      if (input$slctana == "PCA") {
         pc <- psych::principal(base_analysis)
         tables$analysis <- as.data.frame(pc$loadings[]) %>%
           tibble::rownames_to_column("criterion_id") %>%
           dplyr::select(criterion_id, loadings = PC1)
-        
       } else {
-        
         irt <- psych::irt.fa(
           dplyr::mutate_all(
             base_analysis,
             function(x) as.numeric(x > 0)
           )
         )
-        
+
         tables$analysis <- irt$irt$discrimination %>%
           as.data.frame() %>%
           tibble::rownames_to_column("criterion_id") %>%
           dplyr::mutate(difficulty = irt$irt$difficulty[[1]]) %>%
           dplyr::select(criterion_id, difficulty, discrimination = MR1)
-        
       }
     })
-    
+
     output$table <- renderDataTable({
       if (length(tables$analysis) > 1) tables$analysis
     })
-    
+
     output$plot <- renderPlot({
-      if (length(tables$analysis) > 1){
-        if (input$slctana == "PCA" & "loadings" %in% names(tables$analysis)){
+      if (length(tables$analysis) > 1) {
+        if (input$slctana == "PCA" & "loadings" %in% names(tables$analysis)) {
           tables$analysis %>%
             ggplot2::ggplot(ggplot2::aes(x = criterion_id, y = loadings)) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::coord_flip()
         } else {
-          if ("difficulty" %in% names(tables$analysis)){
+          if ("difficulty" %in% names(tables$analysis)) {
             tables$analysis %>%
               ggplot2::ggplot(ggplot2::aes(
                 x = difficulty,
@@ -373,16 +492,50 @@ calibRate <- function() {
         }
       }
     })
-    
+
+    output$subdistribution <- renderPlot({
+      if (length(tables$subdistribution) > 1) {
+        tables$subdistribution %>%
+          ggplot2::ggplot(
+            ggplot2::aes(x = credits, y = n)
+          ) +
+          ggplot2::geom_bar(stat = "identity") +
+          ggplot2::xlab("Credits") +
+          ggplot2::ylab("Count")
+      }
+    })
+
     ############################################################################
     # On exit
 
     observeEvent(input$done, {
-      WriteXLS::WriteXLS(tables$criteria, "weights.xlsx")
-      WriteXLS::WriteXLS(scores(), "scores.xlsx")
+      scores <- scores() %>%
+        dplyr::left_join(
+          unique(dplyr::select(tables$criteria, question_id, part)),
+          by = "question_id"
+        ) %>%
+        dplyr::select(student_id, question_id, part, score, total)
+
+      WriteXLS::WriteXLS(tables$criteria, "weighted_criteria.xlsx")
+      WriteXLS::WriteXLS(scores, "scores.xlsx")
       stopApp()
     })
   }
 
   runGadget(ui, server, viewer = shiny::browserViewer())
+}
+
+
+add_missing <- function(x){
+  x %>%
+    tidyr::pivot_wider(
+      names_from = "criterion_id",
+      values_from = "grade",
+      values_fill = 0
+    ) %>%
+    tidyr::pivot_longer(
+      cols = unique(x$criterion_id),
+      names_to = "criterion_id",
+      values_to = "grade"
+    )
 }
