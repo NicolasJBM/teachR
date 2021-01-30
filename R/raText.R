@@ -39,6 +39,7 @@
 #' @importFrom shiny textOutput
 #' @importFrom shiny htmlOutput
 #' @importFrom shiny HTML
+#' @importFrom shiny column
 #' @importFrom shiny radioButtons
 #' @importFrom shiny textAreaInput
 #' @importFrom shinythemes shinytheme
@@ -141,13 +142,13 @@ raText <- function() {
         icon = icon("edit"),
         miniContentPanel(
           fillCol(
-            flex = c(1,1,10),
+            flex = c(1, 1, 8),
             uiOutput("slctquest"),
             tags$br(),
             fillRow(
               flex = c(5, 7),
               fillCol(
-                flex = c(1, 2, 6),
+                flex = c(1, 2, 5),
                 actionButton(
                   "updatesolution",
                   "Update solution",
@@ -158,7 +159,7 @@ raText <- function() {
                 uiOutput("solution")
               ),
               fillCol(
-                flex = c(1, 9),
+                flex = c(1, 7),
                 actionButton(
                   "updatecriteria",
                   "Update criteria",
@@ -209,7 +210,7 @@ raText <- function() {
                 "lastgraded",
                 "Graded",
                 icon = icon("edit"),
-                style = "width:100px; background-color:#669933;"
+                style = "width:100px; background-color:#999900;"
               ),
               actionButton(
                 "nextsrc",
@@ -249,26 +250,45 @@ raText <- function() {
         icon = icon("ruler"),
         miniContentPanel(
           fillRow(
-            flex = c(2, 1),
+            flex = c(3, 2),
             fillCol(
               dataTableOutput("checktable")
             ),
             fillCol(
-              flex = c(1, 4, 1, 3),
+              flex = c(1, 7),
               actionButton(
                 "checkquestion",
                 "Update",
                 icon = icon("redo"),
                 style = "width:100%; background-color: #006699;"
               ),
-              plotOutput("correlations", height = "100%"),
-              uiOutput("select_dim"),
-              plotOutput("scatterplot", brush = "slctpoint", height = "100%")
+              plotOutput("correlations", height = "100%")
             )
           )
         )
       ),
-      
+
+      miniTabPanel(
+        "Weights",
+        icon = icon("balance-scale"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1, 8),
+            actionButton(
+              "runregr",
+              "Compute",
+              icon = icon("redo"),
+              style = "width:100%; background-color: #006699;"
+            ),
+            fillRow(
+              flex = c(1, 1),
+              plotOutput("coefficients", height = "100%"),
+              plotOutput("residuals", brush = "slctpoint", height = "100%")
+            )
+          )
+        )
+      ),
+
       miniTabPanel(
         "Best-of",
         icon = icon("grin-squint-tears"),
@@ -331,11 +351,11 @@ raText <- function() {
     criterion_order <- NULL
     name <- NULL
     increment <- NULL
-    x <- NULL
-    y <- NULL
     question_label <- NULL
     part <- NULL
     type <- NULL
+    divider <- NULL
+    weight <- NULL
 
 
     ############################################################################
@@ -352,7 +372,6 @@ raText <- function() {
           answers <- readxl::read_excel(
             input$answers$datapath[[1]]
           )
-          
           tables$answers <- answers %>%
             tidyr::pivot_wider(
               names_from = "question_id",
@@ -416,7 +435,7 @@ raText <- function() {
             points = as.double(10)
           )
         }
-        
+
         # Download or create groups
         if (!is.null(input$groups)) {
           tables$groups <- readxl::read_excel(
@@ -449,6 +468,8 @@ raText <- function() {
 
         tables$details <- list()
         tables$scores <- list()
+        tables$coefficients <- list()
+        tables$residuals <- list()
       } else {
         if (!is.null(input$backup)) {
           load(input$backup$datapath)
@@ -464,6 +485,8 @@ raText <- function() {
           tables$bestof <- project$bestof
           tables$details <- project$details
           tables$scores <- project$scores
+          tables$coefficients <- project$coefficients
+          tables$residuals <- project$residuals
         }
       }
     })
@@ -514,7 +537,7 @@ raText <- function() {
         value = textsol,
         height = "100px"
       ) %>%
-        shiny::tagAppendAttributes(style = 'width: 90%;')
+        shiny::tagAppendAttributes(style = "width: 90%;")
     })
 
 
@@ -674,7 +697,9 @@ raText <- function() {
         groups = tables$groups,
         bestof = tables$bestof,
         details = tables$details,
-        scores = tables$scores
+        scores = tables$scores,
+        coefficients = tables$coefficients,
+        residuals = tables$residuals
       )
       save(project, file = "project.RData")
     })
@@ -683,8 +708,8 @@ raText <- function() {
     observeEvent(input$lastgraded, {
       tables$sourceincr <- tables$lastgraded
     })
-    
-    
+
+
     observeEvent(input$nextsrc, {
       tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
     })
@@ -879,7 +904,7 @@ raText <- function() {
           value = comments,
           height = "100px"
         ) %>%
-          shiny::tagAppendAttributes(style = 'width: 100%;')
+          shiny::tagAppendAttributes(style = "width: 100%;")
 
         column(ui, width = 11)
       }
@@ -1026,7 +1051,8 @@ raText <- function() {
                     ),
                     function(x) sd(x) != 0
                   ),
-                1)
+                  1
+                )
               )
             )
             fa <- tibble::tibble(
@@ -1113,7 +1139,7 @@ raText <- function() {
 
     # Display graphs and tables
 
-    basescatterplot <- reactive({
+    basecheck <- reactive({
       if (!is.null(input$slctquest)) {
         if (!is.null(tables$scores[[input$slctquest]])) {
           increments <- tibble::tibble(
@@ -1128,23 +1154,25 @@ raText <- function() {
     })
 
     output$checktable <- renderDataTable({
-      if (!is.null(input$slctquest)) {
-        if (!is.null(tables$details[[input$slctquest]])) {
-          tables$details[[input$slctquest]] %>%
-            dplyr::left_join(tables$criteria, by = "criterion_id") %>%
-            dplyr::left_join(basescatterplot(), by = "source_id") %>%
-            dplyr::select(
-              source = increment, criterion_label, addressed, keywords
-            ) %>%
-            na.omit() %>%
-            dplyr::filter(
-              (addressed == 0 & keywords > 0) |
-                (addressed > 0 & keywords == 0)
-            ) %>%
-            dplyr::arrange(addressed, -keywords)
+        if (!is.null(input$slctquest)) {
+          if (!is.null(tables$details[[input$slctquest]])) {
+            tables$details[[input$slctquest]] %>%
+              dplyr::left_join(tables$criteria, by = "criterion_id") %>%
+              dplyr::left_join(basecheck(), by = "source_id") %>%
+              dplyr::select(
+                source = increment, criterion_label, addressed, keywords
+              ) %>%
+              na.omit() %>%
+              dplyr::filter(
+                (addressed == 0 & keywords > 0) |
+                  (addressed > 0 & keywords == 0)
+              ) %>%
+              dplyr::arrange(addressed, -keywords)
+          }
         }
-      }
-    }, options = list(pageLength = 5))
+      },
+      options = list(pageLength = 8)
+    )
 
 
     output$correlations <- renderPlot({
@@ -1160,74 +1188,132 @@ raText <- function() {
       }
     })
 
+    ############################################################################
+    # Weights
+    observeEvent(input$runregr, {
+      dependent <- tables$answers %>%
+        dplyr::filter(question_id == input$slctquest) %>%
+        dplyr::select(source_id, evaluation) %>%
+        tidyr::replace_na(list(evaluation = 0))
 
-    output$select_dim <- renderUI({
+      independent <- tables$grades %>%
+        dplyr::filter(question_id == input$slctquest) %>%
+        tidyr::unnest(data) %>%
+        dplyr::select(source_id, criterion_id, grade) %>%
+        tidyr::pivot_wider(
+          names_from = criterion_id,
+          values_from = grade,
+          values_fill = 0
+        )
+
+      baseregr <- independent %>%
+        dplyr::left_join(dependent, by = "source_id") %>%
+        tibble::column_to_rownames("source_id")
+
+      baseregr <- baseregr[, (apply(baseregr, 2, sd) != 0)]
+      regression <- stats::lm(evaluation ~ ., data = baseregr)
+
+      coefficients <- as.data.frame(regression$coefficients) %>%
+        tibble::rownames_to_column("criterion_id") %>%
+        dplyr::filter(criterion_id != "(Intercept)")
+      names(coefficients) <- c("criterion_id", "coefficients")
+      coefficients <- coefficients %>%
+        dplyr::left_join(
+          dplyr::select(
+            tables$criteria,
+            criterion_id, criterion_order, criterion_label
+          ),
+          by = "criterion_id"
+        )
+
+      increments <- tibble::tibble(
+        source_id = tables$sources,
+        increment = seq_len(length(tables$sources))
+      )
+
+      residuals <- as.data.frame(regression$residuals) %>%
+        tibble::rownames_to_column("source_id") %>%
+        dplyr::left_join(dependent, by = "source_id") %>%
+        dplyr::left_join(increments, by = "source_id")
+      names(residuals) <- c("source_id", "residuals", "evaluation", "increment")
+
+      tables$coefficients[[input$slctquest]] <- coefficients %>%
+        dplyr::mutate(question_id = input$slctquest) %>%
+        dplyr::select(source_id, question_id, dplyr::everything())
+
+      tables$residuals[[input$slctquest]] <- residuals %>%
+        dplyr::mutate(question_id = input$slctquest) %>%
+        dplyr::select(source_id, question_id, dplyr::everything())
+    })
+
+    output$coefficients <- renderPlot({
       if (!is.null(input$slctquest)) {
-        if (!is.null(tables$scores[[input$slctquest]])) {
-          choices <- c("evaluation", "SUM", "AVG", "PCA", "FAC", "KWD")
-          ui <- list(
-            fillRow(
-              flex = c(1, 1),
-              selectInput(
-                "slctx",
-                "Select x-axis",
-                choices = choices,
-                selected = "SUM"
-              ),
-              selectInput(
-                "slcty",
-                "Select y-axis",
-                choices = choices,
-                selected = "evaluation"
-              )
-            )
+        if (length(tables$coefficients[[input$slctquest]]) > 1) {
+          basecoeff <- tables$coefficients[[input$slctquest]] %>%
+            na.omit() %>%
+            dplyr::arrange(-criterion_order)
+          basecoeff$criterion_label <- factor(
+            basecoeff$criterion_label,
+            levels = basecoeff$criterion_label
           )
-          ui
+          basecoeff %>%
+            ggplot2::ggplot(ggplot2::aes(
+              x = criterion_label,
+              y = coefficients
+            )) +
+            ggplot2::geom_bar(stat = "identity") +
+            ggplot2::xlab("Criteria") +
+            ggplot2::ylab("Weight") +
+            ggplot2::coord_flip()
         }
       }
     })
 
-    output$scatterplot <- renderPlot({
-      if (!is.null(input$slctx) &
-        !is.null(input$slcty) &
-        !is.null(basescatterplot())) {
-        basescatterplot() %>%
-          na.omit() %>%
-          ggplot2::ggplot(ggplot2::aes(
-            x = x, y = y, label = increment
-          )) +
-          ggplot2::geom_label() +
-          ggplot2::geom_smooth(method = "lm", formula = y ~ x) +
-          ggplot2::xlab(input$slctx) +
-          ggplot2::ylab(input$slcty)
+    output$residuals <- renderPlot({
+      if (!is.null(input$slctquest)) {
+        if (length(tables$residuals[[input$slctquest]]) > 1) {
+          basresid <- tables$residuals[[input$slctquest]]
+
+          basresid %>%
+            na.omit() %>%
+            ggplot2::ggplot(ggplot2::aes(
+              x = evaluation,
+              y = residuals,
+              label = increment
+            )) +
+            ggplot2::geom_label() +
+            ggplot2::scale_x_continuous(
+              limits = c(0, max(basresid$evaluation)),
+              breaks = seq(0, max(basresid$evaluation), by = 1)
+            ) +
+            ggplot2::geom_hline(yintercept = 0) +
+            ggplot2::annotate("text", x = 0, y = 1, label = "with bonus") +
+            ggplot2::annotate("text", x = 0, y = -1, label = "with penalty")
+        }
       }
     })
-
 
     observeEvent(input$slctpoint, {
-      if (!is.null(basescatterplot())) {
-        selection <- basescatterplot() %>%
-          dplyr::filter(
-            x <= input$slctpoint$xmax,
-            x >= input$slctpoint$xmin,
-            y <= input$slctpoint$ymax,
-            y >= input$slctpoint$ymin
-          )
-
-        if (nrow(selection) > 0) tables$sourceincr <- selection$increment[[1]]
+      if (!is.null(input$slctquest)) {
+        if (length(tables$residuals[[input$slctquest]]) > 1) {
+          selection <- tables$residuals[[input$slctquest]] %>%
+            dplyr::filter(
+              evaluation <= input$slctpoint$xmax,
+              evaluation >= input$slctpoint$xmin,
+              residuals <= input$slctpoint$ymax,
+              residuals >= input$slctpoint$ymin
+            )
+          if (nrow(selection) > 0) {
+            tables$sourceincr <- selection$increment[[1]]
+          }
+        }
       }
     })
-    
-    
-    ############################################################################
-    # Weights
-    
-    
 
 
     ############################################################################
     # Best of
-    
+
     output$bestof <- rhandsontable::renderRHandsontable({
       tables$bestof %>%
         rhandsontable::rhandsontable(
@@ -1241,32 +1327,37 @@ raText <- function() {
           allowColEdit = FALSE
         )
     })
-    
+
     observeEvent(input$updatebestof, {
       tables$bestof <- rhandsontable::hot_to_r(input$bestof)
     })
-    
+
     ############################################################################
     # Export
 
     # Grade distribution
     output$distribution <- renderPlot({
-      tables$answers %>%
+      basedistrib <- tables$answers %>%
         na.omit() %>%
         dplyr::group_by(source_id) %>%
         dplyr::summarize(evaluation = sum(evaluation)) %>%
         dplyr::ungroup() %>%
-        dplyr::count(evaluation) %>%
+        dplyr::count(evaluation)
+
+      basedistrib %>%
         ggplot2::ggplot(ggplot2::aes(x = evaluation, y = n)) +
         ggplot2::geom_bar(stat = "identity") +
         ggplot2::xlab("Grade") +
-        ggplot2::ylab("Count")
+        ggplot2::ylab("Count") +
+        ggplot2::scale_x_continuous(
+          limits = c(0, max(basedistrib$evaluation)),
+          breaks = seq(0, max(basedistrib$evaluation), by = 1)
+        )
     })
 
 
     # Download
     observeEvent(input$exportxlsx, {
-      
       solutions <- tables$solutions %>%
         dplyr::mutate(type = "text", part = input$part) %>%
         dplyr::mutate_if(
@@ -1276,21 +1367,39 @@ raText <- function() {
         dplyr::select(
           question_id, question_label, solution, points
         )
-      
+
       criteria <- tables$criteria %>%
         dplyr::mutate(type = "text", part = input$part) %>%
+        dplyr::left_join(
+          dplyr::select(
+            bind_rows(tables$coefficients),
+            criterion_id,
+            weight = coefficients
+          ),
+          by = "criterion_id"
+        ) %>%
+        dplyr::left_join(
+          dplyr::select(solutions, question_id, points),
+          by = "question_id"
+        ) %>%
         dplyr::mutate_if(
           is.character,
           function(x) purrr::map_chr(x, lexR::clean_ascii)
         ) %>%
+        dplyr::group_by(question_id) %>%
+        dplyr::mutate(divider = dplyr::n()) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(points = points / divider) %>%
         dplyr::select(
-          part, question_id, criterion_id, criterion_order, criterion_label
+          part, question_id, criterion_id,
+          criterion_order, criterion_label,
+          weight, points
         )
-      
+
       groups <- tables$groups %>%
         dplyr::group_by(source_id) %>%
         tidyr::nest()
-      
+
       grades <- tables$grades %>%
         tidyr::unnest(data) %>%
         dplyr::mutate(type = "text", part = input$part) %>%
@@ -1344,7 +1453,9 @@ raText <- function() {
         groups = tables$groups,
         bestof = tables$bestof,
         details = tables$details,
-        scores = tables$scores
+        scores = tables$scores,
+        coefficients = tables$coefficients,
+        residuals = tables$residuals
       )
       save(project, file = "project.RData")
 
