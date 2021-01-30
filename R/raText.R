@@ -76,29 +76,21 @@ raText <- function() {
         "Upload",
         icon = icon("upload"),
         miniContentPanel(
-          fillCol(
-            flex = c(1, 1, 1, 1, 7),
-            fillRow(
-              flex = c(1, 1, 1),
-              radioButtons(
-                "creres",
-                "Create or resume a project",
-                choices = c("Create", "Resume"),
-                selected = " Create",
-                inline = TRUE
-              ),
-              tags$br(),
-              actionButton(
-                "import",
-                "Import",
-                style = "width:150px;"
-              )
+          fillRow(
+            flex = c(1, 1, 1, 1),
+            height = "400px",
+            radioButtons(
+              "creres",
+              "Create or resume a project",
+              choices = c("Create", "Resume"),
+              selected = " Create",
+              inline = TRUE
             ),
-            tags$hr(),
             conditionalPanel(
               condition = "input.creres === 'Create'",
-              fillRow(
+              fillCol(
                 flex = c(1, 1, 1, 1),
+                height = "400px",
                 fileInput(
                   "answers",
                   "Import answers",
@@ -134,7 +126,12 @@ raText <- function() {
                 accept = ".RData"
               )
             ),
-            tags$br()
+            actionButton(
+              "import",
+              "Import",
+              style = "width:150px; background-color:#990033;",
+              icon = icon("upload")
+            )
           )
         )
       ),
@@ -143,35 +140,41 @@ raText <- function() {
         "Solution",
         icon = icon("edit"),
         miniContentPanel(
-          uiOutput("slctquest"),
-          fillRow(
-            flex = c(2, 4),
-            fillCol(
-              flex = c(1, 1, 9),
-              actionButton(
-                "updatesolution",
-                "Update solution",
-                style = "width:90%; background-color:#009933 !important;"
+          fillCol(
+            flex = c(1,1,10),
+            uiOutput("slctquest"),
+            tags$br(),
+            fillRow(
+              flex = c(5, 7),
+              fillCol(
+                flex = c(1, 2, 6),
+                actionButton(
+                  "updatesolution",
+                  "Update solution",
+                  style = "width:90%; background-color:#009933 !important;",
+                  icon = icon("save")
+                ),
+                uiOutput("question"),
+                uiOutput("solution")
               ),
-              uiOutput("question"),
-              uiOutput("solution")
-            ),
-            fillCol(
-              flex = c(1, 9),
-              actionButton(
-                "updatecriteria",
-                "Update criteria",
-                style = "width:100%; background-color:#009933 !important;"
-              ),
-              rhandsontable::rHandsontableOutput("criteria")
+              fillCol(
+                flex = c(1, 9),
+                actionButton(
+                  "updatecriteria",
+                  "Update criteria",
+                  style = "width:100%; background-color:#009933 !important;",
+                  icon = icon("save")
+                ),
+                rhandsontable::rHandsontableOutput("criteria")
+              )
             )
           )
         )
       ),
 
       miniTabPanel(
-        "Assess",
-        icon = icon("balance-scale"),
+        "Grade",
+        icon = icon("sliders-h"),
         miniContentPanel(
           fillCol(
             flex = c(1, 9),
@@ -181,71 +184,62 @@ raText <- function() {
               actionButton(
                 "firstsrc",
                 "First",
-                style = "width:100px;"
+                icon = icon("angle-double-left"),
+                style = "width:100px; background-color:#990033;"
               ),
               actionButton(
                 "prevsrc",
                 "Previous",
-                style = "width:100px;"
+                icon = icon("angle-left"),
+                style = "width:100px; background-color:#660099;"
               ),
               actionButton(
                 "reloadsrc",
                 "Reload",
-                style = "width:100px; background-color: #003399;"
+                icon = icon("redo"),
+                style = "width:100px; background-color: #000066;"
               ),
               actionButton(
                 "savesrc",
                 "Save",
+                icon = icon("save"),
                 style = "width:100px; background-color:#009933;"
-              ),
-              actionButton(
-                "nextsrc",
-                "Next",
-                style = "width:100px;"
               ),
               actionButton(
                 "lastgraded",
                 "Graded",
-                style = "width:100px;"
+                icon = icon("edit"),
+                style = "width:100px; background-color:#669933;"
+              ),
+              actionButton(
+                "nextsrc",
+                "Next",
+                icon = icon("angle-right"),
+                style = "width:100px; background-color:#996600;"
               ),
               actionButton(
                 "lastsrc",
                 "Last",
-                style = "width:100px;"
+                icon = icon("angle-double-right"),
+                style = "width:100px; background-color:#993300;"
               ),
               actionButton(
                 "gotosrc",
                 "Go to",
-                style = "width:100px;"
+                icon = icon("chevron-circle-right"),
+                style = "width:100px; background-color:#006666;"
               ),
               uiOutput("slctsrc")
             ),
             fillRow(
-              flex = c(7, 1, 4),
+              flex = c(7, 5),
               fillCol(
-                flex = c(1, 9),
+                flex = c(1, 11),
                 uiOutput("slctcriterion"),
                 uiOutput("answer")
               ),
-              tags$br(),
               uiOutput("grading")
             )
-          )
-        )
-      ),
-
-      miniTabPanel(
-        "Best-of",
-        icon = icon("grin-squint-tears"),
-        miniContentPanel(
-          fillCol(
-            flex = c(1, 11),
-            actionButton(
-              "updatebestof",
-              "Update",
-              style = "width:100%;"
-            ),
-            rHandsontableOutput("bestof")
           )
         )
       ),
@@ -254,18 +248,40 @@ raText <- function() {
         "Check",
         icon = icon("ruler"),
         miniContentPanel(
-          actionButton("checkquestion", "Check/Update"),
           fillRow(
-            flex = c(1, 1),
+            flex = c(2, 1),
             fillCol(
               dataTableOutput("checktable")
             ),
             fillCol(
-              flex = c(4, 1, 4),
-              plotOutput("correlations"),
+              flex = c(1, 4, 1, 3),
+              actionButton(
+                "checkquestion",
+                "Update",
+                icon = icon("redo"),
+                style = "width:100%; background-color: #006699;"
+              ),
+              plotOutput("correlations", height = "100%"),
               uiOutput("select_dim"),
-              plotOutput("scatterplot", brush = "slctpoint")
+              plotOutput("scatterplot", brush = "slctpoint", height = "100%")
             )
+          )
+        )
+      ),
+      
+      miniTabPanel(
+        "Best-of",
+        icon = icon("grin-squint-tears"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1, 11),
+            actionButton(
+              "updatebestof",
+              "Save",
+              icon = icon("save"),
+              style = "width:100%; background-color:#009933;"
+            ),
+            rHandsontableOutput("bestof")
           )
         )
       ),
@@ -274,11 +290,21 @@ raText <- function() {
         "Export",
         icon = icon("download"),
         miniContentPanel(
-          plotOutput("distribution"),
-          fillRow(
-            flex = c(1, 1),
-            textInput("part", "Name of the part: ", value = "part"),
-            actionButton("exportxlsx", "Export files")
+          fillCol(
+            flex = c(4, 1, 1),
+            plotOutput("distribution"),
+            textInput(
+              "part",
+              "Name of the part: ",
+              value = "part",
+              width = "100%"
+            ),
+            actionButton(
+              "exportxlsx",
+              "Export",
+              icon = icon("download"),
+              style = "width:100%; background-color:#009933;"
+            )
           )
         )
       )
@@ -457,7 +483,7 @@ raText <- function() {
       )
     })
 
-    output$question <- renderText({
+    output$question <- renderUI({
       if (!is.null(tables$solutions) & !is.null(input$slctquest)) {
         textquest <- tables$solutions %>%
           dplyr::filter(
@@ -468,7 +494,7 @@ raText <- function() {
       } else {
         textquest <- c("")
       }
-      textquest
+      column(HTML(textquest), width = 11)
     })
 
     output$solution <- renderUI({
@@ -486,9 +512,9 @@ raText <- function() {
         "solution",
         label = "Solution",
         value = textsol,
-        height = "500px"
+        height = "100px"
       ) %>%
-        shiny::tagAppendAttributes(style = "width: 90%;")
+        shiny::tagAppendAttributes(style = 'width: 90%;')
     })
 
 
@@ -654,13 +680,13 @@ raText <- function() {
     })
 
 
-    observeEvent(input$nextsrc, {
-      tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
-    })
-
-
     observeEvent(input$lastgraded, {
       tables$sourceincr <- tables$lastgraded
+    })
+    
+    
+    observeEvent(input$nextsrc, {
+      tables$sourceincr <- min(tables$sourceincr + 1, length(tables$sources))
     })
 
 
@@ -717,7 +743,7 @@ raText <- function() {
             "Select keywords to highlight:",
             choices = c("None", "All", criteria),
             selected = "None",
-            width = "100%"
+            width = "90%"
           )
         } else {
           tags$br()
@@ -791,7 +817,6 @@ raText <- function() {
             answer <- gsub("</span>", "</b></font>", answer)
             answer <- gsub("\n", "<br>", answer)
           }
-
           HTML(answer)
         } else {
           tags$iframe(src = answer, width = 840, height = 472)
@@ -835,16 +860,10 @@ raText <- function() {
           as.numeric()
 
         ui <- list()
-        ui[[1]] <- uiOutput("viewanswer")
-        ui[[2]] <- tags$hr()
-        ui[[3]] <- renderText(paste0("Word count: ", wordcount))
-        ui[[4]] <- textAreaInput(
-          "comments",
-          "Comments:",
-          value = comments,
-          height = "200px"
-        ) %>%
-          shiny::tagAppendAttributes(style = "width: 100%;")
+        ui[[1]] <- tags$hr()
+        ui[[2]] <- uiOutput("viewanswer")
+        ui[[3]] <- tags$hr()
+        ui[[4]] <- renderText(paste0("Word count: ", wordcount))
         ui[[5]] <- sliderInput(
           "evaluation",
           "Evaluation:",
@@ -854,7 +873,15 @@ raText <- function() {
           value = evaluation,
           width = "100%"
         )
-        ui
+        ui[[6]] <- textAreaInput(
+          "comments",
+          "Comments:",
+          value = comments,
+          height = "100px"
+        ) %>%
+          shiny::tagAppendAttributes(style = 'width: 100%;')
+
+        column(ui, width = 11)
       }
     })
 
@@ -892,7 +919,8 @@ raText <- function() {
             ui[[i]] <- checkboxInput(
               prefilled$criterion_id[i],
               prefilled$criterion_label[i],
-              value = prefilled$grade[i]
+              value = prefilled$grade[i],
+              width = "100%"
             )
           } else if (prefilled$criterion_scale[i] == "qualitative") {
             selected <- dplyr::case_when(
@@ -907,7 +935,8 @@ raText <- function() {
               prefilled$criterion_label[i],
               choices = c("Wrong", "Missing", "Imprecise", "Right"),
               selected = selected,
-              inline = TRUE
+              inline = TRUE,
+              width = "100%"
             )
           } else {
             ui[[i]] <- sliderInput(
@@ -916,7 +945,8 @@ raText <- function() {
               min = 0,
               max = 1,
               value = prefilled$grade[i],
-              step = 0.25
+              step = 0.25,
+              width = "100%"
             )
           }
         }
@@ -925,27 +955,6 @@ raText <- function() {
       }
     })
 
-
-    ############################################################################
-    # Best of
-
-    output$bestof <- rhandsontable::renderRHandsontable({
-      tables$bestof %>%
-        rhandsontable::rhandsontable(
-          height = 600,
-          width = "100%",
-          rowHeaders = NULL,
-          stretchH = "all"
-        ) %>%
-        rhandsontable::hot_context_menu(
-          allowRowEdit = TRUE,
-          allowColEdit = FALSE
-        )
-    })
-
-    observeEvent(input$updatebestof, {
-      tables$bestof <- rhandsontable::hot_to_r(input$bestof)
-    })
 
     ############################################################################
     # Checks
@@ -1135,7 +1144,7 @@ raText <- function() {
             dplyr::arrange(addressed, -keywords)
         }
       }
-    })
+    }, options = list(pageLength = 5))
 
 
     output$correlations <- renderPlot({
@@ -1208,8 +1217,35 @@ raText <- function() {
         if (nrow(selection) > 0) tables$sourceincr <- selection$increment[[1]]
       }
     })
+    
+    
+    ############################################################################
+    # Weights
+    
+    
 
 
+    ############################################################################
+    # Best of
+    
+    output$bestof <- rhandsontable::renderRHandsontable({
+      tables$bestof %>%
+        rhandsontable::rhandsontable(
+          height = 600,
+          width = "100%",
+          rowHeaders = NULL,
+          stretchH = "all"
+        ) %>%
+        rhandsontable::hot_context_menu(
+          allowRowEdit = TRUE,
+          allowColEdit = FALSE
+        )
+    })
+    
+    observeEvent(input$updatebestof, {
+      tables$bestof <- rhandsontable::hot_to_r(input$bestof)
+    })
+    
     ############################################################################
     # Export
 
