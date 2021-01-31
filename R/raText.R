@@ -1361,8 +1361,8 @@ raText <- function() {
         ggplot2::xlab("Grade") +
         ggplot2::ylab("Count") +
         ggplot2::scale_x_continuous(
-          limits = c(0, max(basedistrib$evaluation)),
-          breaks = seq(0, max(basedistrib$evaluation), by = 1)
+          limits = c(-1, (max(basedistrib$evaluation)+1)),
+          breaks = seq(-1, (max(basedistrib$evaluation)+1), by = 1)
         )
     })
 
