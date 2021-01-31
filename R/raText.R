@@ -246,6 +246,27 @@ raText <- function() {
       ),
 
       miniTabPanel(
+        "Weights",
+        icon = icon("balance-scale"),
+        miniContentPanel(
+          fillCol(
+            flex = c(1, 8),
+            actionButton(
+              "runregr",
+              "Compute",
+              icon = icon("redo"),
+              style = "width:100%; background-color: #006699;"
+            ),
+            fillRow(
+              flex = c(1, 1),
+              plotOutput("coefficients", height = "100%"),
+              plotOutput("residuals", brush = "slctpoint", height = "100%")
+            )
+          )
+        )
+      ),
+      
+      miniTabPanel(
         "Check",
         icon = icon("ruler"),
         miniContentPanel(
@@ -263,27 +284,6 @@ raText <- function() {
                 style = "width:100%; background-color: #006699;"
               ),
               plotOutput("correlations", height = "100%")
-            )
-          )
-        )
-      ),
-
-      miniTabPanel(
-        "Weights",
-        icon = icon("balance-scale"),
-        miniContentPanel(
-          fillCol(
-            flex = c(1, 8),
-            actionButton(
-              "runregr",
-              "Compute",
-              icon = icon("redo"),
-              style = "width:100%; background-color: #006699;"
-            ),
-            fillRow(
-              flex = c(1, 1),
-              plotOutput("coefficients", height = "100%"),
-              plotOutput("residuals", brush = "slctpoint", height = "100%")
             )
           )
         )
@@ -982,213 +982,6 @@ raText <- function() {
 
 
     ############################################################################
-    # Checks
-
-    # Produce metrics on demand for the current question
-    observeEvent(input$checkquestion, {
-      if (!is.null(input$slctquest)) {
-        format <- tables$answers %>%
-          dplyr::filter(question_id == input$slctquest)
-        format <- format$format[[1]]
-
-        criteria <- tables$criteria %>%
-          dplyr::filter(question_id == input$slctquest)
-
-        grades <- tables$grades %>%
-          tidyr::unnest(data) %>%
-          dplyr::filter(question_id == input$slctquest) %>%
-          dplyr::select(-question_id) %>%
-          dplyr::filter(criterion_id %in% criteria$criterion_id)
-
-        if (nrow(criteria) > 1 & nrow(grades) > 1) {
-          aggreg <- grades %>%
-            dplyr::group_by(source_id) %>%
-            dplyr::summarise(
-              SUM = sum(grade),
-              AVG = mean(grade)
-            )
-
-          discrete <- grades %>%
-            dplyr::mutate(criterion_id = paste0(criterion_id, "_grade")) %>%
-            tidyr::pivot_wider(
-              names_from = "criterion_id", values_from = "grade"
-            ) %>%
-            dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
-
-          addressed <- discrete %>%
-            dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x) > 0))
-          names(addressed) <- stringr::str_replace_all(
-            names(addressed), "_grade", "_addressed"
-          )
-
-          options(warn = -1)
-
-          if (nrow(discrete) > length(discrete) + 1) {
-            pca <- suppressWarnings(
-              suppressMessages(
-                psych::pca(
-                  dplyr::select_if(
-                    dplyr::select_if(
-                      discrete, is.numeric
-                    ),
-                    function(x) sd(x) != 0
-                  ),
-                  1
-                )
-              )
-            )
-            pca <- tibble::tibble(
-              source_id = discrete$source_id,
-              PCA = as.numeric(pca$scores)
-            )
-
-            fa <- suppressWarnings(
-              suppressMessages(
-                psych::fa(
-                  dplyr::select_if(
-                    dplyr::select_if(
-                      discrete, is.numeric
-                    ),
-                    function(x) sd(x) != 0
-                  ),
-                  1
-                )
-              )
-            )
-            fa <- tibble::tibble(
-              source_id = discrete$source_id,
-              FAC = as.numeric(fa$scores)
-            )
-          } else {
-            pca <- tibble::tibble(
-              source_id = discrete$source_id,
-              PCA = 0
-            )
-
-            fa <- tibble::tibble(
-              source_id = discrete$source_id,
-              FAC = 0
-            )
-          }
-
-          options(warn = 0)
-
-          scores <- tables$answers %>%
-            dplyr::filter(question_id == input$slctquest) %>%
-            dplyr::select(source_id, evaluation) %>%
-            dplyr::left_join(aggreg, by = "source_id") %>%
-            dplyr::left_join(pca, by = "source_id") %>%
-            dplyr::left_join(fa, by = "source_id")
-
-          if (format == "text") {
-            keywords <- criteria %>%
-              dplyr::select(criterion_id, criterion_keywords) %>%
-              na.omit() %>%
-              dplyr::filter(nchar(criterion_keywords) > 2) %>%
-              dplyr::mutate(
-                criterion_id = paste0(criterion_id, "_keywords"),
-                criterion_keywords = purrr::map_chr(
-                  criterion_keywords, stringr::str_replace_all, ", ", "|"
-                )
-              )
-
-            kwcounts <- tables$answers %>%
-              dplyr::filter(question_id == input$slctquest) %>%
-              dplyr::select(source_id, answer) %>%
-              dplyr::mutate(keywords = list(keywords)) %>%
-              tidyr::unnest(keywords) %>%
-              dplyr::mutate(count = purrr::map2_int(
-                answer, criterion_keywords, stringr::str_count
-              )) %>%
-              dplyr::select(source_id, criterion_id, count) %>%
-              tidyr::pivot_wider(names_from = criterion_id, values_from = count)
-
-            details <- discrete %>%
-              dplyr::left_join(addressed, by = "source_id") %>%
-              dplyr::left_join(kwcounts, by = "source_id") %>%
-              tidyr::pivot_longer(cols = !dplyr::matches("source_id")) %>%
-              tidyr::separate(
-                name,
-                into = c("criterion_id", "type"), sep = "_"
-              ) %>%
-              tidyr::pivot_wider(
-                names_from = "type", values_from = "value", values_fill = NA
-              )
-
-            add2score <- details %>%
-              dplyr::group_by(source_id) %>%
-              dplyr::summarize(KWD = sum(keywords, na.rm = TRUE))
-
-            scores <- scores %>%
-              dplyr::left_join(add2score, by = "source_id")
-          } else {
-            scores <- scores %>%
-              dplyr::mutate(KWD = 0)
-          }
-
-          tables$details[[input$slctquest]] <- details %>%
-            dplyr::mutate(question_id = input$slctquest) %>%
-            dplyr::select(source_id, question_id, dplyr::everything())
-
-          tables$scores[[input$slctquest]] <- scores %>%
-            dplyr::mutate(question_id = input$slctquest) %>%
-            dplyr::select(source_id, question_id, dplyr::everything())
-        }
-      }
-    })
-
-    # Display graphs and tables
-
-    basecheck <- reactive({
-      if (!is.null(input$slctquest)) {
-        if (!is.null(tables$scores[[input$slctquest]])) {
-          increments <- tibble::tibble(
-            source_id = tables$sources,
-            increment = seq_len(length(tables$sources))
-          )
-          tables$scores[[input$slctquest]] %>%
-            dplyr::select(source_id, x = input$slctx, y = input$slcty) %>%
-            dplyr::left_join(increments, by = "source_id")
-        }
-      }
-    })
-
-    output$checktable <- renderDataTable({
-        if (!is.null(input$slctquest)) {
-          if (!is.null(tables$details[[input$slctquest]])) {
-            tables$details[[input$slctquest]] %>%
-              dplyr::left_join(tables$criteria, by = "criterion_id") %>%
-              dplyr::left_join(basecheck(), by = "source_id") %>%
-              dplyr::select(
-                source = increment, criterion_label, addressed, keywords
-              ) %>%
-              na.omit() %>%
-              dplyr::filter(
-                (addressed == 0 & keywords > 0) |
-                  (addressed > 0 & keywords == 0)
-              ) %>%
-              dplyr::arrange(addressed, -keywords)
-          }
-        }
-      },
-      options = list(pageLength = 8)
-    )
-
-
-    output$correlations <- renderPlot({
-      if (!is.null(input$slctquest)) {
-        if (!is.null(tables$scores[[input$slctquest]])) {
-          psych::pairs.panels(
-            dplyr::select_if(
-              tables$scores[[input$slctquest]],
-              is.numeric
-            )
-          )
-        }
-      }
-    })
-
-    ############################################################################
     # Weights
     observeEvent(input$runregr, {
       dependent <- tables$answers %>%
@@ -1311,6 +1104,224 @@ raText <- function() {
     })
 
 
+    ############################################################################
+    # Checks
+    
+    # Produce metrics on demand for the current question
+    observeEvent(input$checkquestion, {
+      if (!is.null(input$slctquest)) {
+        format <- tables$answers %>%
+          dplyr::filter(question_id == input$slctquest)
+        format <- format$format[[1]]
+        
+        criteria <- tables$criteria %>%
+          dplyr::filter(question_id == input$slctquest)
+        
+        grades <- tables$grades %>%
+          tidyr::unnest(data) %>%
+          dplyr::filter(question_id == input$slctquest) %>%
+          dplyr::select(-question_id) %>%
+          dplyr::filter(criterion_id %in% criteria$criterion_id)
+        
+        if (nrow(criteria) > 1 & nrow(grades) > 1) {
+          aggreg <- grades %>%
+            dplyr::group_by(source_id) %>%
+            dplyr::summarise(
+              SUM = sum(grade),
+              AVG = mean(grade)
+            )
+          
+          discrete <- grades %>%
+            dplyr::mutate(criterion_id = paste0(criterion_id, "_grade")) %>%
+            tidyr::pivot_wider(
+              names_from = "criterion_id", values_from = "grade"
+            ) %>%
+            dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
+          
+          addressed <- discrete %>%
+            dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x) > 0))
+          names(addressed) <- stringr::str_replace_all(
+            names(addressed), "_grade", "_addressed"
+          )
+          
+          options(warn = -1)
+          
+          if (nrow(discrete) > length(discrete) + 1) {
+            pca <- suppressWarnings(
+              suppressMessages(
+                psych::pca(
+                  dplyr::select_if(
+                    dplyr::select_if(
+                      discrete, is.numeric
+                    ),
+                    function(x) sd(x) != 0
+                  ),
+                  1
+                )
+              )
+            )
+            pca <- tibble::tibble(
+              source_id = discrete$source_id,
+              PCA = as.numeric(pca$scores)
+            )
+            
+            fa <- suppressWarnings(
+              suppressMessages(
+                psych::fa(
+                  dplyr::select_if(
+                    dplyr::select_if(
+                      discrete, is.numeric
+                    ),
+                    function(x) sd(x) != 0
+                  ),
+                  1
+                )
+              )
+            )
+            fa <- tibble::tibble(
+              source_id = discrete$source_id,
+              FAC = as.numeric(fa$scores)
+            )
+          } else {
+            pca <- tibble::tibble(
+              source_id = discrete$source_id,
+              PCA = 0
+            )
+            
+            fa <- tibble::tibble(
+              source_id = discrete$source_id,
+              FAC = 0
+            )
+          }
+          
+          options(warn = 0)
+          
+          fit <- grades %>%
+            dplyr::left_join(
+              tables$coefficients[[input$slctquest]],
+              by = "criterion_id"
+            ) %>%
+            dplyr::mutate(FIT = grade * coefficients) %>%
+            dplyr::group_by(source_id) %>%
+            dplyr::summarise(FIT = sum(FIT, na.rm = TRUE)) %>%
+            dplyr::ungroup()
+          
+          scores <- tables$answers %>%
+            dplyr::filter(question_id == input$slctquest) %>%
+            dplyr::select(source_id, evaluation) %>%
+            dplyr::left_join(fit, by = "source_id") %>%
+            dplyr::left_join(aggreg, by = "source_id") %>%
+            dplyr::left_join(pca, by = "source_id") %>%
+            dplyr::left_join(fa, by = "source_id")
+          
+          if (format == "text") {
+            keywords <- criteria %>%
+              dplyr::select(criterion_id, criterion_keywords) %>%
+              na.omit() %>%
+              dplyr::filter(nchar(criterion_keywords) > 2) %>%
+              dplyr::mutate(
+                criterion_id = paste0(criterion_id, "_keywords"),
+                criterion_keywords = purrr::map_chr(
+                  criterion_keywords, stringr::str_replace_all, ", ", "|"
+                )
+              )
+            
+            kwcounts <- tables$answers %>%
+              dplyr::filter(question_id == input$slctquest) %>%
+              dplyr::select(source_id, answer) %>%
+              dplyr::mutate(keywords = list(keywords)) %>%
+              tidyr::unnest(keywords) %>%
+              dplyr::mutate(count = purrr::map2_int(
+                answer, criterion_keywords, stringr::str_count
+              )) %>%
+              dplyr::select(source_id, criterion_id, count) %>%
+              tidyr::pivot_wider(names_from = criterion_id, values_from = count)
+            
+            details <- discrete %>%
+              dplyr::left_join(addressed, by = "source_id") %>%
+              dplyr::left_join(kwcounts, by = "source_id") %>%
+              tidyr::pivot_longer(cols = !dplyr::matches("source_id")) %>%
+              tidyr::separate(
+                name,
+                into = c("criterion_id", "type"), sep = "_"
+              ) %>%
+              tidyr::pivot_wider(
+                names_from = "type", values_from = "value", values_fill = NA
+              )
+            
+            add2score <- details %>%
+              dplyr::group_by(source_id) %>%
+              dplyr::summarize(KWD = sum(keywords, na.rm = TRUE))
+            
+            scores <- scores %>%
+              dplyr::left_join(add2score, by = "source_id")
+          } else {
+            scores <- scores %>%
+              dplyr::mutate(KWD = 0)
+          }
+          
+          tables$details[[input$slctquest]] <- details %>%
+            dplyr::mutate(question_id = input$slctquest) %>%
+            dplyr::select(source_id, question_id, dplyr::everything())
+          
+          tables$scores[[input$slctquest]] <- scores %>%
+            dplyr::mutate(question_id = input$slctquest) %>%
+            dplyr::select(source_id, question_id, dplyr::everything())
+        }
+      }
+    })
+    
+    # Display graphs and tables
+    
+    basecheck <- reactive({
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$scores[[input$slctquest]])) {
+          increments <- tibble::tibble(
+            source_id = tables$sources,
+            increment = seq_len(length(tables$sources))
+          )
+          tables$scores[[input$slctquest]] %>%
+            dplyr::select(source_id, x = input$slctx, y = input$slcty) %>%
+            dplyr::left_join(increments, by = "source_id")
+        }
+      }
+    })
+    
+    output$checktable <- renderDataTable({
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$details[[input$slctquest]])) {
+          tables$details[[input$slctquest]] %>%
+            dplyr::left_join(tables$criteria, by = "criterion_id") %>%
+            dplyr::left_join(basecheck(), by = "source_id") %>%
+            dplyr::select(
+              source = increment, criterion_label, addressed, keywords
+            ) %>%
+            na.omit() %>%
+            dplyr::filter(
+              (addressed == 0 & keywords > 0) |
+                (addressed > 0 & keywords == 0)
+            ) %>%
+            dplyr::arrange(addressed, -keywords)
+        }
+      }
+    },
+    options = list(pageLength = 8)
+    )
+    
+    
+    output$correlations <- renderPlot({
+      if (!is.null(input$slctquest)) {
+        if (!is.null(tables$scores[[input$slctquest]])) {
+          psych::pairs.panels(
+            dplyr::select_if(
+              tables$scores[[input$slctquest]],
+              is.numeric
+            )
+          )
+        }
+      }
+    })
+    
     ############################################################################
     # Best of
 
