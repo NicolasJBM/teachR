@@ -34,6 +34,7 @@
 #' @importFrom rvest html_node
 #' @importFrom gtools permutations
 #' @importFrom stats na.omit
+#' @importFrom stats runif
 #' @importFrom stringr str_split
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_replace_all
@@ -59,7 +60,7 @@ test_generate <- function() {
     theme = bslib::bs_theme(
       bootswatch = "flatly",
       base_font = bslib::font_google("Open Sans"),
-      "enable-gradients" = TRUE,
+      "enable-gradients" = FALSE,
       "enable-shadows" = TRUE,
       spacer = "0.5rem"
     ),
@@ -70,7 +71,6 @@ test_generate <- function() {
            }
            .flexfill-item {
               margin:5px 10px 5px 10px !important;
-              font-size:0.9em !important;
            }
            .gadget-tabs-content-container {
               margin:1em 1em 1em 1em !important;
@@ -338,7 +338,12 @@ test_generate <- function() {
                   fillRow(
                     flex = c(2, 1),
                     textInput("pkgname", "Package name:", value = ""),
-                    actionButton("getpkg", "Get")
+                    actionButton(
+                      "getpkg",
+                      "Get",
+                      icon = icon("upload"),
+                      style = "width:100%; background-color: #006699; color: #FFF;"
+                    )
                   ),
                   uiOutput("filtchapter"),
                   uiOutput("filtsection"),
@@ -361,7 +366,12 @@ test_generate <- function() {
               fillRow(
                 flex = c(1, 1),
                 uiOutput("select_display"),
-                actionButton("addquest", "Add question")
+                actionButton(
+                  "addquest",
+                  "Add question",
+                  icon = icon("plus-circle"),
+                  style = "width:100%; background-color: #009933; color: #FFF;"
+                )
               ),
               uiOutput("lookexample")
             )
@@ -388,7 +398,12 @@ test_generate <- function() {
               textOutput("total_points"),
               textOutput("unique_questions"),
               textOutput("check_blocs"),
-              actionButton("validate_selection", "Validate")
+              actionButton(
+                "validate_selection",
+                "Validate",
+                icon = icon("check"),
+                style = "width:100%; background-color: #009933; color: #FFF;"
+              )
             ),
             tags$hr(),
             rhandsontable::rHandsontableOutput("edit_preselection")
@@ -471,6 +486,15 @@ test_generate <- function() {
     pkg <- NULL
     criterion_scale <- NULL
     question_label <- NULL
+    alternatives <- NULL
+    currency <- NULL
+    extype <- NULL
+    question_rank <- NULL
+    question_version <- NULL
+    seed <- NULL
+    show_difficulty <- NULL
+    show_points <- NULL
+    showexname <- NULL
 
 
     # Create reactive values
@@ -506,6 +530,8 @@ test_generate <- function() {
           pkgname = "tmp",
           question_id = "tmp",
           question_nbr = "tmp",
+          question_rank = 0,
+          question_version = 0,
           question_language = "tmp",
           extype = "tmp",
           exname = "tmp",
@@ -516,7 +542,6 @@ test_generate <- function() {
           show_difficulty = TRUE,
           seed = 0,
           alternatives = 0,
-          type_table = "tmp",
           currency = "tmp",
           stringsAsFactors = FALSE
         )
@@ -887,89 +912,80 @@ test_generate <- function() {
       selected_question <- questionlist() %>%
         filter(question_id == input$slctdisp)
 
-      # Add the question in every selected language
-      for (lang in input$languages) {
-        add <- data.frame(
-          pkgname = tables$pkgname,
-          question_id = selected_question$question_id[1],
-          question_nbr = selected_question$question_nbr[1],
-          question_language = input$languages[1],
-          extype = dplyr::case_when(
-            input$typeanswer == "choice" ~ "schoice",
-            input$typeanswer == "number" ~ "num",
-            TRUE ~ "string"
-          ),
-          exname = "tmp",
-          showexname = input$showexname,
-          points = 1,
-          show_points = input$showquestpoint,
-          difficulty = selected_question$difficulty[1],
-          show_difficulty = input$showquestdifficulty[1],
-          seed = 0,
-          alternatives = input$alternatives,
-          currency = input$currency,
-          stringsAsFactors = FALSE
+      # Create several versions of the question
+      rank <- min(
+        setdiff(
+          seq_len((max(tables$preselection$question_rank) + 1)),
+          unique(tables$preselection$question_rank)
         )
+      )
+      add <- data.frame(
+        pkgname = tables$pkgname,
+        question_id = selected_question$question_id[1],
+        question_nbr = selected_question$question_nbr[1],
+        question_rank = rank,
+        question_version = seq_len(input$questversions),
+        question_language = input$languages[1],
+        extype = dplyr::case_when(
+          input$typeanswer == "choice" ~ "schoice",
+          input$typeanswer == "number" ~ "num",
+          TRUE ~ "string"
+        ),
+        exname = "tmp",
+        showexname = input$showexname,
+        points = 1,
+        show_points = input$showquestpoint,
+        difficulty = selected_question$difficulty[1],
+        show_difficulty = input$showquestdifficulty[1],
+        seed = round(1000 + stats::runif(seq_len(input$questversions)) * 8000, 0),
+        alternatives = input$alternatives,
+        currency = input$currency,
+        stringsAsFactors = FALSE
+      )
+
+      # Add the question in every selected language
+      add2base <- list()
+      for (lang in input$languages) {
+        add2base[[lang]] <- add %>%
+          dplyr::mutate(
+            question_id = stringr::str_replace_all(
+              question_id, input$languages[1], lang
+            ),
+            question_language = lang
+          )
       }
+      add2base <- dplyr::bind_rows(add2base) %>%
+        dplyr::mutate(
+          exname = paste0(
+            input$prefix, question_rank, "-V",
+            question_version, question_language
+          ),
+          remove = FALSE
+        ) %>%
+        dplyr::select(
+          pkgname, question_id, question_nbr,
+          question_rank, question_version, question_language,
+          extype, exname, showexname, points,
+          show_points, difficulty, show_difficulty,
+          seed, alternatives, currency, remove
+        )
 
       # Update the preselection
       tables$preselection <- tables$preselection %>%
-        dplyr::bind_rows(add)
-
-      # Create versions
-      base <- tables$preselection %>%
-        dplyr::select(-question_id, -question_language, -exname, -seed) %>%
-        unique() %>%
-        dplyr::filter(question_nbr %in% tables$in_all_languages) %>%
-        dplyr::mutate(question_language = input$languages[1]) %>%
-        dplyr::mutate(question_id = paste0(question_nbr, question_language)) %>%
-        dplyr::mutate(seed = 0) %>%
-        tibble::rownames_to_column("exname")
-
-      tmpbase <- list()
-
-      for (version in seq_len(input$questversions)) {
-        seed <- 1000 + floor(stats::runif(1) * 8999)
-        tmpbase[[version]] <- base %>%
-          dplyr::mutate(
-            exname = paste0(
-              input$prefix,
-              exname,
-              "-V", version,
-              input$languages[1]
-            ),
-            seed = seed
+        dplyr::bind_rows(
+          dplyr::filter(
+            add2base,
+            question_version == 1,
+            question_language == input$languages[1],
+            pkgname != "tmp"
           )
-      }
+        ) %>%
+        dplyr::arrange(question_rank, question_version, question_language)
 
-      base <- dplyr::bind_rows(tmpbase)
-
-      tmpbase <- list()
-
-      for (lang in input$languages) {
-        tmpbase[[lang]] <- base %>%
-          dplyr::mutate(
-            question_id = stringr::str_replace_all(
-              question_id,
-              input$languages[1],
-              lang
-            ),
-            question_language = lang,
-            exname = stringr::str_replace_all(
-              exname,
-              input$languages[1],
-              lang
-            ),
-          )
-      }
-
-      base <- dplyr::bind_rows(tmpbase) %>%
-        dplyr::mutate(remove = FALSE) %>%
-        dplyr::arrange(exname)
-
-      base$seed <- 1000 + floor(stats::runif(nrow(base)) * 8999)
-
-      tables$clean_preselection <- base
+      tables$clean_preselection <- tables$clean_preselection %>%
+        dplyr::bind_rows(add2base) %>%
+        dplyr::filter(question_rank != 0) %>%
+        dplyr::arrange(question_rank, question_version, question_language)
     })
 
 
@@ -990,9 +1006,7 @@ test_generate <- function() {
 
     output$total_points <- renderText({
       points <- tables$clean_preselection %>%
-        dplyr::filter(
-          stringr::str_detect(exname, paste0("V1", input$languages[1]))
-        ) %>%
+        dplyr::filter(question_version == 1) %>%
         dplyr::select(points) %>%
         unlist() %>%
         as.numeric() %>%
@@ -1032,9 +1046,16 @@ test_generate <- function() {
         rhandsontable::hot_to_r(input$edit_preselection)
       )
       edited <- dplyr::filter(edited, remove == FALSE)
+
+      tables$preselection <- edited %>%
+        dplyr::filter(
+          question_version == 1,
+          question_language == input$languages[1]
+        )
+
       tables$clean_preselection <- edited
       tables$test <- tables$clean_preselection %>%
-        dplyr::arrange(exname)
+        dplyr::arrange(question_rank, question_version, question_language)
     })
 
     ############################################################################
