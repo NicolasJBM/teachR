@@ -17,7 +17,7 @@ test_calibrate <- function() {
     theme = bslib::bs_theme(
       bootswatch = "flatly",
       base_font = bslib::font_google("Open Sans"),
-      "enable-gradients" = TRUE,
+      "enable-gradients" = FALSE,
       "enable-shadows" = TRUE,
       spacer = "0.5rem"
     ),

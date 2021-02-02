@@ -231,10 +231,10 @@ test_grade <- function() {
               flex = c(1, 1),
               plotOutput("coefficients", height = "100%"),
               fillCol(
-                flex = c(7,1),
+                flex = c(7, 1),
                 plotOutput("residuals", brush = "slctpoint", height = "100%"),
                 fillRow(
-                  flex = c(1,1),
+                  flex = c(1, 1),
                   actionButton(
                     "addresiduals",
                     "Add residuals",
@@ -966,8 +966,8 @@ test_grade <- function() {
             ui[[i]] <- sliderInput(
               prefilled$criterion_id[i],
               prefilled$criterion_label[i],
-              min = (min(prefilled$grade)-0.5),
-              max = (max(prefilled$grade)+0.5),
+              min = (min(prefilled$grade) - 0.5),
+              max = (max(prefilled$grade) + 0.5),
               value = prefilled$grade[i],
               step = 0.25,
               width = "100%"
@@ -1101,17 +1101,17 @@ test_grade <- function() {
         }
       }
     })
-    
-    
+
+
     observeEvent(input$addresiduals, {
-      if (!is.null(input$slctquest)){
+      if (!is.null(input$slctquest)) {
         delta_label <- paste0(input$slctquest, "_delta")
-        
+
         residuals <- tables$residuals[[input$slctquest]] %>%
           dplyr::select(source_id, question_id, grade = residuals) %>%
-          dplyr::mutate(grade = round(grade*4,0)/4) %>%
+          dplyr::mutate(grade = round(grade * 4, 0) / 4) %>%
           dplyr::mutate(criterion_id = delta_label)
-        
+
         add_criterion <- data.frame(
           criterion_id = delta_label,
           criterion_order = 0,
@@ -1120,11 +1120,11 @@ test_grade <- function() {
           criterion_scale = "adjustment",
           criterion_keywords = as.character(NA)
         )
-        
+
         criteria <- tables$criteria %>%
           dplyr::filter(criterion_id != delta_label) %>%
           dplyr::bind_rows(add_criterion)
-        
+
         grades <- tables$grades %>%
           tidyr::unnest(data) %>%
           dplyr::filter(criterion_id != delta_label) %>%
@@ -1132,26 +1132,26 @@ test_grade <- function() {
           dplyr::group_by(source_id, question_id) %>%
           tidyr::nest() %>%
           dplyr::ungroup()
-        
+
         tables$criteria <- criteria
         tables$grades <- grades
       }
     })
-    
+
     observeEvent(input$rmresiduals, {
-      if (!is.null(input$slctquest)){
+      if (!is.null(input$slctquest)) {
         delta_label <- paste0(input$slctquest, "_delta")
-        
+
         criteria <- tables$criteria %>%
           dplyr::filter(criterion_id != delta_label)
-        
+
         grades <- tables$grades %>%
           tidyr::unnest(data) %>%
           dplyr::filter(criterion_id != delta_label) %>%
           dplyr::group_by(source_id, question_id) %>%
           tidyr::nest() %>%
           dplyr::ungroup()
-        
+
         tables$criteria <- criteria
         tables$grades <- grades
       }
