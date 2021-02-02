@@ -1,49 +1,27 @@
-#' Shiny gadget to change and update the structure of a package.
-#' @return Make necessary entries in structure databases.
-#' @importFrom miniUI miniPage
-#' @importFrom miniUI gadgetTitleBar
-#' @importFrom miniUI miniTabstripPanel
-#' @importFrom miniUI miniTabPanel
-#' @importFrom miniUI miniContentPanel
-#' @importFrom shiny fillCol
-#' @importFrom shiny fillRow
-#' @importFrom shiny icon
-#' @importFrom shiny fileInput
-#' @importFrom shiny textInput
-#' @importFrom shiny dateInput
-#' @importFrom shiny numericInput
-#' @importFrom shiny selectInput
-#' @importFrom shiny checkboxInput
-#' @importFrom shiny stopApp
-#' @importFrom shiny runGadget
-#' @importFrom shiny conditionalPanel
-#' @importFrom shiny tags
-#' @importFrom shiny tableOutput
-#' @importFrom shiny uiOutput
-#' @importFrom shiny actionButton
-#' @importFrom shiny renderUI
-#' @importFrom shiny renderText
-#' @importFrom shiny renderTable
-#' @importFrom shiny reactive
-#' @importFrom shiny reactiveValues
-#' @importFrom shiny observe
-#' @importFrom shiny observeEvent
-#' @importFrom shiny withProgress
-#' @importFrom shiny incProgress
-#' @importFrom shiny withMathJax
-#' @importFrom shiny dialogViewer
-#' @importFrom shiny textOutput
-#' @importFrom shiny htmlOutput
-#' @importFrom shiny HTML
-#' @importFrom shinythemes shinytheme
+#' @name test_calibrate
+#' @title Analyze and weight criteria
+#' @author Nicolas Mangin
+#' @description Analyze item characteirtics to guide the weighting of criteria
+#' @return Export updated weights and scores
+#' @import miniUI
+#' @import shiny
+#' @importFrom bslib bs_theme
+#' @importFrom bslib font_google
 #' @importFrom readxl read_xlsx
 #' @importFrom WriteXLS WriteXLS
 #' @export
 
 
-calibRate <- function() {
+test_calibrate <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("flatly"),
+    theme = bslib::bs_theme(
+      bootswatch = "flatly",
+      base_font = bslib::font_google("Open Sans"),
+      "enable-gradients" = TRUE,
+      "enable-shadows" = TRUE,
+      spacer = "0.5rem"
+    ),
+
     tags$head(tags$style(
       HTML(".shiny-notification {
               position:fixed;top: 30%;left: 0%;right: 0%;
@@ -305,12 +283,12 @@ calibRate <- function() {
     })
 
     output$maxweight <- renderText({
-      maxweight <- round(sum(tables$criteria$weight),2)
+      maxweight <- round(sum(tables$criteria$weight), 2)
       paste0("Total weights: ", maxweight)
     })
 
     output$maxpoints <- renderText({
-      maxpoints <- round(sum(tables$criteria$points),0)
+      maxpoints <- round(sum(tables$criteria$points), 0)
       paste0("Total points: ", maxpoints)
     })
 
@@ -318,7 +296,7 @@ calibRate <- function() {
       total <- nrow(credits())
       paste0("Number of students: ", total)
     })
-    
+
     output$passrate <- renderText({
       if (!is.null(credits()) & !is.null(input$threshold)) {
         nbr <- sum(
@@ -399,18 +377,18 @@ calibRate <- function() {
     })
 
 
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     observeEvent(input$run, {
       base_analysis <- tables$grades %>%
         dplyr::filter(criterion_id %in% input$slctcrit) %>%
         dplyr::select(student_id, criterion_id, grade)
-      
+
       tables$subdistribution <- base_analysis %>%
         dplyr::left_join(
           dplyr::select(
@@ -437,7 +415,7 @@ calibRate <- function() {
         dplyr::filter(credits > 0) %>%
         dplyr::group_by(credits) %>%
         dplyr::count()
-      
+
       base_analysis <- base_analysis %>%
         tidyr::pivot_wider(
           names_from = "criterion_id",
@@ -446,7 +424,7 @@ calibRate <- function() {
         ) %>%
         dplyr::select(-student_id) %>%
         dplyr::select_if(function(x) stats::sd(x) != 0)
-      
+
       if (input$slctana == "PCA") {
         pc <- psych::principal(base_analysis)
         tables$analysis <- as.data.frame(pc$loadings[]) %>%
@@ -526,7 +504,7 @@ calibRate <- function() {
 }
 
 
-add_missing <- function(x){
+add_missing <- function(x) {
   x %>%
     tidyr::pivot_wider(
       names_from = "criterion_id",

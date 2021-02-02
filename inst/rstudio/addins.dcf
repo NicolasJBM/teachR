@@ -1,24 +1,14 @@
-Name: Create a question
+Name: Generate tests
 Description: User interface to build tests from a package of questions.
-Binding: create_question
+Binding: test_generate
 Interactive: true
 
-Name: Generate a test
-Description: User interface to build tests from a package of questions.
-Binding: genTest
+Name: Grade answers
+Description: User interface to grade answers to open questions.
+Binding: test_grade
 Interactive: true
 
-Name: Rate answers
-Description: User interface to rate answers to open questions.
-Binding: raText
-Interactive: true
-
-Name: Calibrate items
-Description: User interface to assess items' parameters.
-Binding: calibraTe
-Interactive: true
-
-Name: Individual reports
-Description: User interface to support individual feedback.
-Binding: reporTest
+Name: Weight criteria
+Description: User interface to assess items' parameters and weight criteria.
+Binding: test_calibrate
 Interactive: true

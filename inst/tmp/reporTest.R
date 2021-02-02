@@ -39,7 +39,7 @@
 #' @export
 
 
-reporTest <- function() {
+test_feedback <- function() {
   
   ui <- miniPage(
     theme = shinythemes::shinytheme("flatly"),

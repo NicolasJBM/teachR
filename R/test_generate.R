@@ -1,50 +1,12 @@
-#' @name genTest
+#' @name test_generate
 #' @title Generate Tests
 #' @author Nicolas Mangin
 #' @description Shiny gadget to select test questions and generate both tests and solutions for several delivery formats.
 #' @return Create an exam folder will all the the necessary files fo test administration and subsequent steps.
-#' @importFrom miniUI miniPage
-#' @importFrom miniUI gadgetTitleBar
-#' @importFrom miniUI miniTabstripPanel
-#' @importFrom miniUI miniTabPanel
-#' @importFrom miniUI miniContentPanel
-#' @importFrom shiny fillCol
-#' @importFrom shiny fillRow
-#' @importFrom shiny icon
-#' @importFrom shiny fileInput
-#' @importFrom shiny textInput
-#' @importFrom shiny dateInput
-#' @importFrom shiny numericInput
-#' @importFrom shiny selectInput
-#' @importFrom shiny checkboxInput
-#' @importFrom shiny stopApp
-#' @importFrom shiny runGadget
-#' @importFrom shiny conditionalPanel
-#' @importFrom shiny tags
-#' @importFrom shiny tableOutput
-#' @importFrom shiny dataTableOutput
-#' @importFrom shiny uiOutput
-#' @importFrom shiny actionButton
-#' @importFrom shiny renderUI
-#' @importFrom shiny renderText
-#' @importFrom shiny renderTable
-#' @importFrom shiny renderDataTable
-#' @importFrom shiny reactive
-#' @importFrom shiny reactiveValues
-#' @importFrom shiny observe
-#' @importFrom shiny observeEvent
-#' @importFrom shiny withProgress
-#' @importFrom shiny incProgress
-#' @importFrom shiny withMathJax
-#' @importFrom shiny browserViewer
-#' @importFrom shiny textOutput
-#' @importFrom shiny htmlOutput
-#' @importFrom shiny renderPlot
-#' @importFrom shiny plotOutput
-#' @importFrom shiny HTML
-#' @importFrom shiny h4
-#' @importFrom shinyBS bsTooltip
-#' @importFrom shinythemes shinytheme
+#' @import miniUI
+#' @import shiny
+#' @importFrom bslib bs_theme
+#' @importFrom bslib font_google
 #' @importFrom dplyr %>%
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
@@ -92,9 +54,16 @@
 #' @export
 
 
-genTest <- function() {
+test_generate <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("flatly"),
+    theme = bslib::bs_theme(
+      bootswatch = "flatly",
+      base_font = bslib::font_google("Open Sans"),
+      "enable-gradients" = TRUE,
+      "enable-shadows" = TRUE,
+      spacer = "0.5rem"
+    ),
+
     tags$head(tags$style(
       HTML(".shiny-notification {
               position:fixed;top: 30%;left: 0%;right: 0%;
@@ -502,6 +471,7 @@ genTest <- function() {
     pkg <- NULL
     criterion_scale <- NULL
     question_label <- NULL
+
 
     # Create reactive values
     tables <- reactiveValues()

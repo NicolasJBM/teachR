@@ -1,48 +1,12 @@
-#' @name raText
+#' @name test_grade
 #' @title Grade open-ended answers
 #' @author Nicolas Mangin
 #' @description Shiny gadget to facilitate grading open-ended questions and essays.
 #' @return Three .csv files: one with students' points, one with updated solutions, one with updated criteria.
-#' @importFrom miniUI miniPage
-#' @importFrom miniUI gadgetTitleBar
-#' @importFrom miniUI miniTabstripPanel
-#' @importFrom miniUI miniTabPanel
-#' @importFrom miniUI miniContentPanel
-#' @importFrom shiny fillCol
-#' @importFrom shiny fillRow
-#' @importFrom shiny icon
-#' @importFrom shiny fileInput
-#' @importFrom shiny textInput
-#' @importFrom shiny dateInput
-#' @importFrom shiny numericInput
-#' @importFrom shiny selectInput
-#' @importFrom shiny checkboxInput
-#' @importFrom shiny sliderInput
-#' @importFrom shiny stopApp
-#' @importFrom shiny runGadget
-#' @importFrom shiny conditionalPanel
-#' @importFrom shiny tags
-#' @importFrom shiny tableOutput
-#' @importFrom shiny uiOutput
-#' @importFrom shiny actionButton
-#' @importFrom shiny renderUI
-#' @importFrom shiny renderText
-#' @importFrom shiny renderTable
-#' @importFrom shiny reactive
-#' @importFrom shiny reactiveValues
-#' @importFrom shiny observe
-#' @importFrom shiny observeEvent
-#' @importFrom shiny withProgress
-#' @importFrom shiny incProgress
-#' @importFrom shiny withMathJax
-#' @importFrom shiny dialogViewer
-#' @importFrom shiny textOutput
-#' @importFrom shiny htmlOutput
-#' @importFrom shiny HTML
-#' @importFrom shiny column
-#' @importFrom shiny radioButtons
-#' @importFrom shiny textAreaInput
-#' @importFrom shinythemes shinytheme
+#' @import miniUI
+#' @import shiny
+#' @importFrom bslib bs_theme
+#' @importFrom bslib font_google
 #' @importFrom readxl read_xlsx
 #' @importFrom WriteXLS WriteXLS
 #' @importFrom dplyr count
@@ -61,9 +25,15 @@
 
 
 
-raText <- function() {
+test_grade <- function() {
   ui <- miniPage(
-    theme = shinythemes::shinytheme("flatly"),
+    theme = bslib::bs_theme(
+      bootswatch = "flatly",
+      base_font = bslib::font_google("Open Sans"),
+      "enable-gradients" = FALSE,
+      "enable-shadows" = TRUE,
+      spacer = "0.5rem"
+    ),
 
     tags$head(tags$style(
       HTML(".shiny-notification {
@@ -71,10 +41,10 @@ raText <- function() {
            }")
     )),
 
-    gadgetTitleBar("Grade open-ended questions"),
+    gadgetTitleBar("Grade open-ended answers"),
     miniTabstripPanel(
       miniTabPanel(
-        "Upload",
+        "Import",
         icon = icon("upload"),
         miniContentPanel(
           fillRow(
@@ -130,7 +100,7 @@ raText <- function() {
             actionButton(
               "import",
               "Import",
-              style = "width:150px; background-color:#990033;",
+              style = "width:150px; background-color:#990033; color: #FFF;",
               icon = icon("upload")
             )
           )
@@ -152,7 +122,7 @@ raText <- function() {
                 actionButton(
                   "updatesolution",
                   "Update solution",
-                  style = "width:90%; background-color:#009933 !important;",
+                  style = "width:90%; background-color:#009933; color: #FFF;",
                   icon = icon("save")
                 ),
                 uiOutput("question"),
@@ -163,7 +133,7 @@ raText <- function() {
                 actionButton(
                   "updatecriteria",
                   "Update criteria",
-                  style = "width:100%; background-color:#009933 !important;",
+                  style = "width:100%; background-color:#009933; color: #FFF;",
                   icon = icon("save")
                 ),
                 rhandsontable::rHandsontableOutput("criteria")
@@ -186,49 +156,49 @@ raText <- function() {
                 "firstsrc",
                 "First",
                 icon = icon("angle-double-left"),
-                style = "width:100px; background-color:#990033;"
+                style = "width:100px; background-color:#990033; color: #FFF;"
               ),
               actionButton(
                 "prevsrc",
                 "Previous",
                 icon = icon("angle-left"),
-                style = "width:100px; background-color:#660099;"
+                style = "width:100px; background-color:#660099; color: #FFF;"
               ),
               actionButton(
                 "reloadsrc",
                 "Reload",
                 icon = icon("redo"),
-                style = "width:100px; background-color: #000066;"
+                style = "width:100px; background-color: #000066; color: #FFF;"
               ),
               actionButton(
                 "savesrc",
                 "Save",
                 icon = icon("save"),
-                style = "width:100px; background-color:#009933;"
+                style = "width:100px; background-color:#009933; color: #FFF;"
               ),
               actionButton(
                 "lastgraded",
                 "Graded",
                 icon = icon("edit"),
-                style = "width:100px; background-color:#999900;"
+                style = "width:100px; background-color:#999900; color: #FFF;"
               ),
               actionButton(
                 "nextsrc",
                 "Next",
                 icon = icon("angle-right"),
-                style = "width:100px; background-color:#996600;"
+                style = "width:100px; background-color:#996600; color: #FFF;"
               ),
               actionButton(
                 "lastsrc",
                 "Last",
                 icon = icon("angle-double-right"),
-                style = "width:100px; background-color:#993300;"
+                style = "width:100px; background-color:#993300; color: #FFF;"
               ),
               actionButton(
                 "gotosrc",
                 "Go to",
                 icon = icon("chevron-circle-right"),
-                style = "width:100px; background-color:#006666;"
+                style = "width:100px; background-color:#006666; color: #FFF;"
               ),
               uiOutput("slctsrc")
             ),
@@ -255,17 +225,35 @@ raText <- function() {
               "runregr",
               "Compute",
               icon = icon("redo"),
-              style = "width:100%; background-color: #006699;"
+              style = "width:100%; background-color: #006699; color: #FFF;"
             ),
             fillRow(
               flex = c(1, 1),
               plotOutput("coefficients", height = "100%"),
-              plotOutput("residuals", brush = "slctpoint", height = "100%")
+              fillCol(
+                flex = c(7,1),
+                plotOutput("residuals", brush = "slctpoint", height = "100%"),
+                fillRow(
+                  flex = c(1,1),
+                  actionButton(
+                    "addresiduals",
+                    "Add residuals",
+                    icon = icon("save"),
+                    style = "width:100%; background-color:#009933; color: #FFF;"
+                  ),
+                  actionButton(
+                    "rmresiduals",
+                    "Remove residuals",
+                    icon = icon("undo"),
+                    style = "width:100%; background-color:#990000; color: #FFF;"
+                  )
+                )
+              )
             )
           )
         )
       ),
-      
+
       miniTabPanel(
         "Check",
         icon = icon("ruler"),
@@ -281,7 +269,7 @@ raText <- function() {
                 "checkquestion",
                 "Update",
                 icon = icon("redo"),
-                style = "width:100%; background-color: #006699;"
+                style = "width:100%; background-color: #006699; color: #FFF;"
               ),
               plotOutput("correlations", height = "100%")
             )
@@ -299,7 +287,7 @@ raText <- function() {
               "updatebestof",
               "Save",
               icon = icon("save"),
-              style = "width:100%; background-color:#009933;"
+              style = "width:100%; background-color:#009933; color: #FFF;"
             ),
             rHandsontableOutput("bestof")
           )
@@ -323,7 +311,7 @@ raText <- function() {
               "exportxlsx",
               "Export",
               icon = icon("download"),
-              style = "width:100%; background-color:#009933;"
+              style = "width:100%; background-color:#009933; color: #FFF;"
             )
           )
         )
@@ -356,6 +344,7 @@ raText <- function() {
     type <- NULL
     divider <- NULL
     weight <- NULL
+    FIT <- NULL
 
 
     ############################################################################
@@ -561,7 +550,7 @@ raText <- function() {
           dplyr::mutate(
             criterion_scale = factor(
               criterion_scale,
-              levels = c("logical", "qualitative", "percentage")
+              levels = c("logical", "qualitative", "percentage", "adjustment")
             )
           ) %>%
           rhandsontable::rhandsontable(
@@ -963,12 +952,22 @@ raText <- function() {
               inline = TRUE,
               width = "100%"
             )
-          } else {
+          } else if (prefilled$criterion_scale[i] == "percentage") {
             ui[[i]] <- sliderInput(
               prefilled$criterion_id[i],
               prefilled$criterion_label[i],
               min = 0,
               max = 1,
+              value = prefilled$grade[i],
+              step = 0.25,
+              width = "100%"
+            )
+          } else {
+            ui[[i]] <- sliderInput(
+              prefilled$criterion_id[i],
+              prefilled$criterion_label[i],
+              min = (min(prefilled$grade)-0.5),
+              max = (max(prefilled$grade)+0.5),
               value = prefilled$grade[i],
               step = 0.25,
               width = "100%"
@@ -1102,27 +1101,85 @@ raText <- function() {
         }
       }
     })
+    
+    
+    observeEvent(input$addresiduals, {
+      if (!is.null(input$slctquest)){
+        delta_label <- paste0(input$slctquest, "_delta")
+        
+        residuals <- tables$residuals[[input$slctquest]] %>%
+          dplyr::select(source_id, question_id, grade = residuals) %>%
+          dplyr::mutate(grade = round(grade*4,0)/4) %>%
+          dplyr::mutate(criterion_id = delta_label)
+        
+        add_criterion <- data.frame(
+          criterion_id = delta_label,
+          criterion_order = 0,
+          question_id = input$slctquest,
+          criterion_label = "Manual adjustment",
+          criterion_scale = "adjustment",
+          criterion_keywords = as.character(NA)
+        )
+        
+        criteria <- tables$criteria %>%
+          dplyr::filter(criterion_id != delta_label) %>%
+          dplyr::bind_rows(add_criterion)
+        
+        grades <- tables$grades %>%
+          tidyr::unnest(data) %>%
+          dplyr::filter(criterion_id != delta_label) %>%
+          dplyr::bind_rows(residuals) %>%
+          dplyr::group_by(source_id, question_id) %>%
+          tidyr::nest() %>%
+          dplyr::ungroup()
+        
+        tables$criteria <- criteria
+        tables$grades <- grades
+      }
+    })
+    
+    observeEvent(input$rmresiduals, {
+      if (!is.null(input$slctquest)){
+        delta_label <- paste0(input$slctquest, "_delta")
+        
+        criteria <- tables$criteria %>%
+          dplyr::filter(criterion_id != delta_label)
+        
+        grades <- tables$grades %>%
+          tidyr::unnest(data) %>%
+          dplyr::filter(criterion_id != delta_label) %>%
+          dplyr::group_by(source_id, question_id) %>%
+          tidyr::nest() %>%
+          dplyr::ungroup()
+        
+        tables$criteria <- criteria
+        tables$grades <- grades
+      }
+    })
 
 
     ############################################################################
     # Checks
-    
+
     # Produce metrics on demand for the current question
     observeEvent(input$checkquestion, {
       if (!is.null(input$slctquest)) {
         format <- tables$answers %>%
           dplyr::filter(question_id == input$slctquest)
         format <- format$format[[1]]
-        
+
         criteria <- tables$criteria %>%
-          dplyr::filter(question_id == input$slctquest)
-        
+          dplyr::filter(
+            question_id == input$slctquest,
+            criterion_id != paste0(input$slctquest, "_delta")
+          )
+
         grades <- tables$grades %>%
           tidyr::unnest(data) %>%
           dplyr::filter(question_id == input$slctquest) %>%
           dplyr::select(-question_id) %>%
           dplyr::filter(criterion_id %in% criteria$criterion_id)
-        
+
         if (nrow(criteria) > 1 & nrow(grades) > 1) {
           aggreg <- grades %>%
             dplyr::group_by(source_id) %>%
@@ -1130,22 +1187,22 @@ raText <- function() {
               SUM = sum(grade),
               AVG = mean(grade)
             )
-          
+
           discrete <- grades %>%
             dplyr::mutate(criterion_id = paste0(criterion_id, "_grade")) %>%
             tidyr::pivot_wider(
               names_from = "criterion_id", values_from = "grade"
             ) %>%
             dplyr::mutate_if(is.numeric, tidyr::replace_na, 0)
-          
+
           addressed <- discrete %>%
             dplyr::mutate_if(is.numeric, function(x) as.numeric(abs(x) > 0))
           names(addressed) <- stringr::str_replace_all(
             names(addressed), "_grade", "_addressed"
           )
-          
+
           options(warn = -1)
-          
+
           if (nrow(discrete) > length(discrete) + 1) {
             pca <- suppressWarnings(
               suppressMessages(
@@ -1164,7 +1221,7 @@ raText <- function() {
               source_id = discrete$source_id,
               PCA = as.numeric(pca$scores)
             )
-            
+
             fa <- suppressWarnings(
               suppressMessages(
                 psych::fa(
@@ -1187,15 +1244,15 @@ raText <- function() {
               source_id = discrete$source_id,
               PCA = 0
             )
-            
+
             fa <- tibble::tibble(
               source_id = discrete$source_id,
               FAC = 0
             )
           }
-          
+
           options(warn = 0)
-          
+
           fit <- grades %>%
             dplyr::left_join(
               tables$coefficients[[input$slctquest]],
@@ -1205,7 +1262,7 @@ raText <- function() {
             dplyr::group_by(source_id) %>%
             dplyr::summarise(FIT = sum(FIT, na.rm = TRUE)) %>%
             dplyr::ungroup()
-          
+
           scores <- tables$answers %>%
             dplyr::filter(question_id == input$slctquest) %>%
             dplyr::select(source_id, evaluation) %>%
@@ -1213,7 +1270,7 @@ raText <- function() {
             dplyr::left_join(aggreg, by = "source_id") %>%
             dplyr::left_join(pca, by = "source_id") %>%
             dplyr::left_join(fa, by = "source_id")
-          
+
           if (format == "text") {
             keywords <- criteria %>%
               dplyr::select(criterion_id, criterion_keywords) %>%
@@ -1225,7 +1282,7 @@ raText <- function() {
                   criterion_keywords, stringr::str_replace_all, ", ", "|"
                 )
               )
-            
+
             kwcounts <- tables$answers %>%
               dplyr::filter(question_id == input$slctquest) %>%
               dplyr::select(source_id, answer) %>%
@@ -1235,8 +1292,12 @@ raText <- function() {
                 answer, criterion_keywords, stringr::str_count
               )) %>%
               dplyr::select(source_id, criterion_id, count) %>%
-              tidyr::pivot_wider(names_from = criterion_id, values_from = count)
-            
+              tidyr::pivot_wider(
+                names_from = criterion_id,
+                values_from = count,
+                values_fill = 0
+              )
+
             details <- discrete %>%
               dplyr::left_join(addressed, by = "source_id") %>%
               dplyr::left_join(kwcounts, by = "source_id") %>%
@@ -1246,33 +1307,35 @@ raText <- function() {
                 into = c("criterion_id", "type"), sep = "_"
               ) %>%
               tidyr::pivot_wider(
-                names_from = "type", values_from = "value", values_fill = NA
+                names_from = "type",
+                values_from = "value",
+                values_fill = 0
               )
-            
+
             add2score <- details %>%
               dplyr::group_by(source_id) %>%
               dplyr::summarize(KWD = sum(keywords, na.rm = TRUE))
-            
+
             scores <- scores %>%
               dplyr::left_join(add2score, by = "source_id")
           } else {
             scores <- scores %>%
               dplyr::mutate(KWD = 0)
           }
-          
+
           tables$details[[input$slctquest]] <- details %>%
             dplyr::mutate(question_id = input$slctquest) %>%
             dplyr::select(source_id, question_id, dplyr::everything())
-          
+
           tables$scores[[input$slctquest]] <- scores %>%
             dplyr::mutate(question_id = input$slctquest) %>%
             dplyr::select(source_id, question_id, dplyr::everything())
         }
       }
     })
-    
+
     # Display graphs and tables
-    
+
     basecheck <- reactive({
       if (!is.null(input$slctquest)) {
         if (!is.null(tables$scores[[input$slctquest]])) {
@@ -1286,29 +1349,30 @@ raText <- function() {
         }
       }
     })
-    
-    output$checktable <- renderDataTable({
-      if (!is.null(input$slctquest)) {
-        if (!is.null(tables$details[[input$slctquest]])) {
-          tables$details[[input$slctquest]] %>%
-            dplyr::left_join(tables$criteria, by = "criterion_id") %>%
-            dplyr::left_join(basecheck(), by = "source_id") %>%
-            dplyr::select(
-              source = increment, criterion_label, addressed, keywords
-            ) %>%
-            na.omit() %>%
-            dplyr::filter(
-              (addressed == 0 & keywords > 0) |
-                (addressed > 0 & keywords == 0)
-            ) %>%
-            dplyr::arrange(addressed, -keywords)
+
+    output$checktable <- renderDataTable(
+      {
+        if (!is.null(input$slctquest)) {
+          if (!is.null(tables$details[[input$slctquest]])) {
+            tables$details[[input$slctquest]] %>%
+              dplyr::left_join(tables$criteria, by = "criterion_id") %>%
+              dplyr::left_join(basecheck(), by = "source_id") %>%
+              dplyr::select(
+                source = increment, criterion_label, addressed, keywords
+              ) %>%
+              na.omit() %>%
+              dplyr::filter(
+                (addressed == 0 & keywords > 0) |
+                  (addressed > 0 & keywords == 0)
+              ) %>%
+              dplyr::arrange(addressed, -keywords)
+          }
         }
-      }
-    },
-    options = list(pageLength = 8)
+      },
+      options = list(pageLength = 8)
     )
-    
-    
+
+
     output$correlations <- renderPlot({
       if (!is.null(input$slctquest)) {
         if (!is.null(tables$scores[[input$slctquest]])) {
@@ -1321,7 +1385,7 @@ raText <- function() {
         }
       }
     })
-    
+
     ############################################################################
     # Best of
 
@@ -1361,8 +1425,8 @@ raText <- function() {
         ggplot2::xlab("Grade") +
         ggplot2::ylab("Count") +
         ggplot2::scale_x_continuous(
-          limits = c(-1, (max(basedistrib$evaluation)+1)),
-          breaks = seq(-1, (max(basedistrib$evaluation)+1), by = 1)
+          limits = c(-1, (max(basedistrib$evaluation) + 1)),
+          breaks = seq(-1, (max(basedistrib$evaluation) + 1), by = 1)
         )
     })
 

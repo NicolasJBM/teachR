@@ -28,7 +28,7 @@ Imports:
   miniUI,
   shiny,
   shinyBS,
-  shinythemes,
+  bslib,
   tibble,
   exams,
   xml2,
