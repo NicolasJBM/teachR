@@ -543,7 +543,8 @@ test_generate <- function() {
           seed = 0,
           alternatives = 0,
           currency = "tmp",
-          stringsAsFactors = FALSE
+          stringsAsFactors = FALSE,
+          remove = FALSE
         )
         tables$preselection <- template
         tables$clean_preselection <- template
