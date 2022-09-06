@@ -1,0 +1,226 @@
+
+
+```{r agenda, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+s1 <- "**Section 1:** Basic features"
+s2 <- "**Section 2:** Diagrams and charts"
+s3 <- "**Section 3:** Varying backgrounds and transitions"
+teachR::add_slide(
+  text = "Agenda", format = "titled",
+  colorback = "#FFFFFF", image = "", video = "",
+  transback = "slide", transdata = "fade"
+)
+teachR::add_list(
+  c(s1,s2,s3),
+  numbered = FALSE,
+  animation = "semi-fade-out"
+)
+```
+
+
+
+```{r section1, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = base::paste0("<chalk> ", s1, " </chalk>"),
+  format = "section", colorback = "#000000",
+  image = "https://e-catalyst.net/content/resources/images/blackboard.jpg",
+  video = "", transback = "slide", transdata = "fade"
+)
+```
+
+
+
+```{r formula, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add mathematical formulas with a Latex synthax",
+  format = "titled", colorback = "#000000",
+  image = "https://e-catalyst.net/content/resources/images/blackboard.jpg",
+  video = "", transback = "slide", transdata = "fade"
+)
+```
+
+$$
+Q_B=\frac{FC}{P-UVC}
+$$
+
+
+
+```{r quote, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add quotes", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+> This is a quote with a citation [@Mangin2022].
+
+
+
+```{r image, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add an image", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+![](https://images.unsplash.com/photo-1644018335954-ab54c83e007f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80){width=80%}
+
+
+
+
+
+```{r section2, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = base::paste0("<chalk> ", s2, " </chalk>"),
+  format = "section", colorback = "#000000",
+  image = "https://e-catalyst.net/content/resources/images/blackboard.jpg",
+  video = "", transback = "slide", transdata = "fade"
+)
+```
+
+
+
+```{r tabletitle, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add a table", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+```{r table, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(kableExtra)
+library(ggplot2)
+# See more on tables at https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+table <- diamonds |>
+  dplyr::slice_head(n = 10)
+
+table |>
+  kableExtra::kbl(format = "html", digits = 2, align = "lllcrrrrrr") |>
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 12,
+    position = "center"
+  ) |>
+  kableExtra::column_spec(
+    7, color = "white",
+    background = kableExtra::spec_color(table$price, end = 0.7),
+    popover = base::paste("price:", table$cut)
+  )
+```
+
+
+
+```{r diagramtitle, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add a diagram", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+```{r diagram, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(DiagrammeR)
+# See https://rich-iannone.github.io/DiagrammeR/graphviz_and_mermaid.html
+diagram <- DiagrammeR::create_graph() |>
+  
+  DiagrammeR::add_node(label = "Cause", node_aes = DiagrammeR::node_aes(shape = "rectangle", color = "black", fontcolor = "white", fillcolor = "grey20", fontsize = 12, x = 0, y = 0, penwidth = 1, width = 1.5, height = 0.5)) |> #1
+  
+  DiagrammeR::add_node(label = "Mediator", node_aes = DiagrammeR::node_aes(shape = "rectangle", color = "black", fontcolor = "white", fillcolor = "grey20", fontsize = 12, x = 2, y = 0, penwidth = 1, width = 1.5, height = 0.5)) |> #2
+  
+  DiagrammeR::add_node(node_aes = node_aes(shape = "rectangle", color = "black", fontcolor = "black", fillcolor = "black", fontsize = 0, x = 3, y = 0, penwidth = 0, width = 0, height = 0)) |>
+  
+  DiagrammeR::add_node(label = "Consequence", node_aes = DiagrammeR::node_aes(shape = "rectangle", color = "black", fontcolor = "white", fillcolor = "grey20", fontsize = 12, x = 4, y = 0, penwidth = 1, width = 1.5, height = 0.5)) |> #3
+  
+  DiagrammeR::add_node(label = "Moderator", node_aes = DiagrammeR::node_aes(shape = "rectangle", color = "black", fontcolor = "white", fillcolor = "grey20", fontsize = 12, x = 3, y = 1, penwidth = 1, width = 1.5, height = 0.5)) |> #4
+  
+  DiagrammeR::add_edge(from = 1, to = 2, edge_aes = DiagrammeR::edge_aes(style = "solid", color = "black", fontcolor = "black", fontsize = 10, penwidth = 2, arrowhead = "normal")) |>
+  
+  DiagrammeR::add_edge(from = 2, to = 3, edge_aes = DiagrammeR::edge_aes(style = "solid", color = "black", fontcolor = "black", fontsize = 10, penwidth = 2, arrowhead = "none")) |>
+  
+  DiagrammeR::add_edge(from = 3, to = 4, edge_aes = DiagrammeR::edge_aes(style = "solid", color = "black", fontcolor = "black", fontsize = 10, penwidth = 2, arrowhead = "normal")) |>
+  
+  DiagrammeR::add_edge(from = 5, to = 3, edge_aes = DiagrammeR::edge_aes(style = "solid", color = "black", fontcolor = "black", fontsize = 10, penwidth = 2, arrowhead = "normal"))
+
+DiagrammeR::render_graph(diagram)
+```
+
+
+
+```{r graphtitle, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add a graph", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+```{r graph, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(ggplot2)
+diamonds |>
+  dplyr::slice_sample(n = 500) |>
+  ggplot(aes(x=carat, y = price)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x")
+```
+
+
+
+
+
+```{r section3, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = base::paste0("<chalk> ", s3, " </chalk>"),
+  format = "section", colorback = "#000000",
+  image = "https://e-catalyst.net/content/resources/images/blackboard.jpg",
+  video = "", transback = "slide", transdata = "fade"
+)
+```
+
+
+
+```{r videotitle, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "Add a video", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+```{r video, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_video(vid = "gM95HHI4gLk", host = "Youtube")
+```
+
+
+
+```{r meme, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_meme(
+  text_above = "I love mathematics.",
+  image = "https://e-catalyst.net/content/resources/images/grumpy_cat2.jpg",
+  text_below = "They make people cry.",
+  font_size = 2.5, transback = "slide", transdata = "fade"
+)
+```
+
+
+
+```{r thankyou, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = base::paste0("<chalk> Thank you! Any question? </chalk>"),
+  format = "section", colorback = "#000000",
+  image = "https://e-catalyst.net/content/resources/images/blackboard.jpg",
+  video = "", transback = "slide", transdata = "fade"
+)
+```
+
+```{r references, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, results="asis"}
+teachR::add_slide(
+  text = "References", format = "titled", colorback = "#FFFFFF",
+  image = "", video = "", transback = "slide", transdata = "fade"
+)
+```
+
+
+
+Meta-information
+================
+exextra[title]:Title of the slide presentation.  
+exextra[type]:Slide  
+exextra[document]:SXXXXXXXXX  
+exextra[tag_authors]: Dr. Nicolas Mangin  

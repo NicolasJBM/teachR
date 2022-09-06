@@ -1,0 +1,15 @@
+
+You can write here descriptions of tone or even B-roll. These descriptions will not be exported in the script but help setting up the video.
+
+> Then you can write as a quote the text you intend to utter.  
+> To facilitate subsequent reading of the script, it is helpful to write short sentences.
+> It also helps to separate sentences and write each on a distinct row.
+
+
+
+Meta-information
+================
+exextra[title]:Title of the video.  
+exextra[type]:Video  
+exextra[document]:VXXXXXXXXX  
+exextra[tag_custom]:  

@@ -1,0 +1,10 @@
+
+
+
+
+Meta-information
+================
+exextra[title]:Title of the game.  
+exextra[type]:Game  
+exextra[document]:GXXXXXXXXX  
+exextra[tag_custom]:  

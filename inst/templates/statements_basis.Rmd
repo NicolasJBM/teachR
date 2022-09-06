@@ -1,0 +1,56 @@
+```{r preparation, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+versionid <- "QXXXXXXXXX_US.Rmd"
+prm <- teachR::questions_set_parameters(versionid, test_parameters, as_latex, record_version)
+base::set.seed(prm$seed)
+
+exercise <- teachR::questions_create_statements(
+  feedbacks = feedbacks,
+  documents = "DXXXXXXXXX",
+  langiso = "US",
+  altnbr = prm$altnbr,
+  truenbr = 1,
+  indication = TRUE
+)
+if (base::sum(exercise$correct) == 1) {
+  sormchoice <- "schoice"
+  schoice <- TRUE
+} else {
+  sormchoice <- "mchoice"
+  schoice <- FALSE
+}
+```
+
+
+
+Question
+========
+  `r prm$show_version` `r exercise$interrogation[[1]]` `r prm$show_points`
+
+```{r question, echo = FALSE, results = "asis"}
+exams::answerlist(exercise$proposition, markup = "markdown")
+```
+
+
+
+Solution
+========
+
+```{r solution, echo = FALSE, results = "asis"}
+teachR::questions_record_version(prm$record_version, prm$test, versionid, exercise)
+exams::answerlist(
+  ifelse(exercise$value, "This statement is true", "This statement is false"),
+  exercise$explanation, markup = "markdown"
+)
+```
+
+
+
+Meta-information
+================
+exname: `r versionid`  
+extype: `r sormchoice`  
+exsolution: `r exams::mchoice2string(exercise$correct, single = schoice)`  
+exextra[title]:Title of the question.  
+exextra[type]:Statements  
+exextra[document]:  
+exextra[tag_custom]:  

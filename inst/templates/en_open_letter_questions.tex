@@ -1,0 +1,168 @@
+\documentclass[10pt,letterpaper]{article}
+
+%% packages
+\usepackage{color,verbatim,Sweave,url,xargs,amsmath,float,caption,graphicx,dcolumn}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+%% new environments
+\newenvironment{question}{\vspace{20pt}\begin{minipage}{\textwidth}\item}{\end{minipage}\vspace{20pt}}
+\newenvironment{solution}{\comment}{\endcomment\hfil\rule{5cm}{.4pt}\hfil\vspace{20pt}}
+\newenvironment{answerlist}{\renewcommand{\labelenumi}{(\alph{enumi})}\begin{enumerate}}{\end{enumerate}}
+
+%% paragraphs
+\setlength{\parskip}{0.7ex plus0.1ex minus0.1ex}
+\setlength{\parindent}{0em}
+
+%% fonts: Times
+\renewcommand{\rmdefault}{ptm}
+\IfFileExists{sfmath.sty}{
+  \RequirePackage{sfmath}
+  \renewcommand{\rmdefault}{ptm}
+}{}
+
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][H]{%
+   \expandafter\origfigure\expandafter[#1]%
+}{%
+   \endorigfigure
+}
+
+\newcommand{\extext}[1]{\phantom{\large #1}}
+\newcommandx{\exmchoice}[9][2=-,3=-,4=-,5=-,6=-,7=-,8=-,9=-]{%
+                \mbox{(a) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#1}} \hspace*{2mm}}%
+  \if #2- \else \mbox{(b) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#2}} \hspace*{2mm}} \fi%
+  \if #3- \else \mbox{(c) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#3}} \hspace*{2mm}} \fi%
+  \if #4- \else \mbox{(d) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#4}} \hspace*{2mm}} \fi%
+  \if #5- \else \mbox{(e) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#5}} \hspace*{2mm}} \fi%
+  \if #6- \else \mbox{(f) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#6}} \hspace*{2mm}} \fi%
+  \if #7- \else \mbox{(g) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#7}} \hspace*{2mm}} \fi%
+  \if #8- \else \mbox{(h) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#8}} \hspace*{2mm}} \fi%
+  \if #9- \else \mbox{(i) \,\, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#9}} \hspace*{2mm}} \fi%
+}
+\newcommandx{\exclozechoice}[9][2=-,3=-,4=-,5=-,6=-,7=-,8=-,9=-]{\setcounter{enumiii}{1}%
+                \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#1}} \hspace*{2mm}\stepcounter{enumiii}}%
+  \if #2- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#2}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #3- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#3}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #4- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#4}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #5- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#5}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #6- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#6}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #7- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#7}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #8- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#8}} \hspace*{2mm}\stepcounter{enumiii}} \fi%
+  \if #9- \else \mbox{\roman{enumiii}. \, \framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#9}} \hspace*{2mm}} \fi%
+}
+\newcommand{\exnum}[9]{%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#1}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#2}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#3}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#4}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#5}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#6}}}%
+  \mbox{ \makebox[3mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-2mm} .}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#7}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#8}}}%
+  \mbox{\framebox[8mm]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#9}}}%
+}
+\newcommand{\exstring}[1]{%
+  \mbox{\framebox[0.9\textwidth][l]{\rule[-1mm]{0mm}{5mm} \hspace*{-1.6mm} \extext{#1}} \hspace*{2mm}}%
+}
+
+%% new commands
+\makeatletter
+\newcommand{\ID}[1]{\def\@ID{#1}}
+\newcommand{\Date}[1]{\def\@Date{#1}}
+\ID{00001}
+\Date{YYYY-MM-DD}
+
+%% \exinput{header}
+
+\newcommand{\myID}{\@ID}
+\newcommand{\myDate}{\@Date}
+\makeatother
+
+%% headings
+\markboth{\textnormal{\bf \large Management Accounting: \myID}}%
+{\textnormal{\bf \large Management Accounting Exam: \myID}}
+\pagestyle{myheadings}
+
+%% force table and figure position
+\usepackage{float}
+\restylefloat{table}
+\captionsetup{labelformat=empty}
+
+%% force single spacing
+\usepackage[singlespacing]{setspace}
+
+% Define 1-inch page margins
+\usepackage[margin=1in]{geometry}
+
+% Remove page numbers
+\pagenumbering{gobble}
+
+% Solves the problem of tigthlists
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+  
+  
+  
+
+
+
+\begin{document}
+
+%% title page
+\thispagestyle{empty}
+{\rm
+\textbf{\LARGE{Exam}}
+
+\textbf{\large{Management Accounting \myDate \hfill Exam ID \myID}}
+
+\vspace*{2cm}
+
+\begin{tabular}{p{14cm}}
+\textbf{Name:} \hrule \\[1.5cm]
+\textbf{Student ID:} \hrule \\[1.5cm]
+\textbf{Signature:} \hrule  \\[1.5cm]
+\end{tabular}
+
+\vspace*{1cm}
+
+%% \exinput{questionnaire}
+}
+\newpage
+
+Please read carefully each question and the related instructions. An answer which does not pertain directly to the question asked will be ignored. \newline
+
+If you believe a question is ambiguous, \textbf{state the assumptions you make} to remove the ambiguity and provide only one answer.  \newline
+
+If you have to round numbers in your computations, \textbf{round at the unit for volumes} (e.g. 674 units), \textbf{2 digits for amounts} (e.g. \texteuro 1,327.45), and \textbf{4 digits for percentages} (e.g. 0.4537 so 45.37\%). \newline
+
+When you report your answer, \textbf{provide the details of your computations} as well as \textbf{appropriate justifications and explanations}. Make sure it is readable and \textbf{highlight you main results}. \newline
+
+Please note that \textbf{every question is self-sufficient and independent from any other question}. Some questions may have names in common, but this happens by pure chance and has no meaning whatsoever. They will all rely on different underlying data.  
+
+\vspace*{1cm}
+
+\hfil\rule{5cm}{.4pt}\hfil
+
+\vspace*{1cm}
+
+\begin{enumerate}
+
+%% \exinput{exercises}
+
+\end{enumerate}
+
+\end{document}

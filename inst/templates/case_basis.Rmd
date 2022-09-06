@@ -1,0 +1,161 @@
+
+# Simulation
+
+## Data
+
+```{r simulation_data, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+# Code generating the data used in the case, possibly with some randomness.
+
+q1_table_to_fill <- tibble::tibble(x = base::character(2), y = base::numeric(2))
+q1_table_with_solution <- tibble::tibble(x = c("A","B"), y = c("22","23"))
+
+```
+
+## Files
+
+```{r simulation_files, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+# Code generating the data used in the case, possibly with some randomness.
+files <- base::list(
+  q1_table_with_solution
+)
+```
+
+
+
+
+
+
+
+
+
+
+# Part 1
+
+A case is organized in parts. Each part has its own case description and series of questions. When the case is created, each part will be a distinct PDF (+ CSV or excel for data if requested) file or a distinct tab in the shiny dashboard, depending on the desired output.  
+
+
+
+## Description
+
+Write here in rmarkdown syntax the case with all the data deemed necessary. This case description will be displayed for all the questions in the corresponding section.  
+
+
+
+
+
+## Questions
+
+
+
+
+
+### Question 1
+
+#### Interrogation
+
+```{r question_1, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+question_1 = base::list(
+  interrogation = 'Write here the question asked to the student.',
+  type = "computation",
+  correct = (labor_administrative+administrative_rent),
+  documents = base::character(1),
+  hints = base::list(
+    'Did you check this?',
+    'Did you do that?'
+  )
+)
+```
+
+#### Solution
+
+Write here in rmarkdown syntax the complete solution to the question.
+
+
+
+
+
+### Question 2
+
+#### Interrogation
+
+```{r question_2, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+question_2 = base::list(
+  interrogation = 'Write here the question asked to the student.',
+  type = "table",
+  table = q1_table_to_fill,
+  readonly = c(1),
+  shaderow = c(5),
+  height = 200,
+  correct = q1_table_with_solution,
+  documents = base::character(1),
+  hints = base::list(
+    'Did you check this?',
+    'Did you do that?'
+  )
+)
+```
+
+#### Solution
+
+Write here the complete solution to the question.
+
+
+
+
+
+### Question 3
+
+#### Interrogation
+
+```{r question_3, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+question_3 = base::list(
+  interrogation = 'Write here the question asked to the student.',
+  type = "words",
+  correct = c("joint","split-off","separable"),
+  documents = base::character(1),
+  hints = base::list(
+    'Did you check this?',
+    'Did you do that?'
+  )
+)
+```
+
+#### Solution
+
+Write here the complete solution to the question.
+
+
+
+
+
+### Question 4
+
+#### Interrogation
+
+```{r question_4, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+question_4 = base::list(
+  interrogation = 'Write here the question asked to the student.',
+  type = "keywords",
+  correct = c("pattern in regex"),
+  documents = base::character(1),
+  hints = base::list(
+    'Did you check this?',
+    'Did you do that?'
+  )
+)
+```
+
+#### Solution
+
+Write here the complete solution to the question.
+
+
+
+
+
+Meta-information
+================
+exextra[title]:Title of the case.  
+exextra[type]:Case  
+exextra[document]:CXXXXXXXXX  
+exextra[tag_custom]:  

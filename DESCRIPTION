@@ -1,0 +1,31 @@
+Package: teachR
+Title: Toolbox to manage courses
+Version: 0.1.0
+Date: 2022-01-31
+Authors@R: 
+    person(given = "Nicolas",
+           family = "Mangin",
+           role = c("aut", "cre"),
+           email = "nicolas.jb.mangin@gmail.com",
+           comment = c(ORCID = "0000-0002-1597-9376"))
+Description: Application supporting the design, organization, and maintenance of teaching, learning, and testing materials.
+Encoding: UTF-8
+URL: https://github.com/NicolasJBM/teachR
+License: GPL-3 | file LICENSE
+Depends: R (>= 4.1)
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
+Imports:
+  dplyr,
+  stringr,
+  shiny,
+  shinyalert,
+  shinybusy,
+  tibble,
+  purrr,
+  tidyr,
+  shinyWidgets,
+  jsTreeR,
+  classR,
+  editR,
+  bibliogR
