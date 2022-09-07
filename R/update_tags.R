@@ -83,9 +83,6 @@ update_tags <- function(course_paths){
     dplyr::select(tag, order, value, count, icon, boxcolor) |>
     dplyr::arrange(tag, order)
 
-  new_tags <- new_tags |>
-    dplyr::mutate(tag = base::factor(tag, levels = base::unique(new_tags$tag)))
-
   tags <- new_tags |>
     dplyr::arrange(tag, order)
   
