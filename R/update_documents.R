@@ -64,10 +64,10 @@ update_documents <- function(course_paths){
   }
   
   file_info <- tibble::tibble(
-    path = base::list.files(course_paths$subfolders$original, full.names = TRUE)
+    path = base::list.files(course_paths$subfolders$original, full.names = TRUE),
+    file = base::list.files(course_paths$subfolders$original, full.names = FALSE)
   ) |>
     dplyr::mutate(
-      file = stringr::str_remove_all(path, base::paste0(course_paths$subfolders$original, "/")),
       modified = purrr::map(path, function(x) base::file.info(x)$mtime)
     ) |>
     tidyr::unnest(modified)
