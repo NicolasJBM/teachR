@@ -45,7 +45,6 @@ update_documents <- function(course_paths){
       code = base::character(0),
       language = base::character(0),
       translations = base::character(0),
-      path = base::character(0),
       modified = base::character(0),
       title = base::character(0),
       type = base::character(0),
