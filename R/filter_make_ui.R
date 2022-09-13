@@ -35,7 +35,10 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
     
     vartype <- filter_variables$filter_type[i]
     variable <- filter_variables$variable_name[i]
-    varvalues <- base::unique(base::unlist(preselection[,variable]))
+    varvalues <- preselection[,variable] |>
+      base::lapply(stringr::str_split, pattern = " ", simplify = TRUE) |>
+      base::unlist() |>
+      base::unique()
     if (!base::is.na(tagvalues[1])){
       varvalues <- base::intersect(tagvalues, varvalues)
     } else varvalues <- base::sort(varvalues)
