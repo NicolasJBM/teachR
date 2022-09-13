@@ -18,43 +18,26 @@ course_update_ui <- function(id){
   base::list(
     shiny::fluidRow(
       shiny::column(
-        2, shiny::h5("Update:")
-      ),
-      shiny::column(
-        2,
+        4,
         shiny::actionButton(
           ns("updatedocuments"),
-          shiny::span("Docs", title = "Scan documents, read tags, and update the document database accordingly."),
+          shiny::span("Update documents", title = "Scan documents, read tags, and update the document database accordingly."),
           style = "background-color:#000066;color:#FFF; width:100%;"
         )
       ),
       shiny::column(
-        2,
-        shiny::actionButton(
-          ns("updatetags"),
-          shiny::span("Tags", title = "List tags in the document database and update the tag database accordingly. Tags are only added. To remove or edit tags, go in curate."),
-          style = "background-color:#330033;color:#FFF; width:100%;"
-        )
-      ),
-      shiny::column(
-        2,
+        4,
         shiny::actionButton(
           ns("updatetrees"),
-          shiny::span("Trees", title = "Synchronise trees with the documents database: add missing entries as unclassified, remove extra entries, update titles."),
+          shiny::span("Update trees", title = "Synchronise trees with the documents database: add missing entries as unclassified, remove extra entries, update titles."),
           style = "background-color:#330033;color:#FFF; width:100%;"
         )
       ),
       shiny::column(
-        2,
+        4,
         shiny::actionButton(
-          ns("updatedata"), shiny::span("Data", title = "Gather ratings, comments, views, tests, and results in clean databases for subsequent analyses."),
-          style = "background-color:#660000;color:#FFF; width:100%;"
-        )
-      ),
-      shiny::column(
-        2,
-        shiny::actionButton(
-          ns("updatestatistics"), shiny::span("Stats", title = "Count observations, compute basic statistics as well as Item Response Theory statistics for each document and item."),
+          ns("updatestatistics"),
+          shiny::span("Update statistics", title = "Count observations, compute basic statistics as well as Item Response Theory statistics for each document and item."),
           style = "background-color:#660000;color:#FFF; width:100%;"
         )
       )

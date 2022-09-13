@@ -29,11 +29,6 @@ update_tags <- function(course_paths){
   documents <- NULL
   count <- NULL
   
-  shinybusy::show_modal_spinner(
-    spin = "orbit",
-    text = "Please wait while the application updates tags..."
-  )
-  
   if (base::file.exists(course_paths$databases$tags)){
     base::load(course_paths$databases$tags)
   } else {
@@ -88,12 +83,5 @@ update_tags <- function(course_paths){
   
   base::save(tags, file = course_paths$databases$tags)
 
-  shinybusy::remove_modal_spinner()
-  
-  shinyalert::shinyalert(
-    title = "Tags updated!",
-    text = "Your tags are now updated. Load the course to apply changes.",
-    type = "success"
-  )
 }
 

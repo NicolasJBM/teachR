@@ -51,11 +51,6 @@ update_data <- function(course_paths){
   language <- NULL
   section <- NULL
   tag_youtube <- NULL
-
-  shinybusy::show_modal_spinner(
-    spin = "orbit",
-    text = "Please wait while the application updates data..."
-  )
   
   
   # Ratings
@@ -187,13 +182,5 @@ update_data <- function(course_paths){
   results <- dplyr::select(alltests, results) |>
     tidyr::unnest(results)
   base::save(results, file = course_paths$databases$results)
-  
-  shinybusy::remove_modal_spinner()
-  
-  shinyalert::shinyalert(
-    title = "Data updated!",
-    text = "Your data are now updated. Load the course to apply changes.",
-    type = "success"
-  )
 
 }

@@ -64,12 +64,6 @@ update_statistics <- function(course_paths, minobs = 10){
   watchtime <- NULL
   weight <- NULL
   
-  
-  shinybusy::show_modal_spinner(
-    spin = "orbit",
-    text = "Please wait while the application updates statistics"
-  )
-  
   base::load(course_paths$databases$documents)
   
   # Ratings
@@ -334,13 +328,4 @@ update_statistics <- function(course_paths, minobs = 10){
   base::save(item_parameters, file = course_paths$databases$item_parameters)
   base::save(item_models, file = course_paths$databases$item_models)
   
-  
-  
-  shinybusy::remove_modal_spinner()
-  
-  shinyalert::shinyalert(
-    title = "Statistics updated!",
-    text = "Your statistics are now updated. Load the course to apply changes.",
-    type = "success"
-  )
 }

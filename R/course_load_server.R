@@ -29,11 +29,9 @@ course_load_server <- function(id, course_paths){
     item_parameters <- NULL
     page_comments <- NULL
     page_ratings <- NULL
-    propositions <- NULL
     students <- NULL
     tags <- NULL
     tests <- NULL
-    translations <- NULL
     video_views <- NULL
     tree <- NULL
     jstree <- NULL
@@ -43,8 +41,6 @@ course_load_server <- function(id, course_paths){
     course_data <- shiny::reactiveValues()
       
     course_data$documents <- NA
-    course_data$propositions <- NA
-    course_data$translations <- NA
     course_data$document_types <- NA
     course_data$tags <- NA
     course_data$languages <- NA
@@ -90,16 +86,6 @@ course_load_server <- function(id, course_paths){
           base::load(course_paths()$databases$documents)
           course_data$documents <- documents
         } else course_data$documents <- NA
-        
-        if (base::file.exists(course_paths()$databases$propositions)){
-          base::load(course_paths()$databases$propositions)
-          course_data$propositions <- propositions
-        } else course_data$propositions <- NA
-        
-        if (base::file.exists(course_paths()$databases$translations)){
-          base::load(course_paths()$databases$translations)
-          course_data$translations <- translations
-        } else course_data$translations <- NA
         
         if (base::file.exists(course_paths()$databases$doctypes)){
           base::load(course_paths()$databases$doctypes)

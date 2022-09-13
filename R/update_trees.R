@@ -32,10 +32,6 @@ update_trees <- function(course_paths){
   documents <- NULL
   document_types <- NULL
   
-  shinybusy::show_modal_spinner(
-    spin = "orbit",
-    text = "Please wait while the application updates trees..."
-  )
   
   # Load necessary data
   base::load(course_paths$databases$documents)
@@ -141,12 +137,5 @@ update_trees <- function(course_paths){
       file = base::paste0(course_paths$subfolders$jstrees, "/", classif)
     )
   }
-
-  shinybusy::remove_modal_spinner()
   
-  shinyalert::shinyalert(
-    title = "Trees updated!",
-    text = "Your trees are now updated. Load the course to apply changes.",
-    type = "success"
-  )
 }

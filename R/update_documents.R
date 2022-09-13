@@ -34,11 +34,6 @@ update_documents <- function(course_paths){
   tags <- NA
   code <- NA
   
-  shinybusy::show_modal_spinner(
-    spin = "orbit",
-    text = "Please wait while the application updates documents..."
-  )
-  
   if (!base::file.exists(course_paths$databases$documents)){
     documents <- base::data.frame(
       file = base::character(0),
@@ -112,13 +107,5 @@ update_documents <- function(course_paths){
     dplyr::select(-path)
   
   base::save(documents, file = course_paths$databases$documents)
-  
-  shinybusy::remove_modal_spinner()
-  
-  shinyalert::shinyalert(
-    title = "Documents updated!",
-    text = "Your documents are now updated. Load the course to apply changes.",
-    type = "success"
-  )
 }
 

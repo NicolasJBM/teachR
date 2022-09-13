@@ -1,8 +1,9 @@
 
-path <- "D:/Dropbox/5-Education/Courses/management_accounting/basis/1_documents/1_original"
+path <- "D:/Dropbox/5-Education/Courses/management_accounting/basis/5_functions"
+files <- base::list.files(path, full.names = TRUE)
+
 pattern <- "teachR::dbl"
 replacement <- "dbl"
-files <- base::list.files(path, full.names = TRUE)
 
 for (file in files){
   lines <- readLines(file)
@@ -14,7 +15,7 @@ for (file in files){
 
 
 path <- "R"
-string <- "shinyAce"
+string <- "rename"
 funs <- list.files(path, full.names = TRUE)
 
 for (file in funs){
