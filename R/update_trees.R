@@ -4,6 +4,7 @@
 #' @description Function adding missing documents as unclassified and removing non-existing documents in all trees.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @return Save on disk updated trees.
+#' @importFrom classR trees_tibble_to_json
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr case_when
 #' @importFrom dplyr everything
@@ -12,9 +13,6 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom purrr map_chr
-#' @importFrom shinyalert shinyalert
-#' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_spinner
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove_all
 #' @importFrom tibble rowid_to_column
@@ -36,6 +34,22 @@ update_trees <- function(course_paths){
   # Load necessary data
   base::load(course_paths$databases$documents)
   base::load(course_paths$databases$doctypes)
+  
+  if (!base::file.exists(course_paths$databases$courses)){
+    courses <- tibble::tibble(
+      tree = "unclassified.RData",
+      course = base::as.character(NA),
+      institution = base::as.character(NA),
+      program = base::as.character(NA),
+      program_level = base::as.character(NA),
+      group = base::as.character(NA),
+      year = base::as.character(NA),
+      website = base::as.character(NA),
+      bib = base::as.character(NA),
+      csl = base::as.character(NA)
+    )
+    base::save(courses, file = course_paths$databases$courses)
+  }
   
   # Prepare the tree structure
   preptree1 <- tibble::tibble(

@@ -19,12 +19,6 @@ filter_statistics_server <- function(
     type <- NULL
     
     documents <- shiny::reactive({
-      shiny::req(!base::is.null(course_data()))
-      shiny::req(!base::is.na(course_data()$documents))
-      shiny::req(!base::is.na(course_data()$page_ratings))
-      shiny::req(!base::is.na(course_data()$video_views))
-      shiny::req(!base::is.na(course_data()$document_parameters))
-      
       course_data()$documents |>
         dplyr::left_join(course_data()$page_ratings, by = "file") |>
         dplyr::left_join(course_data()$video_views, by = "file") |>

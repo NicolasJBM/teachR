@@ -13,16 +13,11 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom dplyr summarise
-#' @importFrom editR get_tags
 #' @importFrom purrr map
-#' @importFrom purrr map_chr
-#' @importFrom shinyalert shinyalert
-#' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_spinner
 #' @importFrom stringr str_remove_all
 #' @importFrom tibble tibble
-#' @importFrom tidyr separate
 #' @importFrom tidyr replace_na
+#' @importFrom tidyr separate
 #' @importFrom tidyr unnest
 #' @export
 
@@ -55,6 +50,37 @@ update_documents <- function(course_paths){
     base::save(documents, file = course_paths$databases$documents)
   } else {
     base::load(course_paths$databases$documents)
+  }
+  
+  
+  
+  
+  
+  if (!base::file.exists(course_paths$databases$propositions)){
+    propositions <- tibble::tibble(
+      item = base::character(0),
+      code = base::character(0),
+      type = base::character(0),
+      document = base::character(0),
+      language = base::character(0),
+      modifications = base::numeric(0),
+      proposition = base::character(0),
+      value = base::numeric(0),
+      scale = base::character(0),
+      explanation = base::character(0),
+      keywords = base::character(0)
+    )
+    base::save(propositions, file = course_paths$databases$propositions)
+  }
+  
+  if (!base::file.exists(course_paths$databases$translations)){
+    translations <- tibble::tibble(
+      item = base::character(0),
+      language = base::character(0),
+      proposition = base::character(0),
+      explanation = base::character(0)
+    )
+    base::save(translations, file = course_paths$databases$translations)
   }
   
   file_info <- tibble::tibble(
