@@ -40,7 +40,9 @@ course_set_paths <- function(course_folder){
       games = base::paste0(course_folder, "/materials/5_games"),
       cases = base::paste0(course_folder, "/materials/6_cases"),
       tests = base::paste0(course_folder, "/materials/7_tests"),
-      analyses = base::paste0(course_folder, "/materials/8_analyses")
+      analyses = base::paste0(course_folder, "/materials/8_analyses"),
+      tex = base::paste0(course_folder, "/temporary/format/tex"),
+      css = base::paste0(course_folder, "/temporary/format/css")
     )
     
     databases <- base::list(
