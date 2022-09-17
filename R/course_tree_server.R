@@ -186,7 +186,7 @@ course_tree_server <- function(id, course_data, course_paths){
         program = base::as.character(input$newtreeprogram),
         program_level = base::as.character(input$newtreeprogramlevel),
         group = base::as.character(input$newtreegroup),
-        year =  base::as.integer(input$newtreeyear),
+        year =  base::as.character(input$newtreeyear),
         website = base::as.character(input$newtreewebsite),
         bib = base::as.character(input$newtreebib),
         csl = base::as.character(input$newtreecsl)

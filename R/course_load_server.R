@@ -113,7 +113,7 @@ course_load_server <- function(id, course_paths){
           course_data$courses <- courses
         } else course_data$courses <- NA
         
-        if (base::dir.exists(course_paths()$subfolders$jstrees)){
+        if (base::dir.exists(course_paths()$subfolders$trees)){
           tbltrees <- base::list.files(course_paths()$subfolders$trees)
           course_data$trees <- base::list()
           for (tbl in tbltrees) {
