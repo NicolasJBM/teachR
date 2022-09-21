@@ -63,7 +63,10 @@ course_references_server <- function(id, course_paths){
         if ("bibliogR" %in% base::as.data.frame(utils::installed.packages())$Package){
           
           bibliogR::make_bib_file(
-            source_folder = course_paths()$subfolders$original,
+            source_folder = c(
+              course_paths()$subfolders$original,
+              course_paths()$subfolders$translated
+            ),
             references = references(),
             destination_folder = base::paste0(
               course_paths()$subfolders$course, "/temporary/data"
