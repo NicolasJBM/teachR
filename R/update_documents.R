@@ -77,8 +77,8 @@ update_documents <- function(course_paths){
     translations <- tibble::tibble(
       item = base::character(0),
       language = base::character(0),
-      proposition = base::character(0),
-      explanation = base::character(0)
+      translated_proposition = base::character(0),
+      translated_explanation = base::character(0)
     )
     base::save(translations, file = course_paths$databases$translations)
   }
