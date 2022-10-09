@@ -229,10 +229,6 @@ update_data <- function(course_paths){
     
     tests <- tibble::tibble(
       tree = base::as.character(NA),
-      institution = base::as.character(NA),
-      program = base::as.character(NA),
-      program_level = base::as.character(NA),
-      group = base::as.character(NA),
       test = base::as.character(NA),
       test_format = base::as.character(NA),
       test_unit = base::as.character(NA),
@@ -245,7 +241,6 @@ update_data <- function(course_paths){
       show_version = base::as.logical(0),
       show_points = base::as.logical(0),
       question = base::as.character(NA),
-      question_path = base::as.character(NA),
       section = base::as.character(NA),
       bloc = base::as.character(NA),
       altnbr = base::as.list.numeric_version(NA),
@@ -253,7 +248,6 @@ update_data <- function(course_paths){
       partial_credits = base::as.logical(0),
       penalty = base::as.logical(0),
       version = base::as.character(NA),
-      version_path = base::as.character(NA),
       seed = base::as.list.numeric_version(NA)
     ) |>
       stats::na.omit()

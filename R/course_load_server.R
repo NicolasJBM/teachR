@@ -99,7 +99,7 @@ course_load_server <- function(id, course_paths){
         
         course_data$languages <- tibble::tribble(
           ~langiso, ~language, ~link,
-          "US",	"English (US)", "temporary/format/flags/us.svg",
+          "US",	"English", "temporary/format/flags/us.svg",
           "FR",	"French", "temporary/format/flags/fr.svg",
           "ES",	"Spanish", "temporary/format/flags/es.svg",
           "IT",	"Italian", "temporary/format/flags/it.svg",

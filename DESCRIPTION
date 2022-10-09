@@ -28,4 +28,5 @@ Imports:
   jsTreeR,
   classR,
   editR,
-  bibliogR
+  bibliogR,
+  fs

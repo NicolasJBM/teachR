@@ -4,12 +4,14 @@
 \alias{course_test_server}
 \title{Load test data}
 \usage{
-course_test_server(id, course_data, tree)
+course_test_server(id, course_data, course_paths, tree)
 }
 \arguments{
 \item{id}{Character. ID of the module to connect the user interface to the appropriate server side.}
 
 \item{course_data}{Reactive. Function containing all the course data loaded with the course.}
+
+\item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
 
 \item{tree}{Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR}
 }
