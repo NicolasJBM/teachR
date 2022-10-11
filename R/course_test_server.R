@@ -58,7 +58,7 @@ course_test_server <- function(id, course_data, course_paths, tree){
     
     shiny::observeEvent(input$newtest, {
       shiny::req(!base::is.na(course_data()))
-      shiny::req(!base::is.na(course_data()$tests))
+      shiny::req(!base::is.na(tree()$course))
       if (base::is.na(tree()$course[1])){
         shinyalert::shinyalert(
           "Select a tree first!",
