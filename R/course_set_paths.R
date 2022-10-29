@@ -41,6 +41,9 @@ course_set_paths <- function(course_folder){
       cases = base::paste0(course_folder, "/materials/6_cases"),
       tests = base::paste0(course_folder, "/materials/7_tests"),
       analyses = base::paste0(course_folder, "/materials/8_analyses"),
+      temp = base::paste0(course_folder, "/temporary"),
+      data = base::paste0(course_folder, "/temporary/data"),
+      csl = base::paste0(course_folder, "/temporary/format/csl"),
       tex = base::paste0(course_folder, "/temporary/format/tex"),
       css = base::paste0(course_folder, "/temporary/format/css")
     )
@@ -67,7 +70,7 @@ course_set_paths <- function(course_folder){
       item_models = base::paste0(course_folder, "/basis/4_analytics/3_statistics/item_models.RData")
     )
     
-    shiny::addResourcePath("temporary", base::paste0(course_folder, "/temporary"))
+    shiny::addResourcePath("temporary", base::paste0(subfolders$temp))
     
     course_paths <- base::list(
       subfolders = subfolders,
