@@ -61,12 +61,7 @@ filter_languages_server <- function(id, course_data){
         inputId = ns("slctexistlanguages"),
         label = "Select the other language(s) in which documents should already be translated:", 
         choices = NULL,
-        choiceNames = base::lapply(
-          base::seq_along(existing$language),
-          function(i) shiny::tagList(shiny::tags$img(
-            src = existing$link[i], width = 20, height = 15
-          ), existing$language[i])
-        ),
+        choiceNames = existing$language,
         choiceValues = existing$langiso,
         width = "100%"
       )
@@ -81,12 +76,7 @@ filter_languages_server <- function(id, course_data){
         inputId = ns("slctmisslanguages"),
         label = "Select the other language(s) in which documents should not be translated yet:", 
         choices = NULL,
-        choiceNames = base::lapply(
-          base::seq_along(missing$language),
-          function(i) shiny::tagList(shiny::tags$img(
-            src = missing$link[i], width = 20, height = 15
-          ), missing$language[i])
-        ),
+        choiceNames = missing$language,
         choiceValues = missing$langiso,
         width = "100%"
       )

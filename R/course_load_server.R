@@ -98,13 +98,13 @@ course_load_server <- function(id, course_paths){
         } else course_data$tags <- NA
         
         course_data$languages <- tibble::tribble(
-          ~langiso, ~language, ~link,
-          "US",	"English", "temporary/format/flags/us.svg",
-          "FR",	"French", "temporary/format/flags/fr.svg",
-          "ES",	"Spanish", "temporary/format/flags/es.svg",
-          "IT",	"Italian", "temporary/format/flags/it.svg",
-          "DE",	"German", "temporary/format/flags/de.svg",
-          "NL",	"Dutch", "temporary/format/flags/nl.svg"
+          ~langiso, ~language,
+          "US",	"English",
+          "FR",	"French",
+          "ES",	"Spanish",
+          "IT",	"Italian",
+          "DE",	"German",
+          "NL",	"Dutch"
         )
         
         if (base::file.exists(course_paths()$databases$courses)){
