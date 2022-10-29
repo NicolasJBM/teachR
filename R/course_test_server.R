@@ -24,34 +24,36 @@ course_test_server <- function(id, course_data, course_paths, tree){
     
     test <- NULL
     
-    tests <- shiny::reactive({
+    shiny::observe({
+      shiny::req(!base::is.na(course_paths()))
       shiny::req(!base::is.na(course_data()))
-      shiny::req(!base::is.na(course_data()$tests))
-      shiny::req(base::length(tree()) > 0)
+      shiny::req(base::length(tree()) > 1)
       
-      tests <- course_data()$tests
-      
-      test_selection <- base::unique(tests$test)
+      tests_selection <- base::list.dirs(
+        course_paths()$subfolders$tests, full.names = FALSE, recursive = FALSE
+      )
+      tests_selection <- tests_selection[!stringr::str_detect(tests_selection, "^archives$|^default$")]
       
       if (base::length(tree()$course) > 1){
         course <- stringr::str_remove(tree()$course$tree[1], ".RData")
-        course_tests <- stringr::str_detect(test_selection, base::paste0("^", course))
-        test_selection <- c("", test_selection[course_tests])
-      } else test_selection <- ""
+        course_tests <- stringr::str_detect(tests_selection, base::paste0("^", course))
+        tests_selection <- c("", tests_selection[course_tests])
+      } else tests_selection <- ""
       
       shiny::updateSelectInput(
         session,
         "selecttest",
-        choices = test_selection
+        choices = tests_selection
       )
-      tests
     })
-    
-    shiny::observe({ tests() })
     
     selected_test <- shiny::reactive({
       shiny::req(input$selecttest != "")
-      dplyr::filter(tests(), test == input$selecttest)
+      base::load(base::paste0(
+        course_paths()$subfolders$tests, "/",
+        input$selecttest, "/test_parameters.RData"
+      ))
+      test_parameters
     })
     
     shiny::observe({ selected_test() })
@@ -111,7 +113,7 @@ course_test_server <- function(id, course_data, course_paths, tree){
         base::load(path_param)
         test_parameters <- test_parameters[1,] |>
           dplyr::mutate(
-            tree = modrval$tree,
+            tree = tree()$course$tree,
             test = input$new_test_name,
             question = base::as.character(NA),
             section = base::as.character(NA),
@@ -124,7 +126,6 @@ course_test_server <- function(id, course_data, course_paths, tree){
             seed = base::as.integer(NA)
           )
         base::save(test_parameters, file = path_param)
-        modrval$tests <- c(modrval$tests, input$new_test_name)
         shinyalert::shinyalert(
           "Test created",
           base::paste0(

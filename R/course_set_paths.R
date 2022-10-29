@@ -5,10 +5,13 @@
 #' @param course_folder Character. Course folder as selected by the user.
 #' @return A list of folder paths based on a standard course structure and used by the application.
 #' @importFrom shiny addResourcePath
+#' @importFrom stringr str_remove
 #' @export
 
 
 course_set_paths <- function(course_folder){
+  
+  course_folder <- stringr::str_remove(course_folder, "/Volumes/Macintosh HD")
   
   if (!base::is.null(course_folder) & !base::is.na(course_folder) & base::nchar(course_folder)){
     
