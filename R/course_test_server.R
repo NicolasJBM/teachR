@@ -93,6 +93,7 @@ course_test_server <- function(id, course_data, course_paths, tree){
     
     shiny::observeEvent(input$add_new_test, {
       all_tests <- unique(course_data()$tests$test)
+      main_language <- course_data()$documents$language[1]
       shiny::removeModal()
       if (input$new_test_name %in% all_tests){
         shinyalert::shinyalert(
@@ -115,6 +116,16 @@ course_test_server <- function(id, course_data, course_paths, tree){
           dplyr::mutate(
             tree = tree()$course$tree,
             test = input$new_test_name,
+            test_format = "quiz",
+            test_unit = "student",
+            test_assessment = "formative",
+            test_documentation = "open-book",
+            test_languages = main_language,
+            test_date = base::Sys.Date(),
+            test_duration = 0,
+            test_points = 0,
+            show_version = FALSE,
+            show_points = FALSE,
             question = base::as.character(NA),
             section = base::as.character(NA),
             bloc = base::as.character(NA),
