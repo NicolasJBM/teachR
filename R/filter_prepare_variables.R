@@ -4,16 +4,21 @@
 #' @description Function creating the variable list serving as input to the function making filters.
 #' @param preselection Tibble. List of remaining documents after some prior selection.
 #' @param filter_family Character. Whether the filtering step is for "common_tags" "custom_tags", "ratings", "views", or "results".
+#' @param tags Tittle. Tags definitions.
 #' @return A tibble indicating the variables for which filters should be created, the associated input id, and the format of the filter. Used as input for filter_make_ui.
 #' @seealso filter_make_ui
 #' @seealso filter_tibble
-#' @importFrom tibble tibble
+#' @importFrom dplyr filter
+#' @importFrom dplyr group_by
+#' @importFrom dplyr sample_n
 #' @importFrom dplyr select
 #' @importFrom dplyr starts_with
+#' @importFrom dplyr ungroup
+#' @importFrom tibble tibble
 #' @export
 
 
-filter_prepare_variables <- function(preselection, filter_family){
+filter_prepare_variables <- function(preselection, filter_family, tags){
   
   if (filter_family == "common_tags"){
     
@@ -29,14 +34,18 @@ filter_prepare_variables <- function(preselection, filter_family){
     custom_tags <- preselection |>
       dplyr::select(dplyr::starts_with("tag_")) |>
       base::names()
-    
     custom_tags <- base::setdiff(custom_tags, "tag_custom")
+    
+    filters <- dplyr::select(tags, variable_name = tag, filter_type = filter) |>
+      dplyr::group_by(variable_name) |>
+      dplyr::sample_n(1) |>
+      dplyr::ungroup()
     
     filter_variables <- tibble::tibble(
       variable_name = custom_tags,
-      input_id = base::paste0("slctfilt", custom_tags),
-      filter_type = base::rep("multiple", base::length(custom_tags))
-    )
+      input_id = base::paste0("slctfilt", custom_tags)
+    ) |>
+      dplyr::left_join(filters, by = "variable_name")
     
   } else if (filter_family == "ratings") {
     

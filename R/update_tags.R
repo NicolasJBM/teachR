@@ -36,6 +36,7 @@ update_tags <- function(course_paths){
       tag = base::factor(0),
       order = base::numeric(0),
       value = base::character(0),
+      filter = base::character(0),
       count = base::numeric(0),
       icon = base::character(0),
       boxcolor = base::character(0)
@@ -56,7 +57,10 @@ update_tags <- function(course_paths){
     dplyr::summarise(count = base::sum(count), .groups = "drop") |>
     base::suppressMessages() |>
     dplyr::mutate(
-      order = 0, icon = "exclamation-triangle", boxcolor = "black"
+      order = 0,
+      filter = "pattern",
+      icon = "exclamation-triangle",
+      boxcolor = "black"
     )
   
   newtags <- dplyr::anti_join(
@@ -69,13 +73,13 @@ update_tags <- function(course_paths){
     dplyr::mutate(count = 0)
   
   updatedtags <- dplyr::inner_join(
-    dplyr::select(tags, tag, order, value, icon, boxcolor),
+    dplyr::select(tags, tag, order, value, filter, icon, boxcolor),
     dplyr::select(usedtags, tag, value, count),
     by = c("tag","value")
   )
   
   new_tags <- dplyr::bind_rows(newtags, unusedtags, updatedtags) |>
-    dplyr::select(tag, order, value, count, icon, boxcolor) |>
+    dplyr::select(tag, order, value, filter, count, icon, boxcolor) |>
     dplyr::arrange(tag, order)
 
   tags <- new_tags |>

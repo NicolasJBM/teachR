@@ -4,12 +4,14 @@
 \alias{filter_prepare_variables}
 \title{Prepare a list of variables for filters}
 \usage{
-filter_prepare_variables(preselection, filter_family)
+filter_prepare_variables(preselection, filter_family, tags)
 }
 \arguments{
 \item{preselection}{Tibble. List of remaining documents after some prior selection.}
 
 \item{filter_family}{Character. Whether the filtering step is for "common_tags" "custom_tags", "ratings", "views", or "results".}
+
+\item{tags}{Tittle. Tags definitions.}
 }
 \value{
 A tibble indicating the variables for which filters should be created, the associated input id, and the format of the filter. Used as input for filter_make_ui.

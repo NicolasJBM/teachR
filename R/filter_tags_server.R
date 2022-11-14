@@ -26,7 +26,11 @@ filter_tags_server <- function(id, course_data){
     })
     
     common_tags_variables <- shiny::reactive({
-      teachR::filter_prepare_variables(course_data()$documents, "common_tags")
+      shiny::req(!base::is.null(tags()))
+      shiny::req(base::length(tags()) > 1)
+      teachR::filter_prepare_variables(
+        course_data()$documents, "common_tags", tags()
+      )
     })
     
     output$commontags_filters <- shiny::renderUI({
@@ -57,7 +61,7 @@ filter_tags_server <- function(id, course_data){
     
     custom_tags_variables <- shiny::reactive({
       teachR::filter_prepare_variables(
-        selected_from_common_tags(), "custom_tags"
+        selected_from_common_tags(), "custom_tags", tags()
       )
     })
     

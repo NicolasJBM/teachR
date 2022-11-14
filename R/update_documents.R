@@ -52,10 +52,6 @@ update_documents <- function(course_paths){
     base::load(course_paths$databases$documents)
   }
   
-  
-  
-  
-  
   if (!base::file.exists(course_paths$databases$propositions)){
     propositions <- tibble::tibble(
       item = base::character(0),
