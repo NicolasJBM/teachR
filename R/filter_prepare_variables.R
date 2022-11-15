@@ -20,6 +20,8 @@
 
 filter_prepare_variables <- function(preselection, filter_family, tags){
   
+  variable_name <- NULL
+  
   if (filter_family == "common_tags"){
     
     common_tags <- c("title","document","type")
