@@ -57,6 +57,8 @@ filter_tree_server <- function(
     })
     
     selected_from_tree <- shiny::reactive({
+      shiny::req(!base::is.na(tree()))
+      shiny::req(!base::is.na(course_data()$documents))
       if (base::length(input$selection_tree_selected)>0){
         selection <- input$selection_tree_selected
         selection <- classR::trees_selected_json_to_tibble(selection) |>
