@@ -86,10 +86,16 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
       
     } else if (vartype == "range") {
       
-      minimum <- base::suppressWarnings(base::min(varvalues, na.rm = TRUE))
-      if (!base::is.finite(minimum)) minimum <- 0
-      maximum <- base::suppressWarnings(base::max(varvalues, na.rm = TRUE))
-      if (!base::is.finite(maximum)) maximum <- 1
+      varvalues <- stats::na.omit(base::as.numeric(varvalues))
+      varvalues <- varvalues[base::is.finite(varvalues)]
+      
+      if (base::length(varvalues) > 1){
+        minimum <- base::min(varvalues)
+        maximum <- base::max(varvalues)
+      } else {
+        minimum <- 0
+        maximum <- 1
+      }
       
       filters[[i]] <- shiny::sliderInput(
         inputid,

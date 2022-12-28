@@ -23,6 +23,7 @@
 #' @importFrom tidyr separate
 #' @importFrom tidyr unnest
 #' @importFrom utils read.csv
+#' @importFrom readr read_csv
 #' @export
 
 update_data <- function(course_paths){
@@ -170,8 +171,6 @@ update_data <- function(course_paths){
   
   base::save(views, file = course_paths$databases$views)
   
-  
-  
   # Tests, students, and results
   alltests <- tibble::tibble(
     test_folders = base::list.dirs(
@@ -190,11 +189,13 @@ update_data <- function(course_paths){
         }),
         students = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/6_students/student_list.csv")
-          if (base::file.exists((file))) utils::read.csv(file)
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "c") |>
+            base::suppressWarnings()
         }),
         results = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/8_results/results.csv")
-          if (base::file.exists((file))) utils::read.csv(file)
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "ccnccnccccnnnnnn") |>
+            base::suppressWarnings()
         })
       )
     
@@ -255,7 +256,7 @@ update_data <- function(course_paths){
     students <- tibble::tibble(
       group = base::character(0),
       student = base::character(0),
-      student_alt = base::integer(0),
+      student_alt = base::character(0),
       team = base::character(0),
       firstname = base::character(0),
       lastname = base::character(0),

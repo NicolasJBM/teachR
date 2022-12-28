@@ -10,9 +10,7 @@
 #' @importFrom dplyr filter
 #' @export
 
-filter_statistics_server <- function(
-  id, course_data
-){
+filter_statistics_server <- function(id, course_data){
   ns <- shiny::NS(id)
   shiny::moduleServer(id, function(input, output, session) {
 

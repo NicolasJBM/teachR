@@ -263,11 +263,14 @@ update_statistics <- function(course_paths, minobs = 10){
     
     document_parameters <- dplyr::bind_rows(questions_irt$parameters, documents_irt$parameters) |>
       dplyr::rename(file = code)
+    
     document_models <- dplyr::bind_rows(questions_irt$models, documents_irt$models) |>
       dplyr::rename(file = code)
+    
     item_parameters <- items_irt$parameters |>
       tidyr::separate(code, into = c("item","language"), sep = "_") |>
       dplyr::mutate(item = stringr::str_replace_all(item, "\\.", "_"))
+    
     item_models <- items_irt$models |>
       tidyr::separate(code, into = c("item","language"), sep = "_") |>
       dplyr::mutate(item = stringr::str_replace_all(item, "\\.", "_"))
@@ -317,8 +320,6 @@ update_statistics <- function(course_paths, minobs = 10){
   item_parameters <- item_parameters |>
     teachR::statistics_assign_colors(type = "questions")
   base::rm(documents, propositions, results)
-  
-  
   
   base::save(page_ratings, file = course_paths$databases$page_ratings)
   base::save(page_comments, file = course_paths$databases$page_comments)

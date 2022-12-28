@@ -29,4 +29,5 @@ Imports:
   classR,
   editR,
   bibliogR,
-  fs
+  fs,
+  readr
