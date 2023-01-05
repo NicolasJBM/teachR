@@ -39,14 +39,13 @@ update_trees <- function(course_paths){
     courses <- tibble::tibble(
       tree = "unclassified.RData",
       course = base::as.character(NA),
+      authors = base::as.character(NA),
       institution = base::as.character(NA),
       program = base::as.character(NA),
       program_level = base::as.character(NA),
       group = base::as.character(NA),
       year = base::as.character(NA),
-      website = base::as.character(NA),
-      bib = base::as.character(NA),
-      csl = base::as.character(NA)
+      website = base::as.character(NA)
     )
     base::save(courses, file = course_paths$databases$courses)
   }

@@ -127,6 +127,10 @@ course_tree_server <- function(id, course_data, course_paths){
               selected = last_course$course[1],
               width = "100%", options = base::list(create = TRUE)
             ),
+            shiny::textInput(
+              ns("newtreeauthors"), "Authors:",
+              value = last_course$authors[1], width = "100%"
+            ),
             shiny::selectizeInput(
               ns("newtreeinstitution"), "Institution:",
               choices = base::unique(courses$institution),
@@ -156,14 +160,6 @@ course_tree_server <- function(id, course_data, course_paths){
               ns("newtreewebsite"), "Website:",
               value = last_course$website[1], width = "100%"
             ),
-            shiny::textInput(
-              ns("newtreebib"), "Bibtex file:",
-              value = last_course$bib[1], width = "100%"
-            ),
-            shiny::textInput(
-              ns("newtreecsl"), "CSL file:",
-              value = last_course$csl[1], width = "100%"
-            ),
             footer = tagList(
               shiny::modalButton("Cancel"),
               shiny::actionButton(
@@ -182,14 +178,13 @@ course_tree_server <- function(id, course_data, course_paths){
       new <- tibble::tibble(
         tree = base::as.character(input$newtreename),
         course = base::as.character(input$newtreecourse),
+        authors = base::as.character(input$newtreeauthors),
         institution = base::as.character(input$newtreeinstitution),
         program = base::as.character(input$newtreeprogram),
         program_level = base::as.character(input$newtreeprogramlevel),
         group = base::as.character(input$newtreegroup),
         year =  base::as.character(input$newtreeyear),
-        website = base::as.character(input$newtreewebsite),
-        bib = base::as.character(input$newtreebib),
-        csl = base::as.character(input$newtreecsl)
+        website = base::as.character(input$newtreewebsite)
       )
       courses <- dplyr::bind_rows(new, course_data()$courses)
       base::save(courses, file = course_paths()$databases$courses)
