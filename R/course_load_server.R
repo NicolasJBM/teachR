@@ -5,7 +5,6 @@
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @return A list of course data.
-#' @importFrom purrr map
 #' @importFrom shiny moduleServer
 #' @importFrom shiny NS
 #' @importFrom shiny observeEvent
@@ -13,6 +12,9 @@
 #' @importFrom shinyalert shinyalert
 #' @importFrom shinybusy remove_modal_spinner
 #' @importFrom shinybusy show_modal_spinner
+#' @importFrom stringr str_detect
+#' @importFrom stringr str_remove
+#' @importFrom tibble tribble
 #' @importFrom utils read.csv
 #' @export
 
@@ -81,6 +83,20 @@ course_load_server <- function(id, course_paths){
             full.names = TRUE, recursive = TRUE
           ), base::source
         )
+        
+        databases <- base::list.files(course_paths()$subfolders$databases, full.names = FALSE)
+        databases <- databases[stringr::str_detect(databases, "csv$")]
+        if (base::length(databases) > 0){
+          for (d in databases){
+            path <- base::paste0(course_paths()$subfolders$databases, "/", d)
+            dcontent <- utils::read.csv(path)
+            dname <- stringr::str_remove(d, ".csv$")
+            base::assign(x = dname, value = dcontent, envir = .GlobalEnv)
+          }
+          base::rm(databases, d, dcontent, dname)
+        }
+        
+        base::save.image(file=base::paste0(course_paths()$subfolders$edit, '/data/environment.RData'))
         
         if (base::file.exists(course_paths()$databases$documents)){
           base::load(course_paths()$databases$documents)
