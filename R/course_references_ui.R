@@ -18,7 +18,7 @@ course_references_ui <- function(id){
   base::list(
     shiny::fluidRow(
       shiny::column(
-        8,
+        6,
         shiny::fileInput(
           ns("referencefile"),
           "Select references:",
@@ -27,12 +27,12 @@ course_references_ui <- function(id){
         )
       ),
       shiny::column(
-        4,
+        6,
         shiny::actionButton(
           ns("updateref"),
           "Update references",
           icon = shiny::icon("rotate"),
-          style = "background-color:#003366;color:#FFF;width:100%;margin-top:25px;"
+          style = "background-color:#006699;color:#FFF;width:100%;margin-top:25px;"
         )
       )
     )

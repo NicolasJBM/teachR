@@ -22,8 +22,8 @@ course_update_ui <- function(id){
         shiny::actionButton(
           ns("updatedocuments"),
           shiny::span("Update documents", title = "Scan documents, read tags, and update the document database accordingly."),
-          icon = shiny::icon("rotate"),
-          style = "background-color:#000066;color:#FFF; width:100%;"
+          icon = shiny::icon("file-pen"),
+          style = "background-color:#006699;color:#FFF; width:100%;"
         )
       ),
       shiny::column(
@@ -31,8 +31,8 @@ course_update_ui <- function(id){
         shiny::actionButton(
           ns("updatetrees"),
           shiny::span("Update trees", title = "Synchronise trees with the documents database: add missing entries as unclassified, remove extra entries, update titles."),
-          icon = shiny::icon("rotate"),
-          style = "background-color:#330033;color:#FFF; width:100%;"
+          icon = shiny::icon("sitemap"),
+          style = "background-color:#006699;color:#FFF; width:100%;"
         )
       ),
       shiny::column(
@@ -40,8 +40,8 @@ course_update_ui <- function(id){
         shiny::actionButton(
           ns("updatestatistics"),
           shiny::span("Update statistics", title = "Count observations, compute basic statistics as well as Item Response Theory statistics for each document and item."),
-          icon = shiny::icon("rotate"),
-          style = "background-color:#660000;color:#FFF; width:100%;"
+          icon = shiny::icon("percent"),
+          style = "background-color:#006699;color:#FFF; width:100%;"
         )
       )
     )

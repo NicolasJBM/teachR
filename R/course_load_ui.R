@@ -15,7 +15,7 @@ course_load_ui <- function(id){
   base::list(
     shiny::actionButton(
       ns("loadcourse"), "Load course", icon = shiny::icon("upload"),
-      style = "background-color:#006600;color:#FFF;width:100%"
+      style = "background-color:#336666;color:#FFF;width:100%"
     )
   )
 }
