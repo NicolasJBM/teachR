@@ -97,6 +97,20 @@ course_tree_server <- function(id, course_data, course_paths){
     
     shiny::observe({ selected_tree() })
     
+    shiny::observeEvent(input$updatetree, {
+      shinybusy::show_modal_spinner(
+        spin = "orbit",
+        text = "Please wait while the application update the selected tree. This can take some time..."
+      )
+      teachR::update_trees(course_paths(), input$selecttree)
+      shinybusy::remove_modal_spinner()
+      shinyalert::shinyalert(
+        title = "Tree updated!",
+        text = "The selected tree has been updated. Reload the course to see the changes.",
+        type = "success"
+      )
+    })
+    
     shiny::observeEvent(input$newtree, {
       if (base::length(course_data()$courses) == 1){
         shinyalert::shinyalert(

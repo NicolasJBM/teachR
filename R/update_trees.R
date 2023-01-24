@@ -3,6 +3,7 @@
 #' @author Nicolas Mangin
 #' @description Function adding missing documents as unclassified and removing non-existing documents in all trees.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
+#' @param selected_tree Character. Name of the selected tree.
 #' @return Save on disk updated trees.
 #' @importFrom classR trees_tibble_to_json
 #' @importFrom dplyr bind_rows
@@ -21,7 +22,7 @@
 #' @export
 
 
-update_trees <- function(course_paths){
+update_trees <- function(course_paths, selected_tree = NA){
 
   title <- NULL
   position <- NULL
@@ -50,47 +51,54 @@ update_trees <- function(course_paths){
     base::save(courses, file = course_paths$databases$courses)
   }
   
-  # Prepare the tree structure
-  preptree1 <- tibble::tibble(
-    position = c("1.0.0","2.0.0","3.0.0"),
-    text = c("Included","Excluded","Unclassified")
-  )
-
-  # Prepare a tree tibble where all documents are unclassified
-  preptree2 <- documents |>
-    dplyr::mutate(
-      text = title,
-      position = 1:base::nrow(documents)
-    ) |>
-    dplyr::mutate(position = base::paste0("3.", position, ".0"))
-
-  # Retrieve document types to get related icons and box colors
-  preptree3 <- dplyr::select(document_types, -description)
-
-  # Make a tree tibble where all documents are unclassified
-  tree <- dplyr::bind_rows(preptree1, preptree2) |>
-    dplyr::left_join(preptree3, by = "type") |>
-    tidyr::replace_na(base::list(icon = "folder-open"))
-
-  # Save the unclassified tree (typically to start classifications from scratch)
-  base::save(
-    tree,
-    file = base::paste0(course_paths$subfolders$trees, "/unclassified.RData")
-  )
-
-  jstree <- tree |>
-    classR::trees_tibble_to_json()
-  
-  base::save(
-    jstree,
-    file = base::paste0(course_paths$subfolders$jstrees, "/unclassified.RData")
-  )
+  if (base::is.na(selected_tree) | selected_tree == ""){
+    
+    # Prepare the tree structure
+    preptree1 <- tibble::tibble(
+      position = c("1.0.0","2.0.0","3.0.0"),
+      text = c("Included","Excluded","Unclassified")
+    )
+    
+    # Prepare a tree tibble where all documents are unclassified
+    preptree2 <- documents |>
+      dplyr::mutate(
+        text = title,
+        position = 1:base::nrow(documents)
+      ) |>
+      dplyr::mutate(position = base::paste0("3.", position, ".0"))
+    
+    # Retrieve document types to get related icons and box colors
+    preptree3 <- dplyr::select(document_types, -description)
+    
+    # Make a tree tibble where all documents are unclassified
+    tree <- dplyr::bind_rows(preptree1, preptree2) |>
+      dplyr::left_join(preptree3, by = "type") |>
+      tidyr::replace_na(base::list(icon = "folder-open"))
+    
+    # Save the unclassified tree (typically to start classifications from scratch)
+    base::save(
+      tree,
+      file = base::paste0(course_paths$subfolders$trees, "/unclassified.RData")
+    )
+    
+    jstree <- tree |>
+      classR::trees_tibble_to_json()
+    
+    base::save(
+      jstree,
+      file = base::paste0(course_paths$subfolders$jstrees, "/unclassified.RData")
+    )
+  }
   
   # Identify the other trees in the course
-  other_trees <- base::setdiff(
-    base::list.files(course_paths$subfolders$trees),
-    "unclassified.RData"
-  )
+  if (base::is.na(selected_tree) | selected_tree == ""){
+    other_trees <- base::setdiff(
+      base::list.files(course_paths$subfolders$trees),
+      "unclassified.RData"
+    )
+  } else {
+    other_trees <- selected_tree
+  }
 
   # For each tree, add missing documents as unclassified and
   # remove non-existing documents.

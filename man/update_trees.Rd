@@ -4,10 +4,12 @@
 \alias{update_trees}
 \title{Update course trees}
 \usage{
-update_trees(course_paths)
+update_trees(course_paths, selected_tree = NA)
 }
 \arguments{
 \item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
+
+\item{selected_tree}{Character. Name of the selected tree.}
 }
 \value{
 Save on disk updated trees.
