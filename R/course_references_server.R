@@ -69,7 +69,7 @@ course_references_server <- function(id, course_paths){
             ),
             references = references(),
             destination_folder = base::paste0(
-              course_paths()$subfolders$course, "/temporary/data"
+              course_paths()$subfolders$edit, "/data"
             ),
             file_name = "references.bib"
           )
