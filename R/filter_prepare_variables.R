@@ -24,11 +24,11 @@ filter_prepare_variables <- function(preselection, filter_family, tags){
   
   if (filter_family == "common_tags"){
     
-    common_tags <- c("title","document","type")
+    common_tags <- c("title","authors","document","type")
     filter_variables <- tibble::tibble(
       variable_name = common_tags,
       input_id = base::paste0("slctfilt", common_tags),
-      filter_type = c("pattern","multiple","multiple")
+      filter_type = c("pattern","pattern","multiple","multiple")
     )
     
   } else if (filter_family == "custom_tags") {

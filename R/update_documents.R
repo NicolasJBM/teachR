@@ -122,7 +122,6 @@ update_documents <- function(course_paths){
     dplyr::select(file, code, language, translations, dplyr::everything()) |>
     dplyr::select(-path)
   
-  if (!("tag_authors" %in% base::names(documents))) documents$tag_authors <- base::as.character(NA)
   if (!("tag_youtube" %in% base::names(documents))) documents$tag_youtube <- base::as.character(NA)
   
   base::save(documents, file = course_paths$databases$documents)

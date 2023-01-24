@@ -15,7 +15,7 @@ for (file in files){
 
 
 path <- "R"
-string <- "rename"
+string <- "tag_authors"
 funs <- list.files(path, full.names = TRUE)
 
 for (file in funs){
