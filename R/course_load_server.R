@@ -16,6 +16,7 @@
 #' @importFrom stringr str_remove
 #' @importFrom tibble tribble
 #' @importFrom utils read.csv
+#' @importFrom readxl read_excel
 #' @export
 
 
@@ -85,12 +86,17 @@ course_load_server <- function(id, course_paths){
         )
         
         databases <- base::list.files(course_paths()$subfolders$databases, full.names = FALSE)
-        databases <- databases[stringr::str_detect(databases, "csv$")]
+        databases <- databases[stringr::str_detect(databases, "csv$|xlsx$")]
         if (base::length(databases) > 0){
           for (d in databases){
             path <- base::paste0(course_paths()$subfolders$databases, "/", d)
-            dcontent <- utils::read.csv(path)
-            dname <- stringr::str_remove(d, ".csv$")
+            if (stringr::str_detect(path, "csv$")){
+              dcontent <- utils::read.csv(path)
+              dname <- stringr::str_remove(d, ".csv$")
+            } else {
+              dcontent <- readxl::read_excel(path)
+              dname <- stringr::str_remove(d, ".xlsx$")
+            }
             base::assign(x = dname, value = dcontent, envir = .GlobalEnv)
           }
           base::rm(databases, d, dcontent, dname)

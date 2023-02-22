@@ -30,4 +30,5 @@ Imports:
   editR,
   bibliogR,
   fs,
-  readr
+  readr,
+  readxl
