@@ -26,9 +26,9 @@ Imports:
   tidyr,
   shinyWidgets,
   jsTreeR,
-  classR,
-  editR,
-  bibliogR,
   fs,
   readr,
-  readxl
+  readxl,
+  classR,
+  editR,
+  bibliogR

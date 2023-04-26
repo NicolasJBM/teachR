@@ -22,7 +22,6 @@
 #' @importFrom tibble tibble
 #' @importFrom tidyr separate
 #' @importFrom tidyr unnest
-#' @importFrom utils read.csv
 #' @importFrom readr read_csv
 #' @export
 
@@ -64,7 +63,7 @@ update_data <- function(course_paths){
     ratings <- ratings |>
       dplyr::mutate(
         ratings = purrr::map(folder, function(x){
-          if (base::file.exists((x))) utils::read.csv(x)
+          if (base::file.exists((x))) readr::read_csv(x, col_types = "ccn")
         })
       ) |>
       dplyr::select(-folder) |>
@@ -99,7 +98,7 @@ update_data <- function(course_paths){
     comments <- comments |>
       dplyr::mutate(
         comments = purrr::map(folder, function(x){
-          if (base::file.exists((x))) utils::read.csv(x)
+          if (base::file.exists((x))) readr::read_csv(x, col_types = "ccc")
         })
       ) |>
       dplyr::select(-folder) |>
@@ -136,7 +135,7 @@ update_data <- function(course_paths){
     views_data <- views_data |>
       dplyr::mutate(
         views = purrr::map(folder, function(x){
-          if (base::file.exists((x))) utils::read.csv(x)
+          if (base::file.exists((x))) readr::read_csv(x, col_types = "cccnncnn")
         })
       ) |>
       dplyr::select(-folder) |>
@@ -189,12 +188,12 @@ update_data <- function(course_paths){
         }),
         students = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/6_students/student_list.csv")
-          if (base::file.exists((file))) readr::read_csv(file, col_types = "c") |>
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "cccccc") |>
             base::suppressWarnings()
         }),
         results = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/8_results/results.csv")
-          if (base::file.exists((file))) readr::read_csv(file, col_types = "ccnccnccccnnnnnn") |>
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "ccnccnccccllnnnn") |>
             base::suppressWarnings()
         })
       )
