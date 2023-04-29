@@ -206,7 +206,7 @@ update_data <- function(course_paths){
       dplyr::group_by(group, student) |>
       dplyr::sample_n(1) |>
       dplyr::ungroup() |>
-      dplyr::mutate(student_alt = NA) |>
+      dplyr::mutate(student_alt = "") |>
       dplyr::select(group, student, student_alt, dplyr::everything()) |>
       dplyr::arrange(group, student)
     if (base::file.exists(course_paths$databases$students)){
@@ -217,7 +217,7 @@ update_data <- function(course_paths){
         dplyr::bind_rows(students_new)
     } else students <- students_new
     for (i in 1:base::nrow(students)){
-      if (base::is.na(students$student_alt[i])){
+      if (students$student_alt[i] == ""){
         students$student_alt[i] <- i
       }
     }
