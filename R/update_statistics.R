@@ -96,7 +96,6 @@ update_statistics <- function(course_paths, minobs = 10){
     teachR::statistics_assign_colors(type = "ratings")
   base::rm(ratings)
   
-  
   # Comments
   
   base::load(course_paths$databases$comments)
@@ -112,7 +111,6 @@ update_statistics <- function(course_paths, minobs = 10){
     )
   }
   base::rm(comments)
-  
   
   # Views
   
@@ -171,7 +169,6 @@ update_statistics <- function(course_paths, minobs = 10){
   video_views <- video_views |>
     teachR::statistics_assign_colors(type = "videos")
   base::rm(views)
-  
   
   # Results
   

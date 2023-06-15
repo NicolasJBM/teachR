@@ -137,15 +137,13 @@ update_data <- function(course_paths){
         })
       ) |>
       dplyr::select(-folder) |>
-      tidyr::unnest(views) |>
-      dplyr::select(
-        tag_youtube = Content,
-        watchtime = Watch.time..hours.,
-        views = Views,
-        viewers = Unique.viewers,
-        duration = Average.view.duration,
-        retention = Average.percentage.viewed....
-      ) |>
+      tidyr::unnest(views) 
+    
+    views_data <- views_data[,c(1,8,7,4,6,5)]
+    
+    base::names(views_data) <- c("tag_youtube","watchtime","views","viewers","duration","retention")
+    
+    views_data <- views_data |>
       dplyr::filter(tag_youtube != "Total")
     base::load(course_paths$databases$documents)
     views <- documents |>
@@ -178,7 +176,7 @@ update_data <- function(course_paths){
   
   if (base::nrow(alltests) > 0){
     
-    alltests <- alltests|>
+    alltests <- alltests |>
       dplyr::mutate(
         tests = purrr::map(test_folders, function(x){
           base::load(base::paste0(x,"/test_parameters.RData"))
@@ -186,7 +184,7 @@ update_data <- function(course_paths){
         }),
         students = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/6_students/student_list.csv")
-          if (base::file.exists((file))) readr::read_csv(file, col_types = "cccccc") |>
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "ccccc") |>
             base::suppressWarnings()
         }),
         results = purrr::map(test_folders, function(x, y){
@@ -206,14 +204,15 @@ update_data <- function(course_paths){
       dplyr::ungroup() |>
       dplyr::select(student, dplyr::everything()) |>
       dplyr::arrange(student)
+    
     if (base::file.exists(course_paths$databases$students)){
       base::load(course_paths$databases$students)
       students_new <- students_new |>
         dplyr::anti_join(students, by = c("student"))
       students <- students |>
-        dplyr::bind_rows(students_new) |>
-        base::unique()
-    } else students <- students_new
+        dplyr::bind_rows(students_new)
+    } else students <- students_new |>
+      base::unique()
     
     results <- dplyr::select(alltests, results) |>
       tidyr::unnest(results)
