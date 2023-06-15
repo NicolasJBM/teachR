@@ -18,11 +18,11 @@ course_set_paths <- function(course_folder){
   
   if (!base::is.null(course_folder) & !base::is.na(course_folder) & base::nchar(course_folder)){
     
-    subfolders <- readr::read_csv(base::paste0(course_folder, "/subfolders.csv")) |>
+    subfolders <- readr::read_csv(base::paste0(course_folder, "/subfolders.csv"), col_types = "cc") |>
       dplyr::mutate(path = base::paste0(course_folder, path))
     subfolders <- base::split(subfolders$path, subfolders$name)
     
-    databases <- readr::read_csv(base::paste0(course_folder, "/databases.csv")) |>
+    databases <- readr::read_csv(base::paste0(course_folder, "/databases.csv"), col_types = "cc") |>
       dplyr::mutate(path = base::paste0(course_folder, path))
     databases <- base::split(databases$path, databases$name)
     

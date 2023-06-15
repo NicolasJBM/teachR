@@ -91,7 +91,7 @@ course_load_server <- function(id, course_paths){
           for (d in databases){
             path <- base::paste0(course_paths()$subfolders$databases, "/", d)
             if (stringr::str_detect(path, "csv$")){
-              dcontent <- readr::read_csv(path)
+              dcontent <- readr::read_csv(path, show_col_types = FALSE)
               dname <- stringr::str_remove(d, ".csv$")
             } else {
               dcontent <- readxl::read_excel(path)
