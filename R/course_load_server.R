@@ -15,7 +15,7 @@
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove
 #' @importFrom tibble tribble
-#' @importFrom utils read.csv
+#' @importFrom readr read_csv
 #' @importFrom readxl read_excel
 #' @export
 
@@ -91,7 +91,7 @@ course_load_server <- function(id, course_paths){
           for (d in databases){
             path <- base::paste0(course_paths()$subfolders$databases, "/", d)
             if (stringr::str_detect(path, "csv$")){
-              dcontent <- utils::read.csv(path)
+              dcontent <- readr::read_csv(path)
               dname <- stringr::str_remove(d, ".csv$")
             } else {
               dcontent <- readxl::read_excel(path)

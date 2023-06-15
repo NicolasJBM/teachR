@@ -27,9 +27,7 @@
 
 update_data <- function(course_paths){
   
-  group <- NULL
   student <- NULL
-  student_alt <- NULL
   test_folders <- NULL
   test_parameters <- NULL
   Content <- NULL
@@ -203,24 +201,19 @@ update_data <- function(course_paths){
     
     students_new <- dplyr::select(alltests, students) |>
       tidyr::unnest(students) |>
-      dplyr::group_by(group, student) |>
+      dplyr::group_by(student) |>
       dplyr::sample_n(1) |>
       dplyr::ungroup() |>
-      dplyr::mutate(student_alt = "") |>
-      dplyr::select(group, student, student_alt, dplyr::everything()) |>
-      dplyr::arrange(group, student)
+      dplyr::select(student, dplyr::everything()) |>
+      dplyr::arrange(student)
     if (base::file.exists(course_paths$databases$students)){
       base::load(course_paths$databases$students)
       students_new <- students_new |>
-        dplyr::anti_join(students, by = c("group","student"))
+        dplyr::anti_join(students, by = c("student"))
       students <- students |>
-        dplyr::bind_rows(students_new)
+        dplyr::bind_rows(students_new) |>
+        base::unique()
     } else students <- students_new
-    for (i in 1:base::nrow(students)){
-      if (students$student_alt[i] == ""){
-        students$student_alt[i] <- i
-      }
-    }
     
     results <- dplyr::select(alltests, results) |>
       tidyr::unnest(results)
@@ -253,9 +246,7 @@ update_data <- function(course_paths){
       stats::na.omit()
     
     students <- tibble::tibble(
-      group = base::character(0),
       student = base::character(0),
-      student_alt = base::character(0),
       team = base::character(0),
       firstname = base::character(0),
       lastname = base::character(0),

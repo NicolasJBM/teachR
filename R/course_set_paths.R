@@ -6,6 +6,7 @@
 #' @return A list of folder paths based on a standard course structure and used by the application.
 #' @importFrom shiny addResourcePath
 #' @importFrom stringr str_remove
+#' @importFrom readr read_csv
 #' @export
 
 
@@ -17,11 +18,11 @@ course_set_paths <- function(course_folder){
   
   if (!base::is.null(course_folder) & !base::is.na(course_folder) & base::nchar(course_folder)){
     
-    subfolders <- utils::read.csv(base::paste0(course_folder, "/subfolders.csv")) |>
+    subfolders <- readr::read_csv(base::paste0(course_folder, "/subfolders.csv")) |>
       dplyr::mutate(path = base::paste0(course_folder, path))
     subfolders <- base::split(subfolders$path, subfolders$name)
     
-    databases <- utils::read.csv(base::paste0(course_folder, "/databases.csv")) |>
+    databases <- readr::read_csv(base::paste0(course_folder, "/databases.csv")) |>
       dplyr::mutate(path = base::paste0(course_folder, path))
     databases <- base::split(databases$path, databases$name)
     
