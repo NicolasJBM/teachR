@@ -18,16 +18,7 @@ course_references_ui <- function(id){
   base::list(
     shiny::fluidRow(
       shiny::column(
-        6,
-        shiny::fileInput(
-          ns("referencefile"),
-          "Select references:",
-          width = "100%",
-          accept = ".RData"
-        )
-      ),
-      shiny::column(
-        6,
+        12,
         shiny::actionButton(
           ns("updateref"),
           "Update references",

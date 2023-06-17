@@ -19,48 +19,28 @@
 #' @export
 
 
-course_references_server <- function(id, course_paths){
+course_references_server <- function(id, course_paths, references){
   ns <- shiny::NS(id)
   shiny::moduleServer(id, function(input, output, session) {
     
-    references <- shiny::reactive({
-      
-      shiny::req(!base::is.null(input$referencefile))
-      
-      shinybusy::show_modal_spinner(
-        spin = "orbit",
-        text = "References loading..."
-      )
-      
-      base::load(input$referencefile$datapath) |>
-        base::suppressWarnings()
-      
-      shinybusy::remove_modal_spinner()
-      
-      shinyalert::shinyalert(
-        title = "References loaded!",
-        text = "All references are now loaded.",
-        type = "success"
-      )
-      
-      references
-    })
-    
-    shiny::observe({ references() })
-    
     shiny::observeEvent(input$updateref, {
       
-      if (base::length(course_paths()) == 1 | base::is.null(references())){
+      if (base::length(course_paths()) == 1){
         
         shinyalert::shinyalert(
           title = "Missing selections!",
-          text = "You need to select a course folder and references to update course references.",
+          text = "You need to select a course folder to update course references.",
           type = "error"
         )
         
       } else {
         
         if ("bibliogR" %in% base::as.data.frame(utils::installed.packages())$Package){
+          
+          shinybusy::show_modal_spinner(
+            spin = "orbit",
+            text = "Updating references..."
+          )
           
           bibliogR::make_bib_file(
             source_folder = c(
@@ -73,6 +53,8 @@ course_references_server <- function(id, course_paths){
             ),
             file_name = "references.bib"
           )
+          
+          shinybusy::remove_modal_spinner()
           
           shinyalert::shinyalert(
             title = "References updated!",
@@ -93,8 +75,6 @@ course_references_server <- function(id, course_paths){
       }
       
     })
-    
-    return(references)
   })
 }
 
