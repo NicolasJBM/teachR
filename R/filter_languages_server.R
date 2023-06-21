@@ -8,14 +8,8 @@
 #' @importFrom dplyr case_when
 #' @importFrom dplyr filter
 #' @importFrom dplyr mutate
-#' @importFrom shiny moduleServer
-#' @importFrom shiny NS
-#' @importFrom shiny reactive
-#' @importFrom shiny renderUI
-#' @importFrom shiny req
-#' @importFrom shiny tagList
+#' @importFrom dplyr select
 #' @importFrom shinyWidgets multiInput
-#' @importFrom stats na.omit
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_split
 #' @export
@@ -61,7 +55,13 @@ filter_languages_server <- function(id, course_data){
         inputId = ns("slctexistlanguages"),
         label = "Select the other language(s) in which documents should already be translated:", 
         choices = NULL,
-        choiceNames = existing$language,
+        choiceNames = base::lapply(
+          base::seq_along(existing$language), 
+          function(i) shiny::tagList(
+            shiny::tags$img(src = existing$flag[i], width = 20, height = 15),
+            existing$language[i]
+          )
+        ),
         choiceValues = existing$langiso,
         width = "100%"
       )
@@ -76,7 +76,13 @@ filter_languages_server <- function(id, course_data){
         inputId = ns("slctmisslanguages"),
         label = "Select the other language(s) in which documents should not be translated yet:", 
         choices = NULL,
-        choiceNames = missing$language,
+        choiceNames = base::lapply(
+          base::seq_along(missing$language), 
+          function(i) shiny::tagList(
+            shiny::tags$img(src = missing$flag[i], width = 20, height = 15),
+            missing$language[i]
+          )
+        ),
         choiceValues = missing$langiso,
         width = "100%"
       )

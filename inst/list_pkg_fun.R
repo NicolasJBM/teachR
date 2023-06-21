@@ -22,4 +22,5 @@ for (file in funs){
 
 pkg <- dplyr::bind_rows(pkg)
 
+writeLines(dplyr::filter(pkg, file == "R/translate_server.R")$import)
 

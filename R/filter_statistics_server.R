@@ -17,6 +17,7 @@ filter_statistics_server <- function(id, course_data){
     type <- NULL
     
     documents <- shiny::reactive({
+      shiny::req(!base::is.null(course_data()))
       course_data()$documents |>
         dplyr::left_join(course_data()$page_ratings, by = "file") |>
         dplyr::left_join(course_data()$video_views, by = "file") |>
@@ -25,9 +26,11 @@ filter_statistics_server <- function(id, course_data){
     
     
     ratings_variables <- shiny::reactive({
+      shiny::req(!base::is.null(documents()))
       teachR::filter_prepare_variables(documents(), "ratings")
     })
     output$ratings_filters <- shiny::renderUI({
+      shiny::req(!base::is.na(course_data()$page_ratings))
       shiny::req(!base::is.null(documents()))
       shiny::req(!base::is.null(ratings_variables()))
       teachR::filter_make_ui(ns, documents(), ratings_variables())
@@ -54,6 +57,7 @@ filter_statistics_server <- function(id, course_data){
       teachR::filter_prepare_variables(selected_from_ratings(), "views")
     })
     output$views_filters <- shiny::renderUI({
+      shiny::req(!base::is.na(course_data()$video_views))
       shiny::req(!base::is.null(selected_from_ratings()))
       shiny::req(!base::is.null(views_variables()))
       teachR::filter_make_ui(ns, selected_from_ratings(), views_variables())
@@ -80,6 +84,7 @@ filter_statistics_server <- function(id, course_data){
       teachR::filter_prepare_variables(selected_from_views(), "results")
     })
     output$results_filters <- shiny::renderUI({
+      shiny::req(!base::is.na(course_data()$document_parameters))
       shiny::req(!base::is.null(selected_from_views()))
       shiny::req(!base::is.null(results_variables()))
       teachR::filter_make_ui(ns, selected_from_views(), results_variables())

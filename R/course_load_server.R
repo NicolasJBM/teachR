@@ -119,14 +119,9 @@ course_load_server <- function(id, course_paths){
           course_data$tags <- tags
         } else course_data$tags <- NA
         
-        course_data$languages <- tibble::tribble(
-          ~langiso, ~language,
-          "US",	"English",
-          "FR",	"French",
-          "ES",	"Spanish",
-          "IT",	"Italian",
-          "DE",	"German",
-          "NL",	"Dutch"
+        course_data$languages <- readr::read_csv(
+          base::paste0(course_paths()$subfolders$course, "languages.csv"),
+          show_col_types = FALSE
         )
         
         if (base::file.exists(course_paths()$databases$courses)){
