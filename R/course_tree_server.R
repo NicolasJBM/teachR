@@ -40,7 +40,8 @@ course_tree_server <- function(id, course_data, course_paths){
     output$slcttree <- shiny::renderUI({
       shiny::req(!base::is.na(course_data()$courses))
       shinyWidgets::radioGroupButtons(
-        inputId = ns("selecttree"),label = "File format:", 
+        inputId = ns("selecttree"),
+        label = "Select a tree:", 
         choices = c(course_data()$courses$tree),
         selected = base::character(0),
         status = "primary",

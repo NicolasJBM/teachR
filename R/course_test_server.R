@@ -37,7 +37,8 @@ course_test_server <- function(id, course_data, course_paths, tree){
       course_tests <- stringr::str_detect(tests_selection, base::paste0("^", course))
       tests_selection <- tests_selection[course_tests]
       shinyWidgets::radioGroupButtons(
-        inputId = ns("selecttest"),label = "File format:", 
+        inputId = ns("selecttest"),
+        label = "Select a test:", 
         choices = tests_selection,
         selected = base::character(0),
         status = "primary",
