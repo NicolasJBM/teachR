@@ -19,17 +19,11 @@ course_test_ui <- function(id){
   base::list(
     shiny::fluidRow(
       shiny::column(
-        6,
-        shiny::selectInput(
-          ns("selecttest"),
-          "Select a test:",
-          choices = "",
-          selected = "",
-          width = "100%"
-        )
+        8,
+        shiny::uiOutput(ns("slcttest"))
       ),
       shiny::column(
-        6,
+        4,
         shiny::actionButton(
           ns("newtest"),
           shiny::span("New test", title = ""),

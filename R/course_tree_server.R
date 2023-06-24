@@ -37,61 +37,47 @@ course_tree_server <- function(id, course_data, course_paths){
     
     tree <- NULL
     
-    shiny::observe({
+    output$slcttree <- shiny::renderUI({
       shiny::req(!base::is.na(course_data()$courses))
-      shiny::updateSelectInput(
-        session, "selecttree",
-        choices = c("", course_data()$courses$tree)
+      shinyWidgets::radioGroupButtons(
+        inputId = ns("selecttree"),label = "File format:", 
+        choices = c(course_data()$courses$tree),
+        selected = base::character(0),
+        status = "primary",
+        justified = TRUE,
+        direction = "vertical",
+        size = "normal",
+        checkIcon = base::list(yes = shiny::icon("check"))
       )
     })
     
     selected_tree <- shiny::reactive({
       shiny::req(!base::is.null(input$selecttree))
-      
-      if (input$selecttree != ""){
-        
-        if (input$selecttree %in% base::names(course_data()$trees)){
-          
-          course <- dplyr::filter(course_data()$courses, tree == input$selecttree)
-          tbltree <- course_data()$trees[[input$selecttree]]
-          jstree <- course_data()$jstrees[[input$selecttree]]
-          textbook <- classR::trees_structure_textbook(
-            tbltree, course$tree[1], course$website[1]
-          )
-          
-          base::list(
-            course = course,
-            tbltree = tbltree,
-            jstree = jstree,
-            textbook = textbook
-          )
-          
-        } else {
-          
-          base::list(
-            course = NA,
-            tbltree = NA,
-            jstree = NA,
-            textbook = NA
-          )
-          
-          shinyalert::shinyalert(
-            "This tree does not exist!",
-            "Reload the course to update the list of trees.",
-            type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
-          )
-          
-        }
-        
+      if (input$selecttree %in% base::names(course_data()$trees)){
+        course <- dplyr::filter(course_data()$courses, tree == input$selecttree)
+        tbltree <- course_data()$trees[[input$selecttree]]
+        jstree <- course_data()$jstrees[[input$selecttree]]
+        textbook <- classR::trees_structure_textbook(
+          tbltree, course$tree[1], course$website[1]
+        )
+        base::list(
+          course = course,
+          tbltree = tbltree,
+          jstree = jstree,
+          textbook = textbook
+        )
       } else {
-        
         base::list(
           course = NA,
           tbltree = NA,
           jstree = NA,
           textbook = NA
         )
-        
+        shinyalert::shinyalert(
+          "This tree does not exist!",
+          "Reload the course to update the list of trees.",
+          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
       }
     })
     

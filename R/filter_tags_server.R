@@ -47,7 +47,8 @@ filter_tags_server <- function(id, course_data){
       shiny::req(!base::is.null(common_tags_variables()))
       after_common_tags <- course_data()$documents
       for (i in base::seq_len(base::nrow(common_tags_variables()))){
-        if (!base::is.null(input[[common_tags_variables()$input_id[[i]]]])){
+        if (!base::is.null(input[[common_tags_variables()$input_id[[i]]]]) &
+            base::length(input[[common_tags_variables()$input_id[[i]]]]) > 0){
           after_common_tags <- teachR::filter_tibble(
             dataset = after_common_tags,
             variable = common_tags_variables()$variable_name[[i]],

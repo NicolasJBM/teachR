@@ -24,26 +24,27 @@ course_test_server <- function(id, course_data, course_paths, tree){
     
     test <- NULL
     
-    shiny::observe({
+    output$slcttest <- shiny::renderUI({
       shiny::req(!base::is.na(course_paths()))
       shiny::req(!base::is.na(course_data()))
       shiny::req(base::length(tree()) > 1)
-      
+      shiny::req(base::length(tree()$course) > 1)
       tests_selection <- base::list.dirs(
         course_paths()$subfolders$tests, full.names = FALSE, recursive = FALSE
       )
       tests_selection <- tests_selection[!stringr::str_detect(tests_selection, "^archives$|^default$")]
-      
-      if (base::length(tree()$course) > 1){
-        course <- stringr::str_remove(tree()$course$tree[1], ".RData")
-        course_tests <- stringr::str_detect(tests_selection, base::paste0("^", course))
-        tests_selection <- c("", tests_selection[course_tests])
-      } else tests_selection <- ""
-      
-      shiny::updateSelectInput(
-        session,
-        "selecttest",
-        choices = tests_selection
+      course <- stringr::str_remove(tree()$course$tree[1], ".RData")
+      course_tests <- stringr::str_detect(tests_selection, base::paste0("^", course))
+      tests_selection <- tests_selection[course_tests]
+      shinyWidgets::radioGroupButtons(
+        inputId = ns("selecttest"),label = "File format:", 
+        choices = tests_selection,
+        selected = base::character(0),
+        status = "primary",
+        justified = TRUE,
+        direction = "vertical",
+        size = "normal",
+        checkIcon = base::list(yes = shiny::icon("check"))
       )
     })
     

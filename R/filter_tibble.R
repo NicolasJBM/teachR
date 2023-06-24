@@ -26,6 +26,8 @@ filter_tibble <- function(
 ) {
   
   base::stopifnot(
+    base::length(base::names(dataset)) > 0,
+    variable %in% base::names(dataset),
     filter_type %in% c(
       "logical", "selection", "multiple", "pattern", "range", "value"
     )

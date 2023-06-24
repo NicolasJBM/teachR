@@ -12,7 +12,7 @@ for (file in funs){
   funs <- tibble::tibble(calls = calls) |>
     tidyr::separate(calls, into = c("packages","functions"), sep = "::") |>
     dplyr::arrange(packages, functions) |>
-    dplyr::filter(!(packages %in% c("base","teachR","bibliogR","chartR","stats","utils","shiny"))) |>
+    dplyr::filter(!(packages %in% c("base","stats","utils"))) |>
     dplyr::mutate(
       file = file,
       import = base::paste0("#' @importFrom ", packages, " ", functions)
@@ -22,5 +22,5 @@ for (file in funs){
 
 pkg <- dplyr::bind_rows(pkg)
 
-writeLines(dplyr::filter(pkg, file == "R/translate_server.R")$import)
+writeLines(dplyr::filter(pkg, file == "R/display_question.R")$import)
 

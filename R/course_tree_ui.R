@@ -19,26 +19,17 @@ course_tree_ui <- function(id){
   base::list(
     shiny::fluidRow(
       shiny::column(
-        6,
-        shiny::selectInput(
-          ns("selecttree"),
-          "Select a tree:",
-          choices = "",
-          selected = "",
-          width = "100%"
-        )
+        8,
+        shiny::uiOutput(ns("slcttree"))
       ),
       shiny::column(
-        3,
+        4,
         shiny::actionButton(
           ns("updatetree"),
           shiny::span("Update tree", title = ""),
           icon = shiny::icon("arrows-rotate"),
           style = "background-color:#006699;color:#FFF; width:100%;margin-top:25px;"
-        )
-      ),
-      shiny::column(
-        3,
+        ),
         shiny::actionButton(
           ns("newtree"),
           shiny::span("New tree", title = ""),
