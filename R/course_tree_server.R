@@ -37,18 +37,31 @@ course_tree_server <- function(id, course_data, course_paths){
     
     tree <- NULL
     
+    output$treepattern <- shiny::renderUI({
+      shiny::req(!base::is.na(course_data()$courses))
+      shinyWidgets::searchInput(
+          inputId = ns("deftreepattern"),
+          label = "Preselect trees based on a pattern:", 
+          btnSearch = shiny::icon("search"), 
+          btnReset = shiny::icon("remove"),
+          width = "100%"
+        )
+    })
+    
     output$slcttree <- shiny::renderUI({
       shiny::req(!base::is.na(course_data()$courses))
-      shinyWidgets::radioGroupButtons(
+      shiny::req(!base::is.null(input$deftreepattern))
+      preslcttrees <- c(course_data()$courses$tree)
+      if (base::nchar(input$deftreepattern) > 0) {
+        preslcttrees <- preslcttrees[stringr::str_detect(preslcttrees, input$deftreepattern)]
+      }
+      shinyWidgets::pickerInput(
         inputId = ns("selecttree"),
         label = "Select a tree:", 
-        choices = c(course_data()$courses$tree),
+        choices = preslcttrees,
         selected = base::character(0),
-        status = "primary",
-        justified = TRUE,
-        direction = "vertical",
-        size = "normal",
-        checkIcon = base::list(yes = shiny::icon("check"))
+        options = base::list(style = "btn-primary"),
+        width = "100%"
       )
     })
     

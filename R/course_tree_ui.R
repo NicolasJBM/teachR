@@ -20,7 +20,7 @@ course_tree_ui <- function(id){
     shiny::fluidRow(
       shiny::column(
         8,
-        shiny::uiOutput(ns("slcttree"))
+        shiny::uiOutput(ns("treepattern"))
       ),
       shiny::column(
         4,
@@ -29,7 +29,16 @@ course_tree_ui <- function(id){
           shiny::span("Update tree", title = ""),
           icon = shiny::icon("arrows-rotate"),
           style = "background-color:#006699;color:#FFF; width:100%;margin-top:25px;"
-        ),
+        )
+      )
+    ),
+    shiny::fluidRow(
+      shiny::column(
+        8,
+        shiny::uiOutput(ns("slcttree"))
+      ),
+      shiny::column(
+        4,
         shiny::actionButton(
           ns("newtree"),
           shiny::span("New tree", title = ""),
