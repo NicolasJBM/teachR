@@ -67,6 +67,7 @@ course_tree_server <- function(id, course_data, course_paths){
     
     selected_tree <- shiny::reactive({
       shiny::req(!base::is.null(input$selecttree))
+      shiny::req(input$selecttree %in% base::list.files(course_paths()$subfolders$trees))
       if (input$selecttree %in% base::names(course_data()$trees)){
         course <- dplyr::filter(course_data()$courses, tree == input$selecttree)
         tbltree <- course_data()$trees[[input$selecttree]]
