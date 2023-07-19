@@ -6,12 +6,12 @@
 \usage{
 statistics_get_parameters(
   results,
-  model_formula = "correct ~ success + proficiency",
+  model_formula = "correct ~ ability",
   minobs = 10
 )
 }
 \arguments{
-\item{results}{Tibble. observation (e.g. student attempt in test), code (e.g. question) and whether the answer is correct.}
+\item{results}{Tibble. observation (e.g. student attempt in test), code (e.g. question) and score (percentage of completion).}
 
 \item{model_formula}{Character Model used to estimate parameters (converted into a formula in yhe function)}
 

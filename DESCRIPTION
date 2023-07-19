@@ -29,5 +29,6 @@ Imports:
   fs,
   readr,
   readxl,
+  psych,
   classR,
   editR

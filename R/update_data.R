@@ -12,7 +12,7 @@
 #' @importFrom dplyr group_by
 #' @importFrom dplyr left_join
 #' @importFrom dplyr mutate
-#' @importFrom dplyr sample_n
+#' @importFrom dplyr slice_head
 #' @importFrom dplyr select
 #' @importFrom dplyr ungroup
 #' @importFrom purrr map
@@ -46,8 +46,7 @@ update_data <- function(course_paths){
   language <- NULL
   section <- NULL
   tag_youtube <- NULL
-  
-  
+  test <- NULL
   
   # Ratings
   ratings <- tibble::tibble(
@@ -79,10 +78,7 @@ update_data <- function(course_paths){
       rate = base::numeric(0)
     )
   }
-  
   base::save(ratings, file = course_paths$databases$ratings)
-  
-  
   
   # Comments
   comments <- tibble::tibble(
@@ -115,20 +111,15 @@ update_data <- function(course_paths){
       comment = base::character(0)
     )
   }
-  
   base::save(comments, file = course_paths$databases$comments)
   
-  
-  
   # Views
-  
   views_data <- tibble::tibble(
     folder = base::list.files(
       course_paths$subfolders$views, recursive = FALSE, full.names = TRUE
     )
   ) |>
     dplyr::filter(!stringr::str_detect(folder, "archives$"))
-  
   if (base::nrow(views_data) > 0){
     views_data <- views_data |>
       dplyr::mutate(
@@ -138,11 +129,8 @@ update_data <- function(course_paths){
       ) |>
       dplyr::select(-folder) |>
       tidyr::unnest(views) 
-    
     views_data <- views_data[,c(1,8,7,4,6,5)]
-    
     base::names(views_data) <- c("tag_youtube","watchtime","views","viewers","duration","retention")
-    
     views_data <- views_data |>
       dplyr::filter(tag_youtube != "Total")
     base::load(course_paths$databases$documents)
@@ -163,19 +151,47 @@ update_data <- function(course_paths){
       retention = base::numeric(0)
     )
   }
-  
   base::save(views, file = course_paths$databases$views)
+  
+  # Students information
+  students_info <- tibble::tibble(
+    folder = base::list.files(
+      course_paths$subfolders$students,
+      recursive = FALSE, full.names = TRUE
+    )
+  ) |>
+    dplyr::filter(!stringr::str_detect(folder, "archives$"))
+  if (base::nrow(students_info) > 0){
+    students_info <- students_info |>
+      dplyr::mutate(
+        students_info = purrr::map(folder, function(x){
+          if (base::file.exists((x))) readr::read_csv(x, show_col_types = FALSE)
+        })
+      ) |>
+      dplyr::select(-folder) |>
+      tidyr::unnest(students_info)
+  } else {
+    students_info <- tibble::tibble(
+      student = base::character(0),
+      gender = base::character(0),
+      age = base::numeric(0)
+    )
+  }
   
   # Tests, students, and results
   alltests <- tibble::tibble(
     test_folders = base::list.dirs(
-      course_paths$subfolders$tests, recursive = FALSE, full.names = TRUE
+      course_paths$subfolders$tests,
+      recursive = FALSE, full.names = TRUE
+    ),
+    test = base::list.dirs(
+      course_paths$subfolders$tests,
+      recursive = FALSE, full.names = FALSE
     )
   )|>
     dplyr::filter(!stringr::str_detect(test_folders, "archives$|default$"))
   
   if (base::nrow(alltests) > 0){
-    
     alltests <- alltests |>
       dplyr::mutate(
         tests = purrr::map(test_folders, function(x){
@@ -189,7 +205,7 @@ update_data <- function(course_paths){
         }),
         results = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/8_results/results.csv")
-          if (base::file.exists((file))) readr::read_csv(file, col_types = "ccnccnccccllnnnn") |>
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "cnccnccccllnnnnn") |>
             base::suppressWarnings()
         })
       )
@@ -197,24 +213,16 @@ update_data <- function(course_paths){
     tests <- dplyr::select(alltests, tests) |>
       tidyr::unnest(tests)
     
-    students_new <- dplyr::select(alltests, students) |>
+    students <- dplyr::select(alltests, test, students) |>
       tidyr::unnest(students) |>
       dplyr::group_by(student) |>
-      dplyr::sample_n(1) |>
+      dplyr::slice_head(n = 1) |>
       dplyr::ungroup() |>
       dplyr::select(student, dplyr::everything()) |>
-      dplyr::arrange(student)
+      dplyr::arrange(student) |>
+      dplyr::left_join(students_info, by = "student")
     
-    if (base::file.exists(course_paths$databases$students)){
-      base::load(course_paths$databases$students)
-      students_new <- students_new |>
-        dplyr::anti_join(students, by = c("student"))
-      students <- students |>
-        dplyr::bind_rows(students_new)
-    } else students <- students_new |>
-      base::unique()
-    
-    results <- dplyr::select(alltests, results) |>
+    results <- dplyr::select(alltests, test, results) |>
       tidyr::unnest(results)
     
   } else {
@@ -228,48 +236,54 @@ update_data <- function(course_paths){
       test_documentation = base::as.character(NA),
       test_languages = base::as.character(NA),
       test_date = base::date(),
-      test_duration = base::as.character(NA),
-      test_points = base::as.character(NA),
-      show_version = base::as.logical(0),
-      show_points = base::as.logical(0),
+      test_duration = base::as.integer(NA),
+      test_points = base::as.integer(NA),
+      show_version = base::as.logical(NA),
+      show_points = base::as.logical(NA),
       question = base::as.character(NA),
       section = base::as.character(NA),
       bloc = base::as.character(NA),
-      altnbr = base::as.list.numeric_version(NA),
-      points = base::as.list.numeric_version(NA),
-      partial_credits = base::as.logical(0),
-      penalty = base::as.logical(0),
+      altnbr = base::as.numeric(NA),
+      points = base::as.numeric(NA),
+      partial_credits = base::as.numeric(NA),
+      penalty = base::as.numeric(NA),
       version = base::as.character(NA),
-      seed = base::as.list.numeric_version(NA)
+      seed = base::as.numeric(NA)
     ) |>
       stats::na.omit()
     
     students <- tibble::tibble(
-      student = base::character(0),
-      team = base::character(0),
-      firstname = base::character(0),
-      lastname = base::character(0),
-      email = base::character(0),
-    )
+      student = base::as.character(NA),
+      test = base::as.character(NA),
+      team = base::as.character(NA),
+      firstname = base::as.character(NA),
+      lastname = base::as.character(NA),
+      email = base::as.character(NA),
+      gender = base::as.character(NA),
+      age = base::as.numeric(NA)
+    ) |>
+      stats::na.omit()
     
     results <- tibble::tibble(
-      student = base::character(0),
-      test = base::character(0),
-      attempt = base::integer(0),
-      question = base::character(0),
-      version = base::character(0),
-      number = base::integer(0),
-      letter = base::character(0),
-      item = base::character(0),
-      language = base::character(0),
-      scale = base::character(0),
-      partial_credits = base::logical(0),
-      penalty = base::logical(0),
-      points = base::numeric(0),
-      checked = base::numeric(0),
-      weight = base::numeric(0),
-      earned = base::numeric(0)
-    )
+      test = base::as.character(NA),
+      student = base::as.character(NA),
+      attempt = base::as.numeric(NA),
+      question = base::as.character(NA),
+      version = base::as.character(NA),
+      number = base::as.numeric(NA),
+      letter = base::as.character(NA),
+      item = base::as.character(NA),
+      language = base::as.character(NA),
+      scale = base::as.character(NA),
+      partial_credits = base::as.logical(NA),
+      penalty = base::as.logical(NA),
+      points = base::as.numeric(NA),
+      checked = base::as.numeric(NA),
+      correct = base::as.numeric(NA),
+      weight = base::as.numeric(NA),
+      earned = base::as.numeric(NA)
+    ) |>
+      stats::na.omit()
   }
   
   base::save(tests, file = course_paths$databases$tests)

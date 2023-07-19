@@ -16,45 +16,62 @@
 
 statistics_compute_irt_parameters <- function(predictions){
   
-  proficiency <- NULL
+  ability <- NULL
   probability <- NULL
   correct <- NULL
   prediction <- NULL
   lag_prob <- NULL
-  lag_prof <- NULL
+  lag_abil <- NULL
   slope <- NULL
   accuracy <- NULL
   discrimination <- NULL
   answers <- NULL
   success <- NULL
   guess <- NULL
+  difficulty <- NULL
+  slope_deciles <- NULL
   
-  predictions |>
-    dplyr::arrange(proficiency) |>
-    dplyr::mutate(
-      lag_prof = dplyr::lag(proficiency),
-      lag_prob = dplyr::lag(probability),
-      accuracy = base::as.numeric(correct == prediction)
+  basic_statistics <- predictions |>
+    dplyr::ungroup() |>
+    base::unique() |>
+    dplyr::summarise(
+      answers = dplyr::n(),
+      success = base::round(base::mean(correct)*100,0),
+      guess = base::round(base::min(probability, na.rm = TRUE)*100,0),
+      accuracy = base::round(base::mean(base::as.numeric(correct == prediction))*100,0)
+    )
+  
+  smooth_basis <- predictions |>
+    dplyr::mutate(difficulty = ability / 10) |>
+    dplyr::group_by(difficulty) |>
+    dplyr::summarise(
+      probability = base::mean(probability, na.rm = TRUE),
+      .groups = "drop"
     ) |>
+    dplyr::arrange(difficulty) 
+  
+  smooth <- stats::loess.smooth(x = smooth_basis$difficulty, y = smooth_basis$probability)
+  
+  irt_statistics <- tibble::tibble(
+    difficulty = smooth$x, probability = smooth$y,
+    discrimination = c(0, base::diff(smooth$y)/base::diff(smooth$x))
+  ) |>
+    dplyr::filter(probability >= 0.45, probability <= 0.55) |>
+    dplyr::summarise_all(base::mean, na.rm = TRUE) |>
     dplyr::mutate(
-      answers = base::length(probability),
-      slope = (probability - lag_prob) / (proficiency - lag_prof)
+      difficulty = base::round(difficulty, 1),
+      discrimination = base::round(discrimination*10, 1)
     ) |>
-    dplyr::mutate(
-      discrimination = base::max(slope, na.rm = TRUE),
-      guess = base::min(probability, na.rm = TRUE),
-      accuracy = base::mean(accuracy, na.rm = TRUE)
-    ) |>
-    dplyr::filter(slope == discrimination) |>
-    dplyr::sample_n(1) |>
+    base::unique()
+  
+  dplyr::bind_cols(basic_statistics, irt_statistics) |>
     dplyr::select(
       answers,
       success,
-      difficulty = proficiency,
+      difficulty,
       discrimination,
       guess,
       accuracy
-    ) |>
-    dplyr::mutate_all(function(x) base::round(x, 2))
+    )
 }
 

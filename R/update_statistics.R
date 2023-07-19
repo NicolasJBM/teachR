@@ -63,15 +63,13 @@ update_statistics <- function(course_paths, minobs = 10){
   viewers <- NULL
   watchtime <- NULL
   weight <- NULL
+  score <- NULL
   
   base::load(course_paths$databases$documents)
   
   # Ratings
-  
   base::load(course_paths$databases$ratings)
-  
   if (base::nrow(ratings) > 0){
-    
     page_ratings <- ratings |>
       dplyr::group_by(file, code, language) |>
       dplyr::summarise(
@@ -91,13 +89,13 @@ update_statistics <- function(course_paths, minobs = 10){
       dispersion = base::numeric(0)
     )
   }
-  
   page_ratings <- page_ratings |>
     teachR::statistics_assign_colors(type = "ratings")
   base::rm(ratings)
   
-  # Comments
   
+  
+  # Comments
   base::load(course_paths$databases$comments)
   
   if (base::nrow(comments) > 0){
@@ -112,8 +110,9 @@ update_statistics <- function(course_paths, minobs = 10){
   }
   base::rm(comments)
   
-  # Views
   
+  
+  # Views
   base::load(course_paths$databases$views)
   
   if (base::nrow(views) > 0){
@@ -134,7 +133,6 @@ update_statistics <- function(course_paths, minobs = 10){
       dplyr::select(
         file, views, viewers, watchtime, retention, duration, repetition
       )
-    
     video2doc <- documents |>
       dplyr::filter(!base::is.na(tag_youtube) & base::nchar(tag_youtube) > 0) |>
       dplyr::mutate(file_alt = base::paste0(document, "_", language, ".Rmd")) |>
@@ -145,15 +143,12 @@ update_statistics <- function(course_paths, minobs = 10){
       dplyr::select(-file) |>
       dplyr::rename(file = file_alt) |>
       dplyr::select(file, dplyr::everything())
-    
     video_views <- dplyr::bind_rows(views, views2) |>
       stats::na.omit() |>
       dplyr::group_by(file) |>
       dplyr::sample_n(1) |>
       dplyr::ungroup()
-    
     base::rm(video2doc, views2)
-    
   } else {
     video_views <- tibble::tibble(
       file = base::character(0),
@@ -165,32 +160,28 @@ update_statistics <- function(course_paths, minobs = 10){
       repetition = base::numeric(0)
     )
   }
-  
   video_views <- video_views |>
     teachR::statistics_assign_colors(type = "videos")
   base::rm(views)
   
-  # Results
   
+  
+  # Results
   base::load(course_paths$databases$propositions)
   base::load(course_paths$databases$results)
-  
   if (base::nrow(results) > 0){
-    
     results <- results |>
       dplyr::left_join(dplyr::select(
-        propositions, item, code = document
+        propositions, item, document
       ), by = c("item")) |>
       dplyr::select(
-        test, student, attempt, file = question, code, item, language,
+        test, student, attempt, question, document, item, language,
         points, checked, weight, earned
       )
     
     questions_irt <- results |>
       dplyr::filter(checked == 1) |>
-      dplyr::select(
-        test, student, attempt, code = file, points, earned
-      ) |>
+      dplyr::select(test, student, attempt, code = question, points, earned) |>
       stats::na.omit() |>
       tidyr::unite("observation", student, attempt, sep = "-") |>
       tidyr::unite("observation", test, observation, sep = ".") |>
@@ -201,37 +192,32 @@ update_statistics <- function(course_paths, minobs = 10){
         earned = base::sum(earned),
         .groups = "drop"
       ) |>
-      dplyr::mutate(
-        correct = base::as.numeric(earned > 0.5 * points)
-      ) |>
-      dplyr::select(observation, code, correct) |>
+      dplyr::mutate(score = earned/points) |>
+      dplyr::select(observation, code, score) |>
       teachR::statistics_get_parameters(
-        model_formula = "correct ~ success + proficiency",
+        model_formula = "correct ~ ability",
         minobs = minobs
       )
     
     documents_irt <- results |>
       dplyr::filter(checked == 1) |>
       dplyr::select(
-        test, student, attempt, code, language, points, earned
+        test, student, attempt, document, language, weight, earned
       ) |>
       stats::na.omit() |>
       tidyr::unite("observation", student, attempt, sep = "-") |>
       tidyr::unite("observation", test, observation, sep = ".") |>
-      dplyr::mutate(code = base::paste0(code, "_", language, ".Rmd")) |>
-      dplyr::select(observation, code, points, earned) |>
+      dplyr::mutate(code = base::paste0(document, "_", language, ".Rmd")) |>
+      dplyr::select(observation, code, weight, earned) |>
+      dplyr::mutate(score = dplyr::case_when(
+        weight == 0 ~ 0,
+        TRUE ~ earned / base::abs(weight)
+      )) |>
       dplyr::group_by(observation, code) |>
-      dplyr::summarise(
-        points = base::max(points),
-        earned = base::sum(earned),
-        .groups = "drop"
-      ) |>
-      dplyr::mutate(
-        correct = base::as.numeric(earned > 0.5 * points)
-      ) |>
-      dplyr::select(observation, code, correct) |>
+      dplyr::summarise(score = base::mean(score), .groups = "drop") |>
+      dplyr::select(observation, code, score) |>
       teachR::statistics_get_parameters(
-        model_formula = "correct ~ success + proficiency",
+        model_formula = "correct ~ ability",
         minobs = minobs
       )
     
@@ -245,16 +231,14 @@ update_statistics <- function(course_paths, minobs = 10){
       tidyr::unite("observation", test, observation, sep = ".") |>
       tidyr::unite("code", item, language, sep = "_") |>
       dplyr::select(observation, code, checked, weight, earned) |>
-      dplyr::mutate(
-        correct = dplyr::case_when(
-          checked == 0 & weight <= 0 ~ 1,
-          checked == 1 & weight > 0 ~ 1,
-          TRUE ~ 0
-        )
-      ) |>
-      dplyr::select(observation, code, correct) |>
+      dplyr::mutate(score = dplyr::case_when(
+          checked == 0 & weight <= 0 ~ 0.51,
+          checked == 1 & weight <= 0 ~ 0,
+          TRUE ~ earned/base::abs(weight)
+      )) |>
+      dplyr::select(observation, code, score) |>
       teachR::statistics_get_parameters(
-        model = stats::as.formula("correct ~ success + proficiency"),
+        model = stats::as.formula("correct ~ ability"),
         minobs = minobs
       )
     
