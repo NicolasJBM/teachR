@@ -207,6 +207,11 @@ update_data <- function(course_paths){
           file <- base::paste0(x,"/8_results/results.csv")
           if (base::file.exists((file))) readr::read_csv(file, col_types = "cnccnccccllnnnnn") |>
             base::suppressWarnings()
+        }),
+        grades = purrr::map(test_folders, function(x, y){
+          file <- base::paste0(x,"/8_results/student_grades.csv")
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "cnnn") |>
+            base::suppressWarnings()
         })
       )
     
@@ -224,6 +229,9 @@ update_data <- function(course_paths){
     
     results <- dplyr::select(alltests, test, results) |>
       tidyr::unnest(results)
+    
+    grades <- dplyr::select(alltests, test, grades) |>
+      tidyr::unnest(grades)
     
   } else {
     
@@ -284,9 +292,19 @@ update_data <- function(course_paths){
       earned = base::as.numeric(NA)
     ) |>
       stats::na.omit()
+    
+    grades <- tibble::tibble(
+      student = base::as.character(NA),
+      attempt = base::as.numeric(NA),
+      points = base::as.numeric(NA),
+      grade = base::as.numeric(NA)
+    ) |>
+      stats::na.omit()
+    
   }
   
   base::save(tests, file = course_paths$databases$tests)
   base::save(students, file = course_paths$databases$students)
   base::save(results, file = course_paths$databases$results)
+  base::save(grades, file = course_paths$databases$grades)
 }
