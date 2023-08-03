@@ -166,7 +166,7 @@ update_statistics <- function(course_paths, minobs = 10){
     results <- results |>
       dplyr::left_join(dplyr::select(
         propositions, item, document
-      ), by = c("item")) |>
+      ), by = "item") |>
       dplyr::select(
         test, student, attempt, question, document, item, language,
         points, checked, weight, earned

@@ -63,7 +63,7 @@ statistics_get_parameters <- function(
       .groups = "drop"
     ) |>
     dplyr::mutate_if(base::is.numeric, function(x) base::as.numeric(base::scale(x)))
-  naive_ability$ability <- psych::fa(naive_ability[,c(2:3)])$scores |>
+  naive_ability$ability <- psych::fa(naive_ability[,c(2,3)])$scores |>
     base::as.numeric() |>
     dplyr::ntile(100)
   
@@ -72,7 +72,7 @@ statistics_get_parameters <- function(
     dplyr::mutate(correct = base::as.numeric(score > 0.5)) |>
     dplyr::ungroup() |>
     dplyr::left_join(dplyr::select(naive_ability, observation, ability), by = "observation") |>
-    dplyr::left_join(dplyr::select(naive_difficulty, code), by = c("code")) |>
+    dplyr::left_join(dplyr::select(naive_difficulty, code), by = "code") |>
     dplyr::group_by(code) |>
     tidyr::nest() |>
     dplyr::mutate(
