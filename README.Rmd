@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # teachR
 
 <!-- badges: start -->
+[![DOI](https://zenodo.org/badge/533273578.svg)](https://zenodo.org/badge/latestdoi/533273578)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN status](https://www.r-pkg.org/badges/version/teachR)](https://CRAN.R-project.org/package=teachR)
 [![R-CMD-check](https://github.com/NicolasJBM/teachR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NicolasJBM/teachR/actions/workflows/R-CMD-check.yaml)
