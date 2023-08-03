@@ -1,28 +1,24 @@
 #' @name update_data
 #' @title Update course tests
 #' @author Nicolas Mangin
-#' @description Function listing tests and gathering tests definition parameters in a single database.
+#' @description Function listing tests and gathering tests definition parameters in a single database which is saved on disk.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
-#' @return Save on disk updated test database.
-#' @importFrom dplyr anti_join
 #' @importFrom dplyr arrange
-#' @importFrom dplyr bind_rows
 #' @importFrom dplyr everything
 #' @importFrom dplyr filter
 #' @importFrom dplyr group_by
 #' @importFrom dplyr left_join
 #' @importFrom dplyr mutate
-#' @importFrom dplyr slice_head
 #' @importFrom dplyr select
+#' @importFrom dplyr slice_head
 #' @importFrom dplyr ungroup
 #' @importFrom purrr map
-#' @importFrom stats na.omit
+#' @importFrom readr read_csv
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove_all
 #' @importFrom tibble tibble
 #' @importFrom tidyr separate
 #' @importFrom tidyr unnest
-#' @importFrom readr read_csv
 #' @export
 
 update_data <- function(course_paths){

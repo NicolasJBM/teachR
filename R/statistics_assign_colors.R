@@ -1,13 +1,12 @@
 #' @name statistics_assign_colors
-#' @title Assign colors to statistics.
+#' @title Assign colors.
 #' @author Nicolas Mangin
-#' @description Function assigning colors to statistics.
+#' @description Function assigning colors based on documents' statistics.
 #' @param parameters Tibble. Page ratings.
 #' @param type Character. Whether the parameterds are for "ratings", "videos", or "questions".
 #' @return Parameters with variable indicating colors for value boxes.
-#' @importFrom dplyr mutate
 #' @importFrom dplyr case_when
-#' @importFrom stats quantile
+#' @importFrom dplyr mutate
 #' @export
 
 

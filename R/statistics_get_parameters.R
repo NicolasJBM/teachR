@@ -1,7 +1,7 @@
 #' @name statistics_get_parameters
-#' @title Compute various statistics
+#' @title Compute IRT statistics
 #' @author Nicolas Mangin
-#' @description Compute various statistics
+#' @description Compute Item Response Theory statistics about documents and items.
 #' @param results Tibble. observation (e.g. student attempt in test), code (e.g. question) and score (percentage of completion).
 #' @param model_formula Character Model used to estimate parameters (converted into a formula in yhe function)
 #' @param minobs Integer.
@@ -10,15 +10,16 @@
 #' @importFrom dplyr group_by
 #' @importFrom dplyr left_join
 #' @importFrom dplyr mutate
+#' @importFrom dplyr mutate_if
+#' @importFrom dplyr ntile
 #' @importFrom dplyr select
 #' @importFrom dplyr summarise
 #' @importFrom dplyr ungroup
+#' @importFrom psych fa
 #' @importFrom purrr map
-#' @importFrom purrr map_int
 #' @importFrom purrr map2
-#' @importFrom stats as.formula
-#' @importFrom stats glm
-#' @importFrom stats predict
+#' @importFrom purrr map_dbl
+#' @importFrom purrr map_int
 #' @importFrom tidyr nest
 #' @importFrom tidyr unnest
 #' @export

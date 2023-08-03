@@ -9,11 +9,8 @@ update_tags(course_paths)
 \arguments{
 \item{course_paths}{List. Paths to the different folders and databases on local disk.}
 }
-\value{
-Save the tag list as a tibble in the folder "2_documents" and returns this list
-}
 \description{
-Function taking all the tags listed in documents, adding the new ones to the existing list of tags, and counting their occurrences.
+Function taking all the tags listed in documents, adding the new ones to the existing list of tags, counting their occurrences, and saving the updated tags database on disk.
 }
 \author{
 Nicolas Mangin

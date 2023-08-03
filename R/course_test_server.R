@@ -1,20 +1,33 @@
 #' @name course_test_server
 #' @title Load test data
 #' @author Nicolas Mangin
-#' @description Module facilitating the loading of relevant test data.
+#' @description Module facilitating the selection of a test to edit, grade, and feedback.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @param tree Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR
-#' @return A list of course data.
-#' @importFrom dplyr filter
+#' @return A list containing a test and a test folder path used in testR, gradR, and reportR.
+#' @importFrom dplyr mutate
 #' @importFrom fs dir_copy
-#' @importFrom shiny moduleServer
 #' @importFrom shiny NS
+#' @importFrom shiny actionButton
+#' @importFrom shiny icon
+#' @importFrom shiny modalButton
+#' @importFrom shiny modalDialog
+#' @importFrom shiny moduleServer
 #' @importFrom shiny observe
+#' @importFrom shiny observeEvent
 #' @importFrom shiny reactive
+#' @importFrom shiny removeModal
+#' @importFrom shiny renderUI
 #' @importFrom shiny req
-#' @importFrom shiny updateSelectInput
+#' @importFrom shiny showModal
+#' @importFrom shiny textInput
+#' @importFrom shinyWidgets radioGroupButtons
+#' @importFrom shinyalert shinyalert
+#' @importFrom stringr str_detect
+#' @importFrom stringr str_remove
+#' @importFrom stringr str_replace
 #' @export
 
 

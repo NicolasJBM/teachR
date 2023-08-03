@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_languages_ui.R
 \name{filter_languages_ui}
 \alias{filter_languages_ui}
-\title{Filter documents based on languages}
+\title{Filter documents based on languages.}
 \usage{
 filter_languages_ui(id)
 }
@@ -10,10 +10,10 @@ filter_languages_ui(id)
 \item{id}{Character. ID of the module to connect the user interface to the appropriate server side.}
 }
 \value{
-Tibble. list of documents existing in all the selected languages.
+Tibble. list of documents.
 }
 \description{
-Module allowing the user to find select document based on whether they exist in other languages.
+Module allowing the user to find select document based on whether they exist in languages other than the main one.
 }
 \author{
 Nicolas Mangin

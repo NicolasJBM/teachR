@@ -1,7 +1,7 @@
 Package: teachR
-Title: Toolbox to manage courses
-Version: 0.1.0
-Date: 2022-01-31
+Title: Create and maintain teaching, learning, and testing materials
+Version: 1.30
+Date: 2023-08-02
 Authors@R: 
     person(given = "Nicolas",
            family = "Mangin",
@@ -16,19 +16,22 @@ Depends: R (>= 4.1)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
-  dplyr,
   stringr,
+  readr,
+  readxl,
   shiny,
   shinyalert,
   shinybusy,
+  dplyr,
+  fs,
+  shinyWidgets,
   tibble,
+  jsTreeR,
+  psych,
   purrr,
   tidyr,
-  shinyWidgets,
-  jsTreeR,
-  fs,
-  readr,
-  readxl,
-  psych,
   classR,
   editR
+Remotes:
+  NicolasJBM/classR,
+  NicolasJBM/editR

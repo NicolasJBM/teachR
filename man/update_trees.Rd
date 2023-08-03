@@ -11,11 +11,8 @@ update_trees(course_paths, selected_tree = NA)
 
 \item{selected_tree}{Character. Name of the selected tree.}
 }
-\value{
-Save on disk updated trees.
-}
 \description{
-Function adding missing documents as unclassified and removing non-existing documents in all trees.
+Function adding missing documents as unclassified, removing non-existing documents in all trees, and saving changes on disk.
 }
 \author{
 Nicolas Mangin

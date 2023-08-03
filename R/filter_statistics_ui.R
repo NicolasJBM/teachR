@@ -1,10 +1,15 @@
 #' @name filter_statistics_ui
-#' @title Select documents from statistics (UI)
+#' @title Select documents from statistics
 #' @author Nicolas Mangin
-#' @description Module allowing the user to select documents by clicking on the different sections of a classification statistics.
+#' @description Module allowing the user to select documents based on their statistics.
 #' @param id ID of the module to connect the user interface to the appropriate server side.
 #' @return Tibble. List of selected documents.
-#' @import shiny
+#' @importFrom shiny NS
+#' @importFrom shiny column
+#' @importFrom shiny fluidRow
+#' @importFrom shiny textOutput
+#' @importFrom shiny uiOutput
+#' @importFrom shinyWidgets prettySwitch
 #' @export
 
 filter_statistics_ui <- function(id){

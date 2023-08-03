@@ -13,7 +13,7 @@ statistics_compute_irt_parameters(predictions)
 Tibble.
 }
 \description{
-Compute difficulty, discrimination, and guess parameters
+Compute difficulty, discrimination, and guess parameters about documents and items.
 }
 \author{
 Nicolas Mangin

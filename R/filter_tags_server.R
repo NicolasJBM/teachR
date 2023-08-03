@@ -1,15 +1,14 @@
 #' @name filter_tags_server
-#' @title Select documents from tags (server)
+#' @title Select documents from tags
 #' @author Nicolas Mangin
-#' @description Module allowing the user to select documents by clicking on the different sections of a classification tags.
+#' @description Module allowing the user to select documents by clicking on their tags.
 #' @param id ID of the module to connect the user interface to the appropriate server side.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @return Tibble. List of selected documents.
-#' @importFrom dplyr filter
-#' @importFrom shiny moduleServer
+#' @importFrom dplyr select
 #' @importFrom shiny NS
+#' @importFrom shiny moduleServer
 #' @importFrom shiny reactive
-#' @importFrom shiny renderText
 #' @importFrom shiny renderUI
 #' @importFrom shiny req
 #' @export

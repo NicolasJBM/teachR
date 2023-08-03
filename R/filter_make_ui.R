@@ -1,5 +1,5 @@
 #' @name filter_make_ui
-#' @title Create filters UI
+#' @title Make filters
 #' @author Nicolas Mangin
 #' @description Function creating user interfaces to select documents based on specified variables
 #' @param ns Function. Apply the ID of the module in which the function is embedded.
@@ -9,11 +9,15 @@
 #' @return A user interface with adequate filters for each variable.
 #' @seealso filter_prepare_variables
 #' @seealso filter_tibble
+#' @importFrom dplyr arrange
 #' @importFrom shiny checkboxInput
-#' @importFrom shiny selectInput
-#' @importFrom shiny textInput
-#' @importFrom shiny sliderInput
+#' @importFrom shiny icon
 #' @importFrom shiny numericInput
+#' @importFrom shiny selectInput
+#' @importFrom shiny sliderInput
+#' @importFrom shinyWidgets checkboxGroupButtons
+#' @importFrom shinyWidgets radioGroupButtons
+#' @importFrom shinyWidgets searchInput
 #' @export
 
 

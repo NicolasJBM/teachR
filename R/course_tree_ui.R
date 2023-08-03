@@ -1,16 +1,16 @@
 #' @name course_tree_ui
 #' @title Select and load a tree
 #' @author Nicolas Mangin
-#' @description Module facilitating the selection of trees and tests to edit and work with.
+#' @description Module facilitating the loading of a classification tree.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
-#' @return A list co ntaining a tree and a test folder path.
+#' @return A list containing the tree as a table and a json object
+#' @importFrom shiny NS
 #' @importFrom shiny actionButton
 #' @importFrom shiny column
 #' @importFrom shiny fluidRow
 #' @importFrom shiny icon
-#' @importFrom shiny NS
-#' @importFrom shiny selectInput
 #' @importFrom shiny span
+#' @importFrom shiny uiOutput
 #' @export
 
 

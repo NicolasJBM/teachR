@@ -9,11 +9,8 @@ update_data(course_paths)
 \arguments{
 \item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
 }
-\value{
-Save on disk updated test database.
-}
 \description{
-Function listing tests and gathering tests definition parameters in a single database.
+Function listing tests and gathering tests definition parameters in a single database which is saved on disk.
 }
 \author{
 Nicolas Mangin

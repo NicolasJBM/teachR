@@ -1,24 +1,25 @@
 #' @name filter_tree_server
-#' @title Select documents from tree (server)
+#' @title Select documents from tree
 #' @author Nicolas Mangin
 #' @description Module allowing the user to select documents by clicking on the different sections of a classification tree.
 #' @param id ID of the module to connect the user interface to the appropriate server side.
 #' @param tree Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @return Tibble. List of selected documents.
+#' @importFrom classR trees_selected_json_to_tibble
 #' @importFrom dplyr anti_join
 #' @importFrom dplyr arrange
 #' @importFrom dplyr bind_rows
+#' @importFrom dplyr filter
 #' @importFrom dplyr left_join
 #' @importFrom dplyr select
 #' @importFrom jsTreeR jstree
 #' @importFrom jsTreeR jstreeDestroy
 #' @importFrom jsTreeR renderJstree
-#' @importFrom shiny moduleServer
 #' @importFrom shiny NS
+#' @importFrom shiny moduleServer
 #' @importFrom shiny reactive
 #' @importFrom shiny req
-#' @importFrom stats na.omit
 #' @export
 
 filter_tree_server <- function(

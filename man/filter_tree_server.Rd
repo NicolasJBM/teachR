@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_tree_server.R
 \name{filter_tree_server}
 \alias{filter_tree_server}
-\title{Select documents from tree (server)}
+\title{Select documents from tree}
 \usage{
 filter_tree_server(id, tree, course_data)
 }

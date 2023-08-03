@@ -14,10 +14,10 @@ course_tree_server(id, course_data, course_paths)
 \item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
 }
 \value{
-A list which can be treated as a sTreeR object.
+A list containing the tree as a table and a json object.
 }
 \description{
-Module facilitating the loading of a js classification tree.
+Module facilitating the loading of a classification tree.
 }
 \author{
 Nicolas Mangin

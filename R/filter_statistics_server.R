@@ -1,13 +1,18 @@
 #' @name filter_statistics_server
-#' @title Select documents from statistics (server)
+#' @title Select documents from statistics
 #' @author Nicolas Mangin
-#' @description Module allowing the user to select documents by clicking on the different sections of a classification statistics.
+#' @description Module allowing the user to select documents based on their statistics.
 #' @param id ID of the module to connect the user interface to the appropriate server side.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @return Tibble. List of selected documents.
 #' @import shiny
 #' @importFrom dplyr left_join
-#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom shiny NS
+#' @importFrom shiny moduleServer
+#' @importFrom shiny reactive
+#' @importFrom shiny renderUI
+#' @importFrom shiny req
 #' @export
 
 filter_statistics_server <- function(id, course_data){

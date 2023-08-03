@@ -1,14 +1,13 @@
 #' @name course_update_ui
 #' @title Update documents and data
 #' @author Nicolas Mangin
-#' @description Module facilitating the update of underlying course data.
+#' @description Module facilitating the update of underlying course documents, trees, data, and statistics.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
-#' @return A list of folder paths based on a standard course structure and used by the application.
+#' @importFrom shiny NS
 #' @importFrom shiny actionButton
 #' @importFrom shiny column
 #' @importFrom shiny fluidRow
-#' @importFrom shiny h6
-#' @importFrom shiny NS
+#' @importFrom shiny icon
 #' @importFrom shiny span
 #' @export
 

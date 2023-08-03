@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_statistics.R
 \name{update_statistics}
 \alias{update_statistics}
-\title{Compte statistics for documents and items.}
+\title{Compute statistics.}
 \usage{
 update_statistics(course_paths, minobs = 10)
 }
@@ -11,11 +11,8 @@ update_statistics(course_paths, minobs = 10)
 
 \item{minobs}{Integer.}
 }
-\value{
-Aggregates, models, and parameters saved on local folders.
-}
 \description{
-Compte statistics for documents and items.
+Function computing various statistics for documents and items and saving them in disk.
 }
 \author{
 Nicolas Mangin

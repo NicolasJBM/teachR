@@ -10,10 +10,10 @@ course_tree_ui(id)
 \item{id}{Character. ID of the module to connect the user interface to the appropriate server side.}
 }
 \value{
-A list co ntaining a tree and a test folder path.
+A list containing the tree as a table and a json object
 }
 \description{
-Module facilitating the selection of trees and tests to edit and work with.
+Module facilitating the loading of a classification tree.
 }
 \author{
 Nicolas Mangin

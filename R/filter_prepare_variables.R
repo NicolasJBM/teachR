@@ -8,8 +8,8 @@
 #' @return A tibble indicating the variables for which filters should be created, the associated input id, and the format of the filter. Used as input for filter_make_ui.
 #' @seealso filter_make_ui
 #' @seealso filter_tibble
-#' @importFrom dplyr filter
 #' @importFrom dplyr group_by
+#' @importFrom dplyr left_join
 #' @importFrom dplyr sample_n
 #' @importFrom dplyr select
 #' @importFrom dplyr starts_with

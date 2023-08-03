@@ -9,11 +9,8 @@ course_update_ui(id)
 \arguments{
 \item{id}{Character. ID of the module to connect the user interface to the appropriate server side.}
 }
-\value{
-A list of folder paths based on a standard course structure and used by the application.
-}
 \description{
-Module facilitating the update of underlying course data.
+Module facilitating the update of underlying course documents, trees, data, and statistics.
 }
 \author{
 Nicolas Mangin

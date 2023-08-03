@@ -1,9 +1,8 @@
 #' @name update_documents
 #' @title Update document list
 #' @author Nicolas Mangin
+#' @description Function listing all the documents, checking whether they were changed, updating information about changed documents, and saving the document database on disk.
 #' @param course_paths List. Paths to the different folders and databases on local disk.
-#' @description Function listing all the documents, checking whether they were changed, and updating information about changed documents.
-#' @return Save the document list as a tibble in the folder "2_documents" and returns this list
 #' @importFrom dplyr anti_join
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr everything

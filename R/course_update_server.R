@@ -1,14 +1,15 @@
 #' @name course_update_server
-#' @title Update documents and data
+#' @title Update documents and data in a course.
 #' @author Nicolas Mangin
-#' @description Module facilitating the update of underlying course data.
+#' @description Module facilitating the update of underlying course documents, trees, data, and statistics.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
-#' @return Nothing. All changes ore on disk
-#' @importFrom shiny moduleServer
 #' @importFrom shiny NS
+#' @importFrom shiny moduleServer
 #' @importFrom shiny observeEvent
 #' @importFrom shinyalert shinyalert
+#' @importFrom shinybusy remove_modal_spinner
+#' @importFrom shinybusy show_modal_spinner
 #' @export
 
 

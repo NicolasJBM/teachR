@@ -10,11 +10,9 @@
 #' @importFrom dplyr filter
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove_all
-#' @importFrom stringr str_to_lower
-#' @importFrom stringr str_split
 #' @importFrom stringr str_replace_all
-#' @importFrom dplyr filter
-#' @importFrom stringr str_detect
+#' @importFrom stringr str_split
+#' @importFrom stringr str_to_lower
 #' @export
 
 

@@ -1,32 +1,36 @@
 #' @name course_tree_server
 #' @title Load tree data
 #' @author Nicolas Mangin
-#' @description Module facilitating the loading of a js classification tree.
+#' @description Module facilitating the loading of a classification tree.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
-#' @return A list which can be treated as a sTreeR object.
+#' @return A list containing the tree as a table and a json object.
 #' @importFrom classR trees_structure_textbook
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr filter
+#' @importFrom shiny NS
 #' @importFrom shiny actionButton
 #' @importFrom shiny icon
 #' @importFrom shiny modalButton
 #' @importFrom shiny modalDialog
 #' @importFrom shiny moduleServer
-#' @importFrom shiny NS
 #' @importFrom shiny numericInput
 #' @importFrom shiny observe
 #' @importFrom shiny observeEvent
 #' @importFrom shiny reactive
 #' @importFrom shiny removeModal
+#' @importFrom shiny renderUI
 #' @importFrom shiny req
-#' @importFrom shiny selectInput
+#' @importFrom shiny selectizeInput
 #' @importFrom shiny showModal
 #' @importFrom shiny textInput
-#' @importFrom shiny selectizeInput
-#' @importFrom shiny updateSelectInput
+#' @importFrom shinyWidgets pickerInput
+#' @importFrom shinyWidgets searchInput
 #' @importFrom shinyalert shinyalert
+#' @importFrom shinybusy remove_modal_spinner
+#' @importFrom shinybusy show_modal_spinner
+#' @importFrom stringr str_detect
 #' @importFrom tibble tibble
 #' @export
 

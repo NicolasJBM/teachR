@@ -1,12 +1,13 @@
 #' @name course_set_paths
 #' @title Complete course folder paths
 #' @author Nicolas Mangin
-#' @description Create a list of addresses on local computer based on the selected course folder.
+#' @description Retrieve a list of paths to relevant databases or subfolders in the selected course folder on the local computer.
 #' @param course_folder Character. Course folder as selected by the user.
-#' @return A list of folder paths based on a standard course structure and used by the application.
+#' @return A list of folder paths based on a specified course structure and used by the application.
+#' @importFrom dplyr mutate
+#' @importFrom readr read_csv
 #' @importFrom shiny addResourcePath
 #' @importFrom stringr str_remove
-#' @importFrom readr read_csv
 #' @export
 
 

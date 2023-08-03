@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_tree_ui.R
 \name{filter_tree_ui}
 \alias{filter_tree_ui}
-\title{Select documents from tree (UI)}
+\title{Select documents from tree}
 \usage{
 filter_tree_ui(id)
 }

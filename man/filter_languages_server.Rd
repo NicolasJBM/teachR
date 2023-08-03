@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_languages_server.R
 \name{filter_languages_server}
 \alias{filter_languages_server}
-\title{Filter documents based on languages}
+\title{Filter documents based on languages.}
 \usage{
 filter_languages_server(id, course_data)
 }
@@ -15,7 +15,7 @@ filter_languages_server(id, course_data)
 Tibble. list of documents existing in all the selected languages.
 }
 \description{
-Module allowing the user to find select document based on whether they exist in other languages.
+Module allowing the user to find select document based on whether they exist in languages other than the main one.
 }
 \author{
 Nicolas Mangin

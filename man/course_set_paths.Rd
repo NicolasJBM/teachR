@@ -10,10 +10,10 @@ course_set_paths(course_folder)
 \item{course_folder}{Character. Course folder as selected by the user.}
 }
 \value{
-A list of folder paths based on a standard course structure and used by the application.
+A list of folder paths based on a specified course structure and used by the application.
 }
 \description{
-Create a list of addresses on local computer based on the selected course folder.
+Retrieve a list of paths to relevant databases or subfolders in the selected course folder on the local computer.
 }
 \author{
 Nicolas Mangin

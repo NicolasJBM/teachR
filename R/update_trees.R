@@ -1,10 +1,9 @@
 #' @name update_trees
 #' @title Update course trees
 #' @author Nicolas Mangin
-#' @description Function adding missing documents as unclassified and removing non-existing documents in all trees.
+#' @description Function adding missing documents as unclassified, removing non-existing documents in all trees, and saving changes on disk.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @param selected_tree Character. Name of the selected tree.
-#' @return Save on disk updated trees.
 #' @importFrom classR trees_tibble_to_json
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr case_when
@@ -123,7 +122,7 @@ update_trees <- function(course_paths, selected_tree = NA){
       dplyr::filter(!(file %in% classified$file)) |>
       tibble::rowid_to_column("position") |>
       dplyr::mutate(position = purrr::map_chr(position, function(x, levels){
-        base::paste(c(3,x,base::rep(0,(levels-2))), collapse = ".")
+        base::paste(c(3, x, base::rep(0,(levels-2))), collapse = ".")
       }, levels)) |>
       dplyr::mutate(text = "")
 

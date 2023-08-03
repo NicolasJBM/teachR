@@ -2,7 +2,7 @@
 % Please edit documentation in R/course_update_server.R
 \name{course_update_server}
 \alias{course_update_server}
-\title{Update documents and data}
+\title{Update documents and data in a course.}
 \usage{
 course_update_server(id, course_paths)
 }
@@ -11,11 +11,8 @@ course_update_server(id, course_paths)
 
 \item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
 }
-\value{
-Nothing. All changes ore on disk
-}
 \description{
-Module facilitating the update of underlying course data.
+Module facilitating the update of underlying course documents, trees, data, and statistics.
 }
 \author{
 Nicolas Mangin

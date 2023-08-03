@@ -22,5 +22,7 @@ for (file in funs){
 
 pkg <- dplyr::bind_rows(pkg)
 
-writeLines(dplyr::filter(pkg, file == "R/reports_feedback_on_open.R")$import)
+
+writeLines(base::unique(pkg$packages))
+writeLines(dplyr::filter(pkg, file == "R/display_curve.R")$import)
 

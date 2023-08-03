@@ -1,8 +1,7 @@
 #' @name course_clean_root
-#' @title Remove temporary files in root
+#' @title Remove temporary files in the working directory
 #' @author Nicolas Mangin
-#' @description Remove non-essential files and folders from the root of the project. These files are created when .Rmd documents are knited.
-#' @return Clean project root folder
+#' @description Remove non-essential files and folders from the root of the project. These files are typically created when .Rmd documents are knitted.
 #' @importFrom stringr str_detect
 #' @export
 

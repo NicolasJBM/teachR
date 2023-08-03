@@ -1,7 +1,7 @@
 #' @name filter_languages_server
-#' @title Filter documents based on languages
+#' @title Filter documents based on languages.
 #' @author Nicolas Mangin
-#' @description Module allowing the user to find select document based on whether they exist in other languages.
+#' @description Module allowing the user to find select document based on whether they exist in languages other than the main one.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @return Tibble. list of documents existing in all the selected languages.
@@ -9,6 +9,12 @@
 #' @importFrom dplyr filter
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
+#' @importFrom shiny NS
+#' @importFrom shiny moduleServer
+#' @importFrom shiny reactive
+#' @importFrom shiny renderUI
+#' @importFrom shiny req
+#' @importFrom shiny tagList
 #' @importFrom shinyWidgets multiInput
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_split

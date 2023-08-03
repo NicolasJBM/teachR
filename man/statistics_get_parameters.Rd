@@ -2,7 +2,7 @@
 % Please edit documentation in R/statistics_get_parameters.R
 \name{statistics_get_parameters}
 \alias{statistics_get_parameters}
-\title{Compute various statistics}
+\title{Compute IRT statistics}
 \usage{
 statistics_get_parameters(
   results,
@@ -21,7 +21,7 @@ statistics_get_parameters(
 Models and parameters
 }
 \description{
-Compute various statistics
+Compute Item Response Theory statistics about documents and items.
 }
 \author{
 Nicolas Mangin

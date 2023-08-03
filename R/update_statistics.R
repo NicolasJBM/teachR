@@ -1,10 +1,9 @@
 #' @name update_statistics
-#' @title Compte statistics for documents and items.
+#' @title Compute statistics.
 #' @author Nicolas Mangin
-#' @description Compte statistics for documents and items.
+#' @description Function computing various statistics for documents and items and saving them in disk.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @param minobs Integer.
-#' @return Aggregates, models, and parameters saved on local folders.
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr case_when
 #' @importFrom dplyr everything
@@ -19,12 +18,6 @@
 #' @importFrom dplyr select
 #' @importFrom dplyr summarise
 #' @importFrom dplyr ungroup
-#' @importFrom shinyalert shinyalert
-#' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_spinner
-#' @importFrom stats as.formula
-#' @importFrom stats na.omit
-#' @importFrom stats sd
 #' @importFrom stringr str_replace_all
 #' @importFrom tibble tibble
 #' @importFrom tidyr separate

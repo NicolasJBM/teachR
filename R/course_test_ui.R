@@ -1,16 +1,16 @@
 #' @name course_test_ui
 #' @title Select and load a test
 #' @author Nicolas Mangin
-#' @description Module facilitating the selection of tests and tests to edit and work with.
+#' @description Module facilitating the selection of a test to edit, grade, and feedback.
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
-#' @return A list co ntaining a test and a test folder path.
+#' @return A list containing a test and a test folder path used in testR, gradR, and reportR.
+#' @importFrom shiny NS
 #' @importFrom shiny actionButton
 #' @importFrom shiny column
 #' @importFrom shiny fluidRow
 #' @importFrom shiny icon
-#' @importFrom shiny NS
-#' @importFrom shiny selectInput
 #' @importFrom shiny span
+#' @importFrom shiny uiOutput
 #' @export
 
 

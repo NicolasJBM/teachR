@@ -2,7 +2,7 @@
 % Please edit documentation in R/statistics_assign_colors.R
 \name{statistics_assign_colors}
 \alias{statistics_assign_colors}
-\title{Assign colors to statistics.}
+\title{Assign colors.}
 \usage{
 statistics_assign_colors(parameters, type = "questions")
 }
@@ -15,7 +15,7 @@ statistics_assign_colors(parameters, type = "questions")
 Parameters with variable indicating colors for value boxes.
 }
 \description{
-Function assigning colors to statistics.
+Function assigning colors based on documents' statistics.
 }
 \author{
 Nicolas Mangin

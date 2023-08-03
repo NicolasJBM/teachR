@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_statistics_ui.R
 \name{filter_statistics_ui}
 \alias{filter_statistics_ui}
-\title{Select documents from statistics (UI)}
+\title{Select documents from statistics}
 \usage{
 filter_statistics_ui(id)
 }
@@ -13,7 +13,7 @@ filter_statistics_ui(id)
 Tibble. List of selected documents.
 }
 \description{
-Module allowing the user to select documents by clicking on the different sections of a classification statistics.
+Module allowing the user to select documents based on their statistics.
 }
 \author{
 Nicolas Mangin

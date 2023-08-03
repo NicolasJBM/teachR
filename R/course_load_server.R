@@ -5,8 +5,10 @@
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @return A list of course data.
-#' @importFrom shiny moduleServer
+#' @importFrom readr read_csv
+#' @importFrom readxl read_excel
 #' @importFrom shiny NS
+#' @importFrom shiny moduleServer
 #' @importFrom shiny observeEvent
 #' @importFrom shiny reactiveValues
 #' @importFrom shinyalert shinyalert
@@ -14,9 +16,6 @@
 #' @importFrom shinybusy show_modal_spinner
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove
-#' @importFrom tibble tribble
-#' @importFrom readr read_csv
-#' @importFrom readxl read_excel
 #' @export
 
 

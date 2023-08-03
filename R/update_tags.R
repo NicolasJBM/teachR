@@ -1,9 +1,8 @@
 #' @name update_tags
 #' @title Update tags
 #' @author Nicolas Mangin
-#' @description Function taking all the tags listed in documents, adding the new ones to the existing list of tags, and counting their occurrences.
+#' @description Function taking all the tags listed in documents, adding the new ones to the existing list of tags, counting their occurrences, and saving the updated tags database on disk.
 #' @param course_paths List. Paths to the different folders and databases on local disk.
-#' @return Save the tag list as a tibble in the folder "2_documents" and returns this list
 #' @importFrom dplyr anti_join
 #' @importFrom dplyr arrange
 #' @importFrom dplyr bind_rows
@@ -13,9 +12,6 @@
 #' @importFrom dplyr select
 #' @importFrom dplyr starts_with
 #' @importFrom dplyr summarise
-#' @importFrom shinyalert shinyalert
-#' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_spinner
 #' @importFrom tibble tibble
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr replace_na

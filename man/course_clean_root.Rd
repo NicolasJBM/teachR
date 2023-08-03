@@ -2,15 +2,12 @@
 % Please edit documentation in R/course_clean_root.R
 \name{course_clean_root}
 \alias{course_clean_root}
-\title{Remove temporary files in root}
+\title{Remove temporary files in the working directory}
 \usage{
 course_clean_root()
 }
-\value{
-Clean project root folder
-}
 \description{
-Remove non-essential files and folders from the root of the project. These files are created when .Rmd documents are knited.
+Remove non-essential files and folders from the root of the project. These files are typically created when .Rmd documents are knitted.
 }
 \author{
 Nicolas Mangin

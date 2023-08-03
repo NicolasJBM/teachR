@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_tags_ui.R
 \name{filter_tags_ui}
 \alias{filter_tags_ui}
-\title{Select documents from tags (UI)}
+\title{Select documents from tags}
 \usage{
 filter_tags_ui(id)
 }
@@ -13,7 +13,7 @@ filter_tags_ui(id)
 Tibble. List of selected documents.
 }
 \description{
-Module allowing the user to select documents by clicking on the different sections of a classification tags.
+Module allowing the user to select documents by clicking on their tags.
 }
 \author{
 Nicolas Mangin

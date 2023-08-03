@@ -16,10 +16,10 @@ course_test_server(id, course_data, course_paths, tree)
 \item{tree}{Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR}
 }
 \value{
-A list of course data.
+A list containing a test and a test folder path used in testR, gradR, and reportR.
 }
 \description{
-Module facilitating the loading of relevant test data.
+Module facilitating the selection of a test to edit, grade, and feedback.
 }
 \author{
 Nicolas Mangin

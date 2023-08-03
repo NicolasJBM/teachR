@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_tags_server.R
 \name{filter_tags_server}
 \alias{filter_tags_server}
-\title{Select documents from tags (server)}
+\title{Select documents from tags}
 \usage{
 filter_tags_server(id, course_data)
 }
@@ -15,7 +15,7 @@ filter_tags_server(id, course_data)
 Tibble. List of selected documents.
 }
 \description{
-Module allowing the user to select documents by clicking on the different sections of a classification tags.
+Module allowing the user to select documents by clicking on their tags.
 }
 \author{
 Nicolas Mangin

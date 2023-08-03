@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_statistics_server.R
 \name{filter_statistics_server}
 \alias{filter_statistics_server}
-\title{Select documents from statistics (server)}
+\title{Select documents from statistics}
 \usage{
 filter_statistics_server(id, course_data)
 }
@@ -15,7 +15,7 @@ filter_statistics_server(id, course_data)
 Tibble. List of selected documents.
 }
 \description{
-Module allowing the user to select documents by clicking on the different sections of a classification statistics.
+Module allowing the user to select documents based on their statistics.
 }
 \author{
 Nicolas Mangin

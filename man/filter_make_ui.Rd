@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_make_ui.R
 \name{filter_make_ui}
 \alias{filter_make_ui}
-\title{Create filters UI}
+\title{Make filters}
 \usage{
 filter_make_ui(ns, preselection, filter_variables, tags = NA)
 }

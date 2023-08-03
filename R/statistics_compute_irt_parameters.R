@@ -1,16 +1,20 @@
 #' @name statistics_compute_irt_parameters
 #' @title Compite IRT parameters
 #' @author Nicolas Mangin
-#' @description Compute difficulty, discrimination, and guess parameters
+#' @description Compute difficulty, discrimination, and guess parameters about documents and items.
 #' @param predictions Tibbles.
 #' @return Tibble.
 #' @importFrom dplyr arrange
+#' @importFrom dplyr bind_cols
 #' @importFrom dplyr filter
-#' @importFrom dplyr lag
+#' @importFrom dplyr group_by
 #' @importFrom dplyr mutate
-#' @importFrom dplyr mutate_all
-#' @importFrom dplyr sample_n
+#' @importFrom dplyr n
 #' @importFrom dplyr select
+#' @importFrom dplyr summarise
+#' @importFrom dplyr summarise_all
+#' @importFrom dplyr ungroup
+#' @importFrom tibble tibble
 #' @export
 
 
