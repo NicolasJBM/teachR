@@ -62,7 +62,7 @@ update_trees <- function(course_paths, selected_tree = NA){
     preptree2 <- documents |>
       dplyr::mutate(
         text = title,
-        position = base::length(base::nrow(documents))
+        position = base::seq_len(base::nrow(documents))
       ) |>
       dplyr::mutate(position = base::paste0("3.", position, ".0"))
     
