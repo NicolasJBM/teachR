@@ -201,7 +201,7 @@ update_data <- function(course_paths){
         }),
         results = purrr::map(test_folders, function(x, y){
           file <- base::paste0(x,"/8_results/results.csv")
-          if (base::file.exists((file))) readr::read_csv(file, col_types = "cnccnccccllnnnnn") |>
+          if (base::file.exists((file))) readr::read_csv(file, col_types = "cnccncccccllnnnnn") |>
             base::suppressWarnings()
         }),
         grades = purrr::map(test_folders, function(x, y){
@@ -277,6 +277,7 @@ update_data <- function(course_paths){
       number = base::as.numeric(NA),
       letter = base::as.character(NA),
       item = base::as.character(NA),
+      document = base::as.character(NA),
       language = base::as.character(NA),
       scale = base::as.character(NA),
       partial_credits = base::as.logical(NA),

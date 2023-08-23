@@ -164,9 +164,6 @@ update_statistics <- function(course_paths, minobs = 10){
   base::load(course_paths$databases$results)
   if (base::nrow(results) > 0){
     results <- results |>
-      dplyr::left_join(dplyr::select(
-        propositions, item, document
-      ), by = "item") |>
       dplyr::select(
         test, student, attempt, question, document, item, language,
         points, checked, weight, earned
