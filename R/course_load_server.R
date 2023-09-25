@@ -81,7 +81,9 @@ course_load_server <- function(id, course_paths){
           base::list.files(
             course_paths()$subfolders$functions,
             full.names = TRUE, recursive = TRUE
-          ), base::source
+          ), function(x){
+            if (stringr::str_detect(x, "\\.R$")) base::source(x)
+          }
         )
         
         databases <- base::list.files(course_paths()$subfolders$databases, full.names = FALSE)
