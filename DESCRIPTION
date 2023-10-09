@@ -30,8 +30,11 @@ Imports:
   psych,
   purrr,
   tidyr,
+  tools,
+  scholR,
   classR,
   editR
 Remotes:
+  NicolasJBM/scholR,
   NicolasJBM/classR,
   NicolasJBM/editR

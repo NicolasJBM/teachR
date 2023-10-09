@@ -16,6 +16,7 @@
 #' @importFrom shinybusy show_modal_spinner
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove
+#' @importFrom tools resaveRdaFiles
 #' @export
 
 
@@ -77,14 +78,28 @@ course_load_server <- function(id, course_paths){
           text = "Course loading..."
         )
         
+        dfRfolder <- base::paste0(course_paths()$subfolders$data, "/datfunpkg/R")
         base::lapply(
           base::list.files(
             course_paths()$subfolders$functions,
             full.names = TRUE, recursive = TRUE
           ), function(x){
-            if (stringr::str_detect(x, "\\.R$")) base::source(x)
+            if (stringr::str_detect(x, "\\.R$")) {
+              base::source(x)
+              base::file.copy(
+                from = x,
+                to = stringr::str_replace(
+                  x,
+                  course_paths()$subfolders$functions,
+                  dfRfolder
+                )
+              )
+            }
           }
         )
+        
+        dfdatafolder <- base::paste0(course_paths()$subfolders$data, "/datfunpkg/data")
+        if (!base::dir.exists(dfdatafolder)) base::dir.create(dfdatafolder)
         
         databases <- base::list.files(course_paths()$subfolders$databases, full.names = FALSE)
         databases <- databases[stringr::str_detect(databases, "csv$|xlsx$")]
@@ -99,6 +114,15 @@ course_load_server <- function(id, course_paths){
               dname <- stringr::str_remove(d, ".xlsx$")
             }
             base::assign(x = dname, value = dcontent, envir = .GlobalEnv)
+            scholR::document_data(
+              x = dcontent,
+              datname = dname,
+              path = dfRfolder
+            )
+            
+            base::save(list = dname, file=base::paste0(dfdatafolder, '/', dname, '.RData'))
+            tools::resaveRdaFiles(base::paste0(dfdatafolder, '/', dname, '.RData'))
+            
           }
           base::rm(databases, d, dcontent, dname)
         }
