@@ -92,7 +92,8 @@ course_load_server <- function(id, course_paths){
                   x,
                   course_paths()$subfolders$functions,
                   dfRfolder
-                )
+                ),
+                overwrite = TRUE
               )
             }
           }
