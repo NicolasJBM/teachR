@@ -22,9 +22,6 @@
     <loc>/reference/course_load_ui.html</loc>
   </url>
   <url>
-    <loc>/reference/course_set_paths.html</loc>
-  </url>
-  <url>
     <loc>/reference/course_test_server.html</loc>
   </url>
   <url>
@@ -35,12 +32,6 @@
   </url>
   <url>
     <loc>/reference/course_tree_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_update_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_update_ui.html</loc>
   </url>
   <url>
     <loc>/reference/filter_documents_count.html</loc>
@@ -89,6 +80,12 @@
   </url>
   <url>
     <loc>/reference/statistics_get_parameters.html</loc>
+  </url>
+  <url>
+    <loc>/reference/statistics_update_server.html</loc>
+  </url>
+  <url>
+    <loc>/reference/statistics_update_ui.html</loc>
   </url>
   <url>
     <loc>/reference/update_data.html</loc>
