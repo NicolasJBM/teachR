@@ -4,12 +4,10 @@
 \alias{update_trees}
 \title{Update course trees}
 \usage{
-update_trees(course_paths, selected_tree = NA)
+update_trees(course_paths)
 }
 \arguments{
 \item{course_paths}{Reactive. Function containing a list of paths to the different folders and databases on local disk.}
-
-\item{selected_tree}{Character. Name of the selected tree.}
 }
 \description{
 Function adding missing documents as unclassified, removing non-existing documents in all trees, and saving changes on disk.

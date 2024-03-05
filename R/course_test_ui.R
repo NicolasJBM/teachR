@@ -17,21 +17,14 @@
 course_test_ui <- function(id){
   ns <- shiny::NS(id)
   base::list(
-    shiny::fluidRow(
-      shiny::column(
-        8,
-        shiny::uiOutput(ns("slcttest"))
-      ),
-      shiny::column(
-        4,
-        shiny::actionButton(
-          ns("newtest"),
-          shiny::span("New test", title = ""),
-          icon = shiny::icon("wand-magic-sparkles"),
-          style = "background-color:#000066;color:#FFF; width:100%;margin-top:25px;"
-        )
-      )
-    )
+    shiny::actionButton(
+      ns("newtest"),
+      shiny::span("New test", title = ""),
+      icon = shiny::icon("wand-magic-sparkles"),
+      style = "background-color:#003366;color:#FFF;width:100%;margin-top:10px;margin-bottom:10px;border:0px;"
+    ),
+    shiny::uiOutput(ns("testpattern")),
+    shiny::uiOutput(ns("slcttest"))
   )
 }
 

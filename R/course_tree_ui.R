@@ -17,36 +17,14 @@
 course_tree_ui <- function(id){
   ns <- shiny::NS(id)
   base::list(
-    shiny::fluidRow(
-      shiny::column(
-        8,
-        shiny::uiOutput(ns("treepattern"))
-      ),
-      shiny::column(
-        4,
-        shiny::actionButton(
-          ns("updatetree"),
-          shiny::span("Update tree", title = ""),
-          icon = shiny::icon("arrows-rotate"),
-          style = "background-color:#006699;color:#FFF; width:100%;margin-top:25px;"
-        )
-      )
+    shiny::actionButton(
+      ns("newtree"),
+      shiny::span("New tree", title = ""),
+      icon = shiny::icon("wand-magic-sparkles"),
+      style = "background-color:#003366;color:#FFF;width:100%;margin-top:10px;margin-bottom:10px;border:0px;"
     ),
-    shiny::fluidRow(
-      shiny::column(
-        8,
-        shiny::uiOutput(ns("slcttree"))
-      ),
-      shiny::column(
-        4,
-        shiny::actionButton(
-          ns("newtree"),
-          shiny::span("New tree", title = ""),
-          icon = shiny::icon("wand-magic-sparkles"),
-          style = "background-color:#000066;color:#FFF; width:100%;margin-top:25px;"
-        )
-      )
-    )
+    shiny::uiOutput(ns("treepattern")),
+    shiny::uiOutput(ns("slcttree"))
   )
 }
 

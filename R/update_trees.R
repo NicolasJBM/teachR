@@ -3,25 +3,21 @@
 #' @author Nicolas Mangin
 #' @description Function adding missing documents as unclassified, removing non-existing documents in all trees, and saving changes on disk.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
-#' @param selected_tree Character. Name of the selected tree.
-#' @importFrom classR trees_tibble_to_json
-#' @importFrom dplyr bind_rows
+#' @importFrom classR tbltree_to_jstree
+#' @importFrom classR complete_position
+#' @importFrom dplyr arrange
 #' @importFrom dplyr case_when
-#' @importFrom dplyr everything
 #' @importFrom dplyr filter
 #' @importFrom dplyr left_join
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom purrr map_chr
-#' @importFrom stringr str_detect
-#' @importFrom stringr str_remove_all
 #' @importFrom tibble rowid_to_column
 #' @importFrom tibble tibble
-#' @importFrom tidyr replace_na
 #' @export
 
 
-update_trees <- function(course_paths, selected_tree = NA){
+update_trees <- function(course_paths){
 
   title <- NULL
   position <- NULL
@@ -29,6 +25,11 @@ update_trees <- function(course_paths, selected_tree = NA){
   text <- NULL
   documents <- NULL
   document_types <- NULL
+  active <- NULL
+  path <- NULL
+  tmp <- NULL
+  translations <- NULL
+  type <- NULL
   
   
   # Load necessary data
@@ -45,117 +46,61 @@ update_trees <- function(course_paths, selected_tree = NA){
       program_level = base::as.character(NA),
       group = base::as.character(NA),
       year = base::as.character(NA),
-      website = base::as.character(NA)
+      website = base::as.character(NA),
+      active = FALSE
     )
     base::save(courses, file = course_paths$databases$courses)
-  }
+  } else base::load(course_paths$databases$courses)
   
-  if (base::is.na(selected_tree) | selected_tree == ""){
-    
-    # Prepare the tree structure
-    preptree1 <- tibble::tibble(
-      position = c("1.0.0","2.0.0","3.0.0"),
-      text = c("Included","Excluded","Unclassified")
-    )
-    
-    # Prepare a tree tibble where all documents are unclassified
-    preptree2 <- documents |>
-      dplyr::mutate(
-        text = title,
-        position = base::seq_len(base::nrow(documents))
-      ) |>
-      dplyr::mutate(position = base::paste0("3.", position, ".0"))
-    
-    # Retrieve document types to get related icons and box colors
-    preptree3 <- dplyr::select(document_types, -description)
-    
-    # Make a tree tibble where all documents are unclassified
-    tree <- dplyr::bind_rows(preptree1, preptree2) |>
-      dplyr::left_join(preptree3, by = "type") |>
-      tidyr::replace_na(base::list(icon = "folder-open"))
-    
-    # Save the unclassified tree (typically to start classifications from scratch)
-    base::save(
-      tree,
-      file = base::paste0(course_paths$subfolders$trees, "/unclassified.RData")
-    )
-    
-    jstree <- tree |>
-      classR::trees_tibble_to_json()
-    
-    base::save(
-      jstree,
-      file = base::paste0(course_paths$subfolders$jstrees, "/unclassified.RData")
-    )
-  }
+  active_courses <- dplyr::filter(courses, active == TRUE)
   
-  # Identify the other trees in the course
-  if (base::is.na(selected_tree) | selected_tree == ""){
-    other_trees <- base::setdiff(
-      base::list.files(course_paths$subfolders$trees),
-      "unclassified.RData"
-    )
-  } else {
-    other_trees <- selected_tree
-  }
-
-  # For each tree, add missing documents as unclassified and
-  # remove non-existing documents.
-  for (classif in other_trees){
-
-    base::load(base::paste0(course_paths$subfolders$trees, "/", classif))
-
-    classified <- tree |>
-      dplyr::filter(
-        !stringr::str_detect(position, "^3.[1-9]"),
-        file %in% documents$file | base::is.na(file)
-      ) |>
-      dplyr::select(position, file, text) |>
-      dplyr::left_join(documents, by = "file") |>
-      dplyr::select(position, text, dplyr::everything())
-
-    levels <- base::nchar(
-      stringr::str_remove_all(classified$position[1], "\\.")
-    )
-
-    add <- documents |>
-      dplyr::filter(!(file %in% classified$file)) |>
-      tibble::rowid_to_column("position") |>
-      dplyr::mutate(position = purrr::map_chr(position, function(x, levels){
-        base::paste(c(3, x, base::rep(0,(levels-2))), collapse = ".")
-      }, levels)) |>
-      dplyr::mutate(text = "")
-
-    tree <- dplyr::bind_rows(classified, add) |>
-      dplyr::mutate(text = dplyr::case_when(
-        base::is.na(title) ~ text,
-        TRUE ~ title
-      )) |>
-      dplyr::left_join(document_types, by = "type") |>
+  tbltree <- documents |>
+    dplyr::select(file, title, type, translations) |>
+    dplyr::left_join(dplyr::select(document_types, type, icon), by = "type") |>
+    tibble::rowid_to_column("tmp") |>
+    dplyr::mutate(tmp = purrr::map_chr(tmp, classR::complete_position, 9)) |>
+    dplyr::mutate(
+      path = base::paste0("Unclassified/", file),
+      position = base::paste0("03-", tmp)
+    ) |>
+    dplyr::select(file, path, position, title, type, icon, translations)  |>
+    dplyr::arrange(position)
+  base::save(tbltree, file = base::paste0(course_paths$subfolders$tbltrees, "/unclassified.RData"))
+  
+  jstree <- classR::tbltree_to_jstree(tbltree)
+  
+  base::save(jstree, file = base::paste0(course_paths$subfolders$jstrees, "/unclassified.RData"))
+  
+  tbltree <- NA
+  jstree <- NA
+  
+  for (slcttree in active_courses$tree){
+    base::load(base::paste0(course_paths$subfolders$tbltrees, "/", slcttree))
+    
+    newtbltree <- documents |>
+      dplyr::select(file, title, type, translations) |>
+      dplyr::left_join(dplyr::select(document_types, type, icon), by = "type") |>
+      dplyr::left_join(dplyr::select(tbltree, file, path, position), by = "file") |>
+      tibble::rowid_to_column("tmp") |>
+      dplyr::mutate(tmp = purrr::map_chr(tmp, classR::complete_position, 9)) |>
       dplyr::mutate(
-        icon = dplyr::case_when(
-          base::is.na(icon) ~ "folder-open",
-          TRUE ~ icon
+        path = dplyr::case_when(
+          base::is.na(path) ~ base::paste0("Unclassified/", file),
+          TRUE ~ path
         ),
-        boxcolor = dplyr::case_when(
-          base::is.na(boxcolor) ~ "black",
-          TRUE ~ boxcolor
+        position = dplyr::case_when(
+          base::is.na(position) ~ paste0("03-", tmp),
+          TRUE ~ position
         )
       ) |>
-      dplyr::select(position, text, dplyr::everything())
+      dplyr::select(file, path, position, title, type, icon, translations)  |>
+      dplyr::arrange(position)
     
-    base::save(
-      tree,
-      file = base::paste0(course_paths$subfolders$trees, "/", classif)
-    )
+    tbltree <- newtbltree
+    base::save(tbltree, file = base::paste0(course_paths$subfolders$tbltrees, "/", slcttree))
     
-    jstree <- tree |>
-      classR::trees_tibble_to_json()
-    
-    base::save(
-      jstree,
-      file = base::paste0(course_paths$subfolders$jstrees, "/", classif)
-    )
+    jstree <- classR::tbltree_to_jstree(tbltree)
+    base::save(jstree, file = base::paste0(course_paths$subfolders$jstrees, "/", slcttree))
   }
   
 }

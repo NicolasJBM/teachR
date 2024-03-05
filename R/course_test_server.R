@@ -37,15 +37,28 @@ course_test_server <- function(id, course_data, course_paths, tree){
     
     test <- NULL
     
+    output$testpattern <- shiny::renderUI({
+      shiny::req(!base::is.na(course_data()$courses))
+      shinyWidgets::searchInput(
+        inputId = ns("deftestpattern"),
+        label = "Preselect based on pattern:", 
+        btnSearch = shiny::icon("search"), 
+        btnReset = shiny::icon("remove"),
+        width = "100%"
+      )
+    })
+    
     output$slcttest <- shiny::renderUI({
       shiny::req(!base::is.na(course_paths()))
       shiny::req(!base::is.na(course_data()))
+      shiny::req(!base::is.null(input$deftestpattern))
       shiny::req(base::length(tree()) > 1)
       shiny::req(base::length(tree()$course) > 1)
       tests_selection <- base::list.dirs(
         course_paths()$subfolders$tests, full.names = FALSE, recursive = FALSE
       )
       tests_selection <- tests_selection[!stringr::str_detect(tests_selection, "^archives$|^default$")]
+      if (input$deftestpattern != "") tests_selection <- tests_selection[stringr::str_detect(tests_selection, input$deftestpattern)]
       course <- stringr::str_remove(tree()$course$tree[1], ".RData")
       course_tests <- stringr::str_detect(tests_selection, base::paste0("^", course))
       tests_selection <- tests_selection[course_tests]

@@ -45,7 +45,7 @@ course_tree_server <- function(id, course_data, course_paths){
       shiny::req(!base::is.na(course_data()$courses))
       shinyWidgets::searchInput(
           inputId = ns("deftreepattern"),
-          label = "Preselect trees based on a pattern:", 
+          label = "Preselect based on pattern:", 
           btnSearch = shiny::icon("search"), 
           btnReset = shiny::icon("remove"),
           width = "100%"
@@ -71,14 +71,12 @@ course_tree_server <- function(id, course_data, course_paths){
     
     selected_tree <- shiny::reactive({
       shiny::req(!base::is.null(input$selecttree))
-      shiny::req(input$selecttree %in% base::list.files(course_paths()$subfolders$trees))
-      if (input$selecttree %in% base::names(course_data()$trees)){
+      shiny::req(input$selecttree %in% base::list.files(course_paths()$subfolders$tbltrees))
+      if (input$selecttree %in% base::names(course_data()$tbltrees)){
         course <- dplyr::filter(course_data()$courses, tree == input$selecttree)
-        tbltree <- course_data()$trees[[input$selecttree]]
+        tbltree <- course_data()$tbltrees[[input$selecttree]]
         jstree <- course_data()$jstrees[[input$selecttree]]
-        textbook <- classR::trees_structure_textbook(
-          tbltree, course$tree[1], course$website[1]
-        )
+        textbook <- classR::trees_structure_textbook(tbltree, course$tree[1], course$website[1])
         base::list(
           course = course,
           tbltree = tbltree,
@@ -102,20 +100,6 @@ course_tree_server <- function(id, course_data, course_paths){
     
     shiny::observe({ selected_tree() })
     
-    shiny::observeEvent(input$updatetree, {
-      shinybusy::show_modal_spinner(
-        spin = "orbit",
-        text = "Please wait while the application update the selected tree. This can take some time..."
-      )
-      teachR::update_trees(course_paths(), input$selecttree)
-      shinybusy::remove_modal_spinner()
-      shinyalert::shinyalert(
-        title = "Tree updated!",
-        text = "The selected tree has been updated. Reload the course to see the changes.",
-        type = "success"
-      )
-    })
-    
     shiny::observeEvent(input$newtree, {
       if (base::length(course_data()$courses) == 1){
         shinyalert::shinyalert(
@@ -136,7 +120,7 @@ course_tree_server <- function(id, course_data, course_paths){
             ),
             shiny::selectizeInput(
               ns("newtreebasis"), "Base new tree on:",
-              choices = base::unique(courses$tree),
+              choices = base::unique(courses$tbltree),
               selected = "unclassified.RData",
               width = "100%", options = base::list(create = FALSE)
             ),
@@ -203,13 +187,14 @@ course_tree_server <- function(id, course_data, course_paths){
         program_level = base::as.character(input$newtreeprogramlevel),
         group = base::as.character(input$newtreegroup),
         year =  base::as.character(input$newtreeyear),
-        website = base::as.character(input$newtreewebsite)
+        website = base::as.character(input$newtreewebsite),
+        active = TRUE
       )
       courses <- dplyr::bind_rows(new, course_data()$courses)
       base::save(courses, file = course_paths()$databases$courses)
       base::file.copy(
-        from = base::paste0(course_paths()$subfolders$trees, "/", input$newtreebasis),
-        to = base::paste0(course_paths()$subfolders$trees, "/", input$newtreename)
+        from = base::paste0(course_paths()$subfolders$tbltrees, "/", input$newtreebasis),
+        to = base::paste0(course_paths()$subfolders$tbltrees, "/", input$newtreename)
       )
       base::file.copy(
         from = base::paste0(course_paths()$subfolders$jstrees, "/", input$newtreebasis),

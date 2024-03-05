@@ -78,7 +78,7 @@ filter_tree_server <- function(
         
         selection1 <- tree()$textbook |>
           dplyr::filter(file %in% selection$file) |>
-          dplyr::arrange(folder) |>
+          dplyr::arrange(order) |>
           dplyr::select(file) |>
           dplyr::left_join(selection, by = "file")
         

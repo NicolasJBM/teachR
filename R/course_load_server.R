@@ -7,15 +7,18 @@
 #' @return A list of course data.
 #' @importFrom readr read_csv
 #' @importFrom readxl read_excel
+#' @importFrom scholR document_data
 #' @importFrom shiny NS
 #' @importFrom shiny moduleServer
 #' @importFrom shiny observeEvent
 #' @importFrom shiny reactiveValues
 #' @importFrom shinyalert shinyalert
 #' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_spinner
+#' @importFrom shinybusy show_modal_progress_line
+#' @importFrom shinybusy update_modal_progress
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove
+#' @importFrom stringr str_replace
 #' @importFrom tools resaveRdaFiles
 #' @export
 
@@ -36,10 +39,12 @@ course_load_server <- function(id, course_paths){
     tags <- NULL
     tests <- NULL
     video_views <- NULL
-    tree <- NULL
+    tbltree <- NULL
     jstree <- NULL
     langiso <- NULL
     courses <- NULL
+    propositions <- NULL
+    translations <- NULL
     
     course_data <- shiny::reactiveValues()
       
@@ -48,7 +53,7 @@ course_load_server <- function(id, course_paths){
     course_data$tags <- NA
     course_data$languages <- NA
     course_data$courses <- NA
-    course_data$trees <- NA
+    course_data$tbltrees <- NA
     course_data$jstrees <- NA
     course_data$tests <- NA
     course_data$students <- NA
@@ -73,12 +78,24 @@ course_load_server <- function(id, course_paths){
         
       } else {
         
-        shinybusy::show_modal_spinner(
-          spin = "orbit",
-          text = "Course loading..."
-        )
+        shinybusy::show_modal_progress_line(value = 0/4, text = "Updating documents")
         
-        dfRfolder <- base::paste0(course_paths()$subfolders$data, "/datfunpkg/R")
+        teachR::update_documents(course_paths())
+        
+        shinybusy::update_modal_progress(value = 1/4, text = "Updating tags")
+        
+        teachR::update_tags(course_paths())
+        
+        shinybusy::update_modal_progress(value = 2/4, text = "Updating trees")
+        
+        teachR::update_trees(course_paths())
+        
+        shinybusy::update_modal_progress(value = 3/4, text = "Loading course")
+        
+        dfRfolder <- base::paste0(course_paths()$subfolders$package, "/R")
+        if (!base::dir.exists(dfRfolder)) base::dir.create(dfRfolder)
+        base::unlink(base::list.files(dfRfolder, full.names = TRUE))
+        
         base::lapply(
           base::list.files(
             course_paths()$subfolders$functions,
@@ -99,11 +116,31 @@ course_load_server <- function(id, course_paths){
           }
         )
         
-        dfdatafolder <- base::paste0(course_paths()$subfolders$data, "/datfunpkg/data")
+        dfdatafolder <- base::paste0(course_paths()$subfolders$package, "/data")
         if (!base::dir.exists(dfdatafolder)) base::dir.create(dfdatafolder)
+        base::unlink(base::list.files(dfdatafolder, full.names = TRUE))
         
         databases <- base::list.files(course_paths()$subfolders$databases, full.names = FALSE)
         databases <- databases[stringr::str_detect(databases, "csv$|xlsx$")]
+        
+        base::load(course_paths()$databases$propositions)
+        scholR::document_data(
+          x = propositions,
+          datname = "propositions",
+          path = dfRfolder
+        )
+        base::save(propositions, file=base::paste0(dfdatafolder, '/propositions.RData'))
+        tools::resaveRdaFiles(base::paste0(dfdatafolder, '/propositions.RData'))
+        
+        base::load(course_paths()$databases$translations)
+        scholR::document_data(
+          x = translations,
+          datname = "translations",
+          path = dfRfolder
+        )
+        base::save(translations, file=base::paste0(dfdatafolder, '/translations.RData'))
+        tools::resaveRdaFiles(base::paste0(dfdatafolder, '/translations.RData'))
+        
         if (base::length(databases) > 0){
           for (d in databases){
             path <- base::paste0(course_paths()$subfolders$databases, "/", d)
@@ -155,14 +192,14 @@ course_load_server <- function(id, course_paths){
           course_data$courses <- courses
         } else course_data$courses <- NA
         
-        if (base::dir.exists(course_paths()$subfolders$trees)){
-          tbltrees <- base::list.files(course_paths()$subfolders$trees)
-          course_data$trees <- base::list()
+        if (base::dir.exists(course_paths()$subfolders$tbltrees)){
+          tbltrees <- base::list.files(course_paths()$subfolders$tbltrees)
+          course_data$tbltrees <- base::list()
           for (tbl in tbltrees) {
-            base::load(base::paste0(course_paths()$subfolders$trees, "/", tbl))
-            course_data$trees[[tbl]] <- tree
+            base::load(base::paste0(course_paths()$subfolders$tbltrees, "/", tbl))
+            course_data$tbltrees[[tbl]] <- tbltree
           }
-        } else course_data$trees <- NA
+        } else course_data$tbltrees <- NA
         
         if (base::dir.exists(course_paths()$subfolders$jstrees)){
           jstrees <- base::list.files(course_paths()$subfolders$jstrees)
@@ -218,7 +255,7 @@ course_load_server <- function(id, course_paths){
           course_data$item_models <- item_models
         } else course_data$item_models <- NA
         
-        
+        shinybusy::update_modal_progress(value = 4/4, text = "Course loaded")
         shinybusy::remove_modal_spinner()
         
         shinyalert::shinyalert(
