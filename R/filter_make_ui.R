@@ -53,7 +53,6 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
           "Computation", "Essay", "Problem"
         )) |>
         base::sort() |> base::as.character()
-      print(varvalues)
     } else if (!base::is.na(tagvalues[1])){
       varvalues <- base::intersect(tagvalues, varvalues)
     } else varvalues <- base::sort(varvalues)
