@@ -40,6 +40,7 @@ filter_prepare_variables <- function(preselection, filter_family, tags){
     
     filters <- dplyr::select(tags, variable_name = tag, filter_type = filter) |>
       dplyr::group_by(variable_name) |>
+      stats::na.omit() |>
       dplyr::sample_n(1) |>
       dplyr::ungroup()
     

@@ -43,7 +43,18 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
       base::lapply(stringr::str_split, pattern = " ", simplify = TRUE) |>
       base::unlist() |>
       base::unique()
-    if (!base::is.na(tagvalues[1])){
+    
+    if (variable == "type"){
+      varvalues <- varvalues |>
+        base::factor(levels = c(
+          "Note", "Slide", "Video", "Page",
+          "Tutorial", "Game", "Case",
+          "Free", "Statements", "Alternatives",
+          "Computation", "Essay", "Problem"
+        )) |>
+        base::sort() |> base::as.character()
+      print(varvalues)
+    } else if (!base::is.na(tagvalues[1])){
       varvalues <- base::intersect(tagvalues, varvalues)
     } else varvalues <- base::sort(varvalues)
     varvalues <- varvalues[varvalues != ""]
@@ -85,7 +96,7 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
       
     } else if (vartype == "multiple") {
       
-      if (base::length(varvalues) > 10){
+      if (base::length(varvalues) > 15){
         filters[[i]] <- shiny::selectInput(
           inputid,
           variable,

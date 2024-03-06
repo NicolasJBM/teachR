@@ -17,20 +17,26 @@ filter_documents_count <- function(selection){
   notenbr <- selection |>
     dplyr::filter(type == "Note") |>
     base::nrow()
-  pagenbr <- selection |>
-    dplyr::filter(type == "Page") |>
-    base::nrow()
   slidenbr <- selection |>
     dplyr::filter(type == "Slide") |>
     base::nrow()
   videonbr <- selection |>
     dplyr::filter(type == "Video") |>
     base::nrow()
+  pagenbr <- selection |>
+    dplyr::filter(type == "Page") |>
+    base::nrow()
+  tutorialnbr <- selection |>
+    dplyr::filter(type == "Tutorial") |>
+    base::nrow()
   gamenbr <- selection |>
     dplyr::filter(type == "Game") |>
     base::nrow()
   casenbr <- selection |>
     dplyr::filter(type == "Case") |>
+    base::nrow()
+  freenbr <- selection |>
+    dplyr::filter(type == "Free") |>
     base::nrow()
   statementnbr <- selection |>
     dplyr::filter(type == "Statements") |>
@@ -50,16 +56,18 @@ filter_documents_count <- function(selection){
   base::paste0(
     docnbr,
     " selected documents: ",
-    notenbr, " notes, ",
-    pagenbr, " pages, ",
-    slidenbr, " slides, ",
-    videonbr, " videos, ",
-    gamenbr, " games, ",
-    casenbr, " notes, ",
-    statementnbr, " statements questions, ",
-    alternativenbr, " alternatives questions, ",
-    computationnbr, " computation questions, ",
-    essaynbr, " essay questions, and ",
-    problemnbr, " problem questions, "
+    notenbr, " note(s), ",
+    slidenbr, " slide(s), ",
+    videonbr, " video(s), ",
+    pagenbr, " page(s), ",
+    tutorialnbr, " tutorial(s), ",
+    gamenbr, " game(s), ",
+    casenbr, " note(s), ",
+    freenbr, " free question(s), ",
+    statementnbr, " statements question(s), ",
+    alternativenbr, " alternatives question(s), ",
+    computationnbr, " computation question(s), ",
+    essaynbr, " essay question(s), and ",
+    problemnbr, " problem question(s), "
   )
 }
