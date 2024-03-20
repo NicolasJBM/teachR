@@ -120,7 +120,7 @@ course_tree_server <- function(id, course_data, course_paths){
             ),
             shiny::selectizeInput(
               ns("newtreebasis"), "Base new tree on:",
-              choices = base::unique(courses$tbltree),
+              choices = base::unique(courses$tree),
               selected = "unclassified.RData",
               width = "100%", options = base::list(create = FALSE)
             ),
