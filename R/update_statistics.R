@@ -14,7 +14,6 @@
 #' @importFrom dplyr mutate_if
 #' @importFrom dplyr n
 #' @importFrom dplyr rename
-#' @importFrom dplyr sample_n
 #' @importFrom dplyr select
 #' @importFrom dplyr summarise
 #' @importFrom dplyr ungroup
@@ -137,10 +136,7 @@ update_statistics <- function(course_paths, minobs = 10){
       dplyr::rename(file = file_alt) |>
       dplyr::select(file, dplyr::everything())
     video_views <- dplyr::bind_rows(views, views2) |>
-      stats::na.omit() |>
-      dplyr::group_by(file) |>
-      dplyr::sample_n(1) |>
-      dplyr::ungroup()
+      stats::na.omit()
     base::rm(video2doc, views2)
   } else {
     video_views <- tibble::tibble(
