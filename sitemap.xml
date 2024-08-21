@@ -1,105 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_clean_root.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_load_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_load_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_test_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_test_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_tree_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/course_tree_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_documents_count.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_languages_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_languages_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_make_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_prepare_variables.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_statistics_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_statistics_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_tags_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_tags_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_tibble.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_tree_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter_tree_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/statistics_assign_colors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/statistics_compute_irt_parameters.html</loc>
-  </url>
-  <url>
-    <loc>/reference/statistics_get_parameters.html</loc>
-  </url>
-  <url>
-    <loc>/reference/statistics_update_server.html</loc>
-  </url>
-  <url>
-    <loc>/reference/statistics_update_ui.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_data.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_documents.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_statistics.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_tags.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_trees.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/course_clean_root.html</loc></url>
+<url><loc>/reference/course_load_server.html</loc></url>
+<url><loc>/reference/course_load_ui.html</loc></url>
+<url><loc>/reference/course_test_server.html</loc></url>
+<url><loc>/reference/course_test_ui.html</loc></url>
+<url><loc>/reference/course_tree_server.html</loc></url>
+<url><loc>/reference/course_tree_ui.html</loc></url>
+<url><loc>/reference/filter_documents_count.html</loc></url>
+<url><loc>/reference/filter_languages_server.html</loc></url>
+<url><loc>/reference/filter_languages_ui.html</loc></url>
+<url><loc>/reference/filter_make_ui.html</loc></url>
+<url><loc>/reference/filter_prepare_variables.html</loc></url>
+<url><loc>/reference/filter_statistics_server.html</loc></url>
+<url><loc>/reference/filter_statistics_ui.html</loc></url>
+<url><loc>/reference/filter_tags_server.html</loc></url>
+<url><loc>/reference/filter_tags_ui.html</loc></url>
+<url><loc>/reference/filter_tibble.html</loc></url>
+<url><loc>/reference/filter_tree_server.html</loc></url>
+<url><loc>/reference/filter_tree_ui.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/statistics_assign_colors.html</loc></url>
+<url><loc>/reference/statistics_compute_irt_parameters.html</loc></url>
+<url><loc>/reference/statistics_get_parameters.html</loc></url>
+<url><loc>/reference/statistics_update_server.html</loc></url>
+<url><loc>/reference/statistics_update_ui.html</loc></url>
+<url><loc>/reference/update_data.html</loc></url>
+<url><loc>/reference/update_documents.html</loc></url>
+<url><loc>/reference/update_statistics.html</loc></url>
+<url><loc>/reference/update_tags.html</loc></url>
+<url><loc>/reference/update_trees.html</loc></url>
 </urlset>
+
