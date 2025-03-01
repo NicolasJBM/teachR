@@ -138,6 +138,7 @@ course_test_server <- function(id, course_data, course_paths, tree){
           course_paths()$subfolders$tests, "/", input$new_test_name
         )
         fs::dir_copy(test_template, new_test_folder)
+        base::Sys.sleep(2)
         path_param <- base::paste0(new_test_folder, "/test_parameters.RData")
         base::load(path_param)
         test_parameters <- test_parameters[1,] |>
@@ -164,6 +165,7 @@ course_test_server <- function(id, course_data, course_paths, tree){
             version = base::as.character(NA),
             seed = base::as.integer(NA)
           )
+        
         base::save(test_parameters, file = path_param)
         shinyalert::shinyalert(
           "Test created",
