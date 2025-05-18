@@ -3,7 +3,7 @@
 #' @author Nicolas Mangin
 #' @description Module allowing the user to select documents by clicking on the different sections of a classification tree.
 #' @param id ID of the module to connect the user interface to the appropriate server side.
-#' @param tree Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR
+#' @param intake Reactive. Function containing all information about the selected intake.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @return Tibble. List of selected documents.
 #' @importFrom classR trees_selected_json_to_tibble
@@ -22,9 +22,7 @@
 #' @importFrom shiny req
 #' @export
 
-filter_tree_server <- function(
-  id, tree, course_data
-){
+filter_tree_server <- function(id, intake, course_data){
   ns <- shiny::NS(id)
   shiny::moduleServer(id, function(input, output, session) {
 
@@ -35,10 +33,10 @@ filter_tree_server <- function(
     folder <- NULL
     
     output$selection_tree <- jsTreeR::renderJstree({
-      shiny::req(!base::is.na(tree()))
+      shiny::req(!base::is.na(intake()$jstree))
       jsTreeR::jstreeDestroy(session, ns("selection_tree"))
       jsTreeR::jstree(
-        nodes = tree()$jstree,
+        nodes = intake()$jstree,
         selectLeavesOnly = FALSE,
         checkboxes = TRUE,
         search = FALSE,
@@ -58,7 +56,7 @@ filter_tree_server <- function(
     })
     
     selected_from_tree <- shiny::reactive({
-      shiny::req(!base::is.na(tree()))
+      shiny::req(!base::is.na(intake()$jstree))
       shiny::req(!base::is.na(course_data()$documents))
       if (base::length(input$selection_tree_selected)>0){
         selection <- input$selection_tree_selected
@@ -74,15 +72,15 @@ filter_tree_server <- function(
           dplyr::select(file) 
       }
       
-      if (base::length(tree()$tbltree) > 1){
+      if (base::length(intake()$tbltree) > 1){
         
-        selection1 <- tree()$textbook |>
+        selection1 <- intake()$textbook |>
           dplyr::filter(file %in% selection$file) |>
           dplyr::arrange(order) |>
           dplyr::select(file) |>
           dplyr::left_join(selection, by = "file")
         
-        selection2 <- tree()$tbltree |>
+        selection2 <- intake()$tbltree |>
           dplyr::anti_join(selection1, by = "file") |>
           dplyr::filter(file %in% selection$file) |>
           dplyr::arrange(position) |>

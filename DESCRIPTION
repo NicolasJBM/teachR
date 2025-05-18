@@ -23,17 +23,17 @@ Imports:
   shinyalert,
   shinybusy,
   dplyr,
-  fs,
   shinyWidgets,
+  shinydashboardPlus,
   tibble,
   jsTreeR,
-  psych,
   purrr,
   tidyr,
   tools,
   scholR,
   classR,
-  editR
+  editR,
+  rhandsontable
 Remotes:
   NicolasJBM/scholR,
   NicolasJBM/classR,

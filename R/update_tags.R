@@ -12,6 +12,8 @@
 #' @importFrom dplyr select
 #' @importFrom dplyr starts_with
 #' @importFrom dplyr summarise
+#' @importFrom tidyr unnest
+#' @importFrom purrr map
 #' @importFrom tibble tibble
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr replace_na
@@ -48,6 +50,10 @@ update_tags <- function(course_paths){
       cols = base::names(usedtags), names_to = "tag", values_to = "value"
     ) |>
     tidyr::replace_na(base::list(value = "")) |>
+    dplyr::mutate(value = purrr::map(value, function(x){
+      tibble::tibble(value = base::as.character(stringr::str_split(x, pattern = " ", simplify = TRUE)))
+    })) |>
+    tidyr::unnest(value) |>
     dplyr::mutate(count = 1) |>
     dplyr::group_by(tag,value) |>
     dplyr::summarise(count = base::sum(count), .groups = "drop") |>

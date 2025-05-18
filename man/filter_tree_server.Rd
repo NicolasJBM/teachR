@@ -4,12 +4,12 @@
 \alias{filter_tree_server}
 \title{Select documents from tree}
 \usage{
-filter_tree_server(id, tree, course_data)
+filter_tree_server(id, intake, course_data)
 }
 \arguments{
 \item{id}{ID of the module to connect the user interface to the appropriate server side.}
 
-\item{tree}{Reactive. Function containing a list of documents as a classification tree compatible with jsTreeR}
+\item{intake}{Reactive. Function containing all information about the selected intake.}
 
 \item{course_data}{Reactive. Function containing all the course data loaded with the course.}
 }
