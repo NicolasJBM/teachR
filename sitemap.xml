@@ -4,12 +4,10 @@
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/reference/course_clean_root.html</loc></url>
+<url><loc>/reference/course_intake_ui.html</loc></url>
 <url><loc>/reference/course_load_server.html</loc></url>
 <url><loc>/reference/course_load_ui.html</loc></url>
-<url><loc>/reference/course_test_server.html</loc></url>
-<url><loc>/reference/course_test_ui.html</loc></url>
 <url><loc>/reference/course_tree_server.html</loc></url>
-<url><loc>/reference/course_tree_ui.html</loc></url>
 <url><loc>/reference/filter_documents_count.html</loc></url>
 <url><loc>/reference/filter_languages_server.html</loc></url>
 <url><loc>/reference/filter_languages_ui.html</loc></url>
@@ -23,15 +21,17 @@
 <url><loc>/reference/filter_tree_server.html</loc></url>
 <url><loc>/reference/filter_tree_ui.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
-<url><loc>/reference/statistics_assign_colors.html</loc></url>
-<url><loc>/reference/statistics_compute_irt_parameters.html</loc></url>
-<url><loc>/reference/statistics_get_parameters.html</loc></url>
-<url><loc>/reference/statistics_update_server.html</loc></url>
-<url><loc>/reference/statistics_update_ui.html</loc></url>
+<url><loc>/reference/set_course_paths.html</loc></url>
+<url><loc>/reference/update_comments.html</loc></url>
 <url><loc>/reference/update_data.html</loc></url>
 <url><loc>/reference/update_documents.html</loc></url>
-<url><loc>/reference/update_statistics.html</loc></url>
+<url><loc>/reference/update_logs.html</loc></url>
+<url><loc>/reference/update_paths.html</loc></url>
+<url><loc>/reference/update_ratings.html</loc></url>
+<url><loc>/reference/update_students.html</loc></url>
 <url><loc>/reference/update_tags.html</loc></url>
+<url><loc>/reference/update_tests.html</loc></url>
 <url><loc>/reference/update_trees.html</loc></url>
+<url><loc>/reference/update_views.html</loc></url>
 </urlset>
 
