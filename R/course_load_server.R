@@ -260,7 +260,7 @@ course_load_server <- function(id, course_paths){
         
         shinybusy::update_modal_progress(value = 2/14, text = "Updating trees")
         
-        #teachR::update_trees(course_paths())
+        teachR::update_trees(course_paths())
         
         shinybusy::update_modal_progress(value = 3/14, text = "Updating paths")
         

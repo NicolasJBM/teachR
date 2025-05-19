@@ -36,24 +36,6 @@ update_trees <- function(course_paths){
   base::load(course_paths$databases$documents)
   base::load(course_paths$databases$doctypes)
   
-  if (!base::file.exists(course_paths$databases$courses)){
-    courses <- tibble::tibble(
-      tree = "unclassified.RData",
-      course = base::as.character(NA),
-      authors = base::as.character(NA),
-      institution = base::as.character(NA),
-      program = base::as.character(NA),
-      program_level = base::as.character(NA),
-      group = base::as.character(NA),
-      year = base::as.character(NA),
-      website = base::as.character(NA),
-      active = FALSE
-    )
-    base::save(courses, file = course_paths$databases$courses)
-  } else base::load(course_paths$databases$courses)
-  
-  active_courses <- dplyr::filter(courses, active == TRUE)
-  
   tbltree <- documents |>
     dplyr::select(file, title, type, translations) |>
     dplyr::left_join(dplyr::select(document_types, type, icon), by = "type") |>
@@ -74,7 +56,12 @@ update_trees <- function(course_paths){
   tbltree <- NA
   jstree <- NA
   
-  for (slcttree in active_courses$tree){
+  
+  alltrees <- base::list.files(course_paths$subfolders$jstrees)
+  
+  
+  for (slcttree in alltrees){
+    print(slcttree)
     base::load(base::paste0(course_paths$subfolders$tbltrees, "/", slcttree))
     
     newtbltree <- documents |>
