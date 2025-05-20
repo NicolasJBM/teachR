@@ -141,7 +141,7 @@ course_intake_server <- function(id, course_data, course_paths){
             style = "background-color:#001F3F;color:#FFF;margin-top:300px;",
             shiny::textInput(
               ns("newintakename"), "Save intake as:",
-              value = "new_intake.RData", width = "100%"
+              value = "new_intake", width = "100%"
             ),
             shiny::textInput(
               ns("newintaketeachers"), "Authors:",
@@ -194,33 +194,50 @@ course_intake_server <- function(id, course_data, course_paths){
     })
     
     shiny::observeEvent(input$makenewintake, {
-      shiny::removeModal()
-      new <- tibble::tibble(
-        intake = base::as.character(input$newintakename),
-        teachers = base::as.character(input$newintakeauthors),
-        institution = base::as.character(input$newintakeinstitution),
-        program = base::as.character(input$newintakeprogram),
-        program_level = base::as.character(input$newintakeprogramlevel),
-        year =  base::as.character(input$newintakeyear),
-        path =  base::as.character(input$newintakepath),
-        tree =  base::as.character(input$newintaketree),
-        website = base::as.character(input$newintakewebsite)
-      )
-      intakes <- dplyr::bind_rows(new, course_data()$intakes)
-      base::save(intakes, file = course_paths()$databases$intakes)
       
-      studentlist <- base::paste0(course_paths()$subfolders$students, "/init.csv")
-      file <- base::paste0(
-        course_paths()$subfolders$students,
-        "/", input$newintakename, ".csv"
-      )
-      utils::write.csv(studentlist, file = file, row.names = FALSE)
-      
-      shinyalert::shinyalert(
-        "Intake created!",
-        "The new intake has been created. Reload the course to enact changes.",
-        type = "success", closeOnEsc = FALSE, closeOnClickOutside = TRUE
-      )
+      if (input$newintakename %in% course_data()$intakes$intake){
+        
+        shinyalert::shinyalert(
+          "Intake already existing!",
+          "This name has already been attributed to an existing intake. Please rename.",
+          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
+        
+      } else {
+        
+        shiny::removeModal()
+        
+        addintake <- tibble::tibble(
+          intake = input$newintakename,
+          teachers = input$newintaketeachers,
+          institution = input$newintakeinstitution,
+          program = input$newintakeprogram,
+          program_level = input$newintakeprogramlevel,
+          year =  input$newintakeyear,
+          path =  input$newintakepath,
+          tree =  input$newintaketree,
+          website = input$newintakewebsite
+        ) |>
+          dplyr::mutate(year = base::as.character(year))
+        intakes <- dplyr::bind_rows(addintake, course_data()$intakes)
+        base::save(intakes, file = course_paths()$databases$intakes)
+        
+        studentlist <- utils::read.csv(
+          base::paste0(course_paths()$subfolders$students, "/init.csv")
+        )
+        file <- base::paste0(
+          course_paths()$subfolders$students,
+          "/", input$newintakename, ".csv"
+        )
+        utils::write.csv(studentlist, file = file, row.names = FALSE)
+        
+        shinyalert::shinyalert(
+          "Intake created!",
+          "The new intake has been created. Reload the course to enact changes.",
+          type = "success", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
+        
+      }
     })
     
     
@@ -233,9 +250,6 @@ course_intake_server <- function(id, course_data, course_paths){
       
       base::list(
         shiny::h4(selected_intake()$intake$intake[1]),
-        shiny::textInput(
-          ns("intake"), "Intake:", value = selected_intake()$intake$intake[1], width = "100%"
-        ),
         shiny::textInput(
           ns("teachers"), "Teachers:",
           value = selected_intake()$intake$teachers[1], width = "100%"
@@ -278,7 +292,7 @@ course_intake_server <- function(id, course_data, course_paths){
       other_intakes <- course_data()$intakes |>
         dplyr::filter(intake != input$selectintake)
       edtided <- tibble::tibble(
-        intake = base::as.character(input$intake),
+        intake = base::as.character(input$selectintake),
         teachers = base::as.character(input$teachers),
         institution = base::as.character(input$institution),
         program = base::as.character(input$program),
