@@ -149,19 +149,19 @@ course_intake_server <- function(id, course_data, course_paths){
             ),
             shiny::selectizeInput(
               ns("newintakeinstitution"), "Institution:",
-              choices = base::unique(courses$institution),
+              choices = base::unique(intakes$institution),
               selected = last_intake$institution[1],
               width = "100%", options = base::list(create = TRUE)
             ),
             shiny::selectizeInput(
               ns("newintakeprogram"), "Program:",
-              choices = base::unique(courses$program),
+              choices = base::unique(intakes$program),
               selected = last_intake$program[1],
               width = "100%", options = base::list(create = TRUE)
             ),
             shiny::selectizeInput(
               ns("newintakeprogramlevel"), "Program level:",
-              choices = base::unique(courses$program_level),
+              choices = base::unique(intakes$program_level),
               selected = last_intake$program_level[1],
               width = "100%", options = base::list(create = TRUE)
             ),
