@@ -67,7 +67,8 @@ course_intake_server <- function(id, course_data, course_paths){
       shiny::req(!base::is.null(input$defintakepattern))
       preslctintakes <- stats::na.omit(course_data()$intakes$intake)
       if (base::nchar(input$defintakepattern) > 0) {
-        preslctintakes <- preslctintakes[stringr::str_detect(preslctintakes, input$defintakepattern)]
+        preslctintakes <- preslctintakes[stringr::str_detect(preslctintakes, input$defintakepattern)] |>
+          base::sort()
       }
       shinyWidgets::pickerInput(
         inputId = ns("selectintake"),

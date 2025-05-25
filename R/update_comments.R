@@ -26,11 +26,11 @@ update_comments <- function(course_paths){
   ) |>
     dplyr::mutate(
       intake = purrr::map_chr(intake, stringr::str_remove_all, pattern = "\\.csv"),
-      allcomments = purrr::map(paths, readr::read_csv)
+      allcomments = purrr::map(paths, readr::read_csv, col_types = "Tcc")
     ) |>
     dplyr::select(-paths) |>
     tidyr::unnest(allcomments) |>
-    dplyr::filter(timestamp != "x")
+    dplyr::filter(timestamp != "2025-01-01 00:00:00")
   
   base::save(comments, file = base::paste0(course_paths$subfolders$comments, "/comments.RData"))
 }

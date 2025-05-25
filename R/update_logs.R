@@ -25,7 +25,7 @@ update_logs <- function(course_paths){
   ) |>
     dplyr::mutate(
       intake = purrr::map_chr(intake, stringr::str_remove_all, pattern = "\\.csv"),
-      alllogs = purrr::map(paths, readr::read_csv)
+      alllogs = purrr::map(paths, readr::read_csv, col_types = "iTcccc")
     ) |>
     dplyr::select(-paths) |>
     tidyr::unnest(alllogs) |>

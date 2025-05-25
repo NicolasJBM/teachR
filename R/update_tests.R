@@ -14,7 +14,6 @@
 
 
 
-
 update_tests <- function(course_paths){
   
   parameters <- NULL
@@ -31,5 +30,5 @@ update_tests <- function(course_paths){
     dplyr::select(-paths) |>
     tidyr::unnest(parameters)
   
-  base::save(tests, file = base::paste0(course_paths$subfolders$tests, "/tests.RData"))
+  base::save(tests, file = course_paths$databases$tests)
 }

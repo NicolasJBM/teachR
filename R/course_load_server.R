@@ -105,6 +105,60 @@ course_load_server <- function(id, course_paths){
         
       } else {
         
+        # Read documents and update tags and tree accordingly.
+        
+        shinybusy::show_modal_progress_line(value = 0/13, text = "Updating documents")
+        
+        teachR::update_documents(course_paths())
+        
+        shinybusy::update_modal_progress(value = 1/13, text = "Updating tags")
+        
+        teachR::update_tags(course_paths())
+        
+        shinybusy::update_modal_progress(value = 2/13, text = "Updating trees")
+        
+        teachR::update_trees(course_paths())
+        
+        shinybusy::update_modal_progress(value = 3/13, text = "Updating paths")
+        
+        teachR::update_paths(course_paths())
+        
+        shinybusy::update_modal_progress(value = 4/13, text = "Updating students")
+        
+        teachR::update_students(course_paths())
+        
+        shinybusy::update_modal_progress(value = 5/13, text = "Updating tests")
+        
+        teachR::update_tests(course_paths())
+        
+        shinybusy::update_modal_progress(value = 6/13, text = "Updating logs")
+        
+        teachR::update_logs(course_paths())
+        
+        shinybusy::update_modal_progress(value = 7/13, text = "Updating views")
+        
+        teachR::update_views(course_paths())
+        
+        shinybusy::update_modal_progress(value = 8/13, text = "Updating ratings")
+        
+        teachR::update_ratings(course_paths())
+        
+        shinybusy::update_modal_progress(value = 9/13, text = "Updating comments")
+        
+        teachR::update_comments(course_paths())
+        
+        shinybusy::update_modal_progress(value = 10/13, text = "Updating solutions")
+        
+        teachR::update_solutions(course_paths())
+        
+        shinybusy::update_modal_progress(value = 11/13, text = "Updating answers")
+        
+        teachR::update_answers(course_paths())
+        
+        Sys.sleep(2)
+        
+        shinybusy::update_modal_progress(value = 12/13, text = "Load course")
+        
         course_data$languages <- readr::read_csv(
           base::paste0(course_paths()$subfolders$course, "languages.csv"),
           show_col_types = FALSE
@@ -225,104 +279,13 @@ course_load_server <- function(id, course_paths){
           course_data$item_parameters <- item_parameters
         } else course_data$item_parameters <- NA
         
-        shinyalert::shinyalert(
-          title = "Course loaded!",
-          text = "All course data are now loaded.",
-          type = "success"
-        )
-      }
-      
-    })
-    
-    
-    
-    shiny::observeEvent(input$updatecourse, {
-      
-      if (base::length(course_paths()) != 2){
+        shinybusy::update_modal_progress(value = 13/13, text = "Course updated")
         
-        shinyalert::shinyalert(
-          title = "Please select a course folder.",
-          text = "You must first select a course folder to perform this action.",
-          type = "error"
-        )
-        
-      } else {
-        
-        # Read documents and update tags and tree accordingly.
-        
-        shinybusy::show_modal_progress_line(value = 0/14, text = "Updating documents")
-        
-        teachR::update_documents(course_paths())
-        
-        shinybusy::update_modal_progress(value = 1/14, text = "Updating tags")
-        
-        teachR::update_tags(course_paths())
-        
-        shinybusy::update_modal_progress(value = 2/14, text = "Updating trees")
-        
-        teachR::update_trees(course_paths())
-        
-        shinybusy::update_modal_progress(value = 3/14, text = "Updating paths")
-        
-        teachR::update_paths(course_paths())
-        
-        shinybusy::update_modal_progress(value = 4/14, text = "Updating students")
-        
-        teachR::update_students(course_paths())
-        
-        shinybusy::update_modal_progress(value = 5/14, text = "Updating tests")
-        
-        teachR::update_tests(course_paths())
-        
-        shinybusy::update_modal_progress(value = 6/14, text = "Updating logs")
-        
-        teachR::update_logs(course_paths())
-        
-        shinybusy::update_modal_progress(value = 7/14, text = "Updating views")
-        
-        teachR::update_views(course_paths())
-        
-        shinybusy::update_modal_progress(value = 8/14, text = "Updating ratings")
-        
-        teachR::update_ratings(course_paths())
-        
-        shinybusy::update_modal_progress(value = 9/14, text = "Updating comments")
-        
-        teachR::update_comments(course_paths())
-        
-        
-        
-        
-        
-        
-        
-        #shinybusy::update_modal_progress(value = 10/14, text = "Updating answers")
-        
-        #teachR::update_answers(course_paths())
-        
-        #shinybusy::update_modal_progress(value = 11/14, text = "Updating results")
-        
-        #teachR::update_results(course_paths())
-        
-        #shinybusy::update_modal_progress(value = 12/14, text = "Updating scores")
-        
-        #teachR::update_scores(course_paths())
-        
-        #shinybusy::update_modal_progress(value = 13/14, text = "Updating grades")
-        
-        #teachR::update_grades(course_paths())
-        
-        
-        
-        
-        
-        
-        shinybusy::update_modal_progress(value = 14/14, text = "Course updated")
         shinybusy::remove_modal_spinner()
         
         shinyalert::shinyalert(
-          title = "Course updated!",
-          text = "All course data are now updated on disk.",
+          title = "Course updated and loaded!",
+          text = "All course data are now loaded.",
           type = "success"
         )
       }
@@ -444,12 +407,6 @@ course_load_server <- function(id, course_paths){
     })
     
     
-    
-    shiny::observeEvent(input$updateanalytics, {
-      
-      teachR::update_data(course_paths())
-      
-    })
     
     return(course_data)
   })

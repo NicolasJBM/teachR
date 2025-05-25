@@ -26,7 +26,7 @@ update_views <- function(course_paths){
   ) |>
     dplyr::mutate(
       intake = purrr::map_chr(intake, stringr::str_remove_all, pattern = "\\.csv"),
-      allviews = purrr::map(paths, readr::read_csv)
+      allviews = purrr::map(paths, readr::read_csv, col_types = "cccddcdd")
     ) |>
     dplyr::select(-paths) |>
     tidyr::unnest(allviews) |>

@@ -56,12 +56,10 @@ update_trees <- function(course_paths){
   tbltree <- NA
   jstree <- NA
   
-  
   alltrees <- base::list.files(course_paths$subfolders$jstrees)
   
-  
   for (slcttree in alltrees){
-    print(slcttree)
+    
     base::load(base::paste0(course_paths$subfolders$tbltrees, "/", slcttree))
     
     newtbltree <- documents |>

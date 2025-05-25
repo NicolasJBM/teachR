@@ -18,16 +18,8 @@ course_load_ui <- function(id){
       style = "background-color:#003366;color:#FFF;width:150px;border:0px;margin-left:10px;"
     ),
     shiny::actionButton(
-      ns("updatecourse"), "Update course", icon = shiny::icon("chalkboard"),
-      style = "background-color:#009999;color:#FFF;width:150px;border:0px;margin-left:10px;"
-    ),
-    shiny::actionButton(
       ns("updatepackage"), "Update package", icon = shiny::icon("box-archive"),
       style = "background-color:#006666;color:#FFF;width:150px;border:0px;margin-left:10px;"
-    ),
-    shiny::actionButton(
-      ns("updateanalytics"), "Update analytics", icon = shiny::icon("magnifying-glass-chart"),
-      style = "background-color:#003333;color:#FFF;width:150px;border:0px;margin-left:10px;"
     )
   )
 }
