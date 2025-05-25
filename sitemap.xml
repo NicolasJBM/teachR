@@ -22,12 +22,13 @@
 <url><loc>/reference/filter_tree_ui.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/set_course_paths.html</loc></url>
+<url><loc>/reference/update_answers.html</loc></url>
 <url><loc>/reference/update_comments.html</loc></url>
-<url><loc>/reference/update_data.html</loc></url>
 <url><loc>/reference/update_documents.html</loc></url>
 <url><loc>/reference/update_logs.html</loc></url>
 <url><loc>/reference/update_paths.html</loc></url>
 <url><loc>/reference/update_ratings.html</loc></url>
+<url><loc>/reference/update_solutions.html</loc></url>
 <url><loc>/reference/update_students.html</loc></url>
 <url><loc>/reference/update_tags.html</loc></url>
 <url><loc>/reference/update_tests.html</loc></url>
