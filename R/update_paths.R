@@ -25,32 +25,50 @@ update_paths <- function(course_paths){
     dplyr::mutate(path = purrr::map_chr(path, stringr::str_remove_all, pattern = "\\.xlsx"))
   
   outcomes <- pathfiles |>
-    dplyr::mutate(outcomes = purrr::map(paths, readxl::read_excel, sheet = "outcomes")) |>
+    dplyr::mutate(outcomes = purrr::map(
+      paths, readxl::read_excel, sheet = "outcomes",
+      col_types = c("text", "numeric", "text", "text")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(outcomes)
   
   connections <- pathfiles |>
-    dplyr::mutate(connections = purrr::map(paths, readxl::read_excel, sheet = "connections")) |>
+    dplyr::mutate(connections = purrr::map(
+      paths, readxl::read_excel, sheet = "connections",
+      col_types = c("text", "text")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(connections)
   
   outlabels <- pathfiles |>
-    dplyr::mutate(outlabels = purrr::map(paths, readxl::read_excel, sheet = "outlabels")) |>
+    dplyr::mutate(outlabels = purrr::map(
+      paths, readxl::read_excel, sheet = "outlabels",
+      col_types = c("text", "text", "text", "text", "text", "text")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(outlabels)
   
   activities <- pathfiles |>
-    dplyr::mutate(activities = purrr::map(paths, readxl::read_excel, sheet = "activities")) |>
+    dplyr::mutate(activities = purrr::map(
+      paths, readxl::read_excel, sheet = "activities",
+      col_types = c("text", "numeric", "text", "text", "text", "text","numeric", "text", "text", "text","numeric","date","date")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(activities)
   
   actlabels <- pathfiles |>
-    dplyr::mutate(actlabels = purrr::map(paths, readxl::read_excel, sheet = "actlabels")) |>
+    dplyr::mutate(actlabels = purrr::map(
+      paths, readxl::read_excel, sheet = "actlabels",
+      col_types = c("text", "text", "text", "text", "text", "text")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(actlabels)
   
   attributes <- pathfiles |>
-    dplyr::mutate(attributes = purrr::map(paths, readxl::read_excel, sheet = "attributes")) |>
+    dplyr::mutate(attributes = purrr::map(
+      paths, readxl::read_excel, sheet = "attributes",
+      col_types = c("text", "text", "text", "text", "text")
+    )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(attributes)
   

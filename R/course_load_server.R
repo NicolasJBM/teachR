@@ -58,6 +58,7 @@ course_load_server <- function(id, course_paths){
     scores <- NULL
     views <- NULL
     paths <- NULL
+    solutions <- NULL
     
     # Create course content list
     
@@ -77,14 +78,15 @@ course_load_server <- function(id, course_paths){
     course_data$actlabels <- NA
     course_data$attributes <- NA
     course_data$students <- NA
-    course_data$tests <- NA
     course_data$documents <- NA
+    course_data$tests <- NA
     
     # Prepare for course analytics and statistics
     course_data$logs <- NA
     course_data$views <- NA
     course_data$ratings <- NA
     course_data$comments <- NA
+    course_data$solutions <- NA
     course_data$answers <- NA
     course_data$results <- NA
     course_data$scores <- NA
@@ -219,15 +221,15 @@ course_load_server <- function(id, course_paths){
           course_data$students <- students
         } else course_data$students <- NA
         
-        if (base::file.exists(course_paths()$databases$tests)){
-          base::load(course_paths()$databases$tests)
-          course_data$tests <- tests
-        } else course_data$tests <- NA
-        
         if (base::file.exists(course_paths()$databases$documents)){
           base::load(course_paths()$databases$documents)
           course_data$documents <- documents
         } else course_data$documents <- NA
+        
+        if (base::file.exists(course_paths()$databases$tests)){
+          base::load(course_paths()$databases$tests)
+          course_data$tests <- tests
+        } else course_data$tests <- NA
         
         if (base::file.exists(course_paths()$databases$logs)){
           base::load(course_paths()$databases$logs)
@@ -248,6 +250,11 @@ course_load_server <- function(id, course_paths){
           base::load(course_paths()$databases$comments)
           course_data$comments <- comments
         } else course_data$comments <- NA
+        
+        if (base::file.exists(course_paths()$databases$solutions)){
+          base::load(course_paths()$databases$solutions)
+          course_data$solutions <- solutions
+        } else course_data$solutions <- NA
         
         if (base::file.exists(course_paths()$databases$answers)){
           base::load(course_paths()$databases$answers)
