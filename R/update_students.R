@@ -29,8 +29,7 @@ update_students <- function(course_paths){
       studentlist = purrr::map(paths, readr::read_csv, col_types = "ccccccccc")
     ) |>
     dplyr::select(-paths) |>
-    tidyr::unnest(studentlist) |>
-    dplyr::filter(studentid != "x")
+    tidyr::unnest(studentlist)
   
   base::save(students, file = base::paste0(course_paths$subfolders$students, "/students.RData"))
 }

@@ -33,7 +33,8 @@ Imports:
   scholR,
   classR,
   editR,
-  rhandsontable
+  rhandsontable,
+  cryptography
 Remotes:
   NicolasJBM/scholR,
   NicolasJBM/classR,

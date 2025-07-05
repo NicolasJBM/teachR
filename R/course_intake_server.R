@@ -95,13 +95,9 @@ course_intake_server <- function(id, course_data, course_paths){
       actlabels <- dplyr::filter(course_data()$actlabels, path == intake$path[1])
       attributes <- dplyr::filter(course_data()$attributes, path == intake$path[1])
       
-      studentfile <- base::paste0(
-        course_paths()$subfolders$students,
-        "/", intake$intake, ".csv"
-      )
-      if (base::file.exists(studentfile)){
-        students <- utils::read.csv(studentfile, colClasses = "character")
-      }
+      students <- course_data()$students |>
+        dplyr::filter(intake == input$selectintake) |>
+        dplyr::select(-intake)
       
       base::list(
         intake = intake,
@@ -325,11 +321,28 @@ course_intake_server <- function(id, course_data, course_paths){
     
     shiny::observeEvent(input$savestudents, {
       studentlist <- rhandsontable::hot_to_r(input$students)
+      if (base::nchar(input$newencryptkey) > 4){
+        key <- input$newencryptkey
+        studentlist <- studentlist |>
+          teachR::encrypt_variable("firstname", key) |>
+          teachR::encrypt_variable("lastname", key) |>
+          teachR::encrypt_variable("email", key) |>
+          teachR::encrypt_variable("studenturl", key)
+      } else {
+        studentlist <- studentlist
+      }
+      
       file <- base::paste0(
         course_paths()$subfolders$students,
         "/", selected_intake()$intake$intake, ".csv"
       )
       utils::write.csv(studentlist, file = file, row.names = FALSE)
+      
+      shinyalert::shinyalert(
+        "Student list saved!",
+        "If you applied an encryption key greater than 4 characters, the student list also has been encrypted.",
+        type = "success", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+      )
     })
     
     

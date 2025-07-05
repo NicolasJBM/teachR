@@ -19,6 +19,7 @@
 #' @importFrom stringr str_remove
 #' @importFrom stringr str_replace
 #' @importFrom tools resaveRdaFiles
+#' @importFrom cryptography autokey
 #' @export
 
 
@@ -59,6 +60,10 @@ course_load_server <- function(id, course_paths){
     views <- NULL
     paths <- NULL
     solutions <- NULL
+    email <- NULL
+    firstname <- NULL
+    lastname <- NULL
+    studenturl <- NULL
     
     # Create course content list
     
@@ -218,8 +223,20 @@ course_load_server <- function(id, course_paths){
         
         if (base::file.exists(course_paths()$databases$students)){
           base::load(course_paths()$databases$students)
+          if (base::nchar(input$encryptkey) > 4){
+            key <- input$encryptkey
+            students <- students |>
+              teachR::decrypt_variable("firstname", key) |>
+              teachR::decrypt_variable("lastname", key) |>
+              teachR::decrypt_variable("email", key) |>
+              teachR::decrypt_variable("studenturl", key)
+          } else {
+            students <- students
+          }
           course_data$students <- students
-        } else course_data$students <- NA
+        } else {
+          course_data$students <- NA
+        }
         
         if (base::file.exists(course_paths()$databases$documents)){
           base::load(course_paths()$databases$documents)

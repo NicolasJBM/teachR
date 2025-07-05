@@ -52,10 +52,26 @@ course_intake_ui <- function(id){
       collapsed = FALSE,
       closable = FALSE,
       icon = shiny::icon("users"),
-      shiny::actionButton(
-        ns("savestudents"), "Save students", icon = shiny::icon("floppy-disk"),
-        style = "background-color:#006600;color:#FFF;
-          width:100%;margin-top:25px;"
+      
+      shiny::fluidRow(
+        shiny::column(
+          6,
+          shinyWidgets::textInputIcon(
+            ns("newencryptkey"), label = NULL,
+            placeholder = "Encryption",
+            inputType = "password",
+            icon = shiny::icon("key"),
+            width = "100%"
+          )
+        ),
+        shiny::column(
+          6,
+          shiny::actionButton(
+            ns("savestudents"), "Save students", icon = shiny::icon("floppy-disk"),
+            style = "background-color:#006600;color:#FFF;
+          width:100%;margin-bottom:25px;"
+          )
+        )
       ),
       rhandsontable::rHandsontableOutput(ns("students"))
     )
