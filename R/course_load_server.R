@@ -330,14 +330,14 @@ course_load_server <- function(id, course_paths){
         
       } else {
         
-        shinybusy::show_modal_progress_line(value = 0/5, text = "Updating the package")
+        shinybusy::show_modal_progress_line(value = 0/6, text = "Updating the package")
         
         # Create or empty the function folder for the course package
         dfRfolder <- base::paste0(course_paths()$subfolders$package, "/R")
         if (!base::dir.exists(dfRfolder)) base::dir.create(dfRfolder)
         base::unlink(base::list.files(dfRfolder, full.names = TRUE))
         
-        shinybusy::update_modal_progress(value = 1/5, text = "Add functions to the package")
+        shinybusy::update_modal_progress(value = 1/6, text = "Add functions to the package")
         
         # copy functions
         base::lapply(
@@ -360,7 +360,7 @@ course_load_server <- function(id, course_paths){
           }
         )
         
-        shinybusy::update_modal_progress(value = 2/5, text = "Updating package main data")
+        shinybusy::update_modal_progress(value = 2/6, text = "Updating package main data")
         
         # Create or empty the data folder for the course package and copy functions
         dfdatafolder <- base::paste0(course_paths()$subfolders$package, "/data")
@@ -388,7 +388,7 @@ course_load_server <- function(id, course_paths){
         base::save(translations, file=base::paste0(dfdatafolder, '/translations.RData'))
         tools::resaveRdaFiles(base::paste0(dfdatafolder, '/translations.RData'))
         
-        shinybusy::update_modal_progress(value = 3/5, text = "Updating package secondary data")
+        shinybusy::update_modal_progress(value = 3/6, text = "Updating package secondary data")
         
         if (base::length(databases) > 0){
           for (d in databases){
@@ -414,12 +414,25 @@ course_load_server <- function(id, course_paths){
           base::rm(databases, d, dcontent, dname)
         }
         
-        shinybusy::update_modal_progress(value = 4/5, text = "Save the environment for editing documents")
+        shinybusy::update_modal_progress(value = 4/6, text = "Save the environment for editing documents")
         
         base::save.image(file=base::paste0(course_paths()$subfolders$edit, '/data/environment.RData'))
         
         
-        shinybusy::update_modal_progress(value = 5/5, text = "Package updated")
+        shinybusy::update_modal_progress(value = 5/6, text = "Import questions")
+        
+        original <- base::list.files(course_paths()$subfolders$original, full.names = FALSE, pattern = "^Q")
+        original <- base::paste0(course_paths()$subfolders$original, "/", original)
+        translated <- base::list.files(course_paths()$subfolders$translated, full.names = FALSE, pattern = "^Q")
+        translated <- base::paste0(course_paths()$subfolders$translated, "/", translated)
+        destination <- base::paste0(course_paths()$subfolders$package,"/inst/exercises")
+        
+        base::file.copy(from = original, to = destination, overwrite = TRUE)
+        base::file.copy(from = translated, to = destination, overwrite = TRUE)
+        
+        
+        shinybusy::update_modal_progress(value = 6/6, text = "Package updated")
+        
         shinybusy::remove_modal_spinner()
         
         shinyalert::shinyalert(
