@@ -22,28 +22,44 @@ update_solutions <- function(course_paths){
   paths <- NULL
   files <- NULL
   test <- NULL
-  
-  tests <- base::list.dirs(course_paths$subfolders$tests, recursive = FALSE, full.names = FALSE)
+  old <- NULL
+  path <- NULL
+  solution <- NULL
+  solutionpath <- NULL
   
   if (base::file.exists(course_paths$databases$solutions)){
     base::load(course_paths$databases$solutions)
-    solutions <- dplyr::filter(solutions, test %in% tests)
-    newtests <- base::setdiff(tests, c(base::unique(solutions$test), "archives", "default"))
   } else {
-    newtests <- base::setdiff(tests, c("archives", "default"))
+    solutions <- tibble::tibble(version = NA)
   }
   
-  newsolutions <- tibble::tibble(
-    paths = base::paste0(course_paths$subfolders$tests, "/", newtests)
+  testpath <- course_paths$subfolders$tests
+  
+  tests <- base::list.dirs(testpath, recursive = FALSE, full.names = FALSE)
+  solutionspaths <- base::paste0(testpath, "/", tests, "/4_solutions")
+  testnbr <- base::length(solutionspaths)
+  
+  allsolutions <- base::list(testnbr)
+  for (i in base::seq_len(testnbr)){
+    allsolutions[[i]] <- base::list.files(solutionspaths[i], full.names = FALSE)
+  }
+  allsolutions <- tibble::tibble(
+    solutionpath = solutionspaths,
+    solution = allsolutions
   ) |>
-    dplyr::mutate(paths = base::paste0(paths, "/4_solutions")) |>
-    dplyr::mutate(solutions = purrr::map(paths, function(x){
-      tibble::tibble(files = base::list.files(x, full.names = TRUE)) |>
-        dplyr::mutate(solutions = purrr::map(files, readr::read_csv, col_types = "ccdcccccdccdcccdd")) |>
-        dplyr::select(-files) |>
-        tidyr::unnest(solutions)
-    })) |>
-    dplyr::select(-paths) |>
+    tidyr::unnest(solution) |>
+    dplyr::mutate(old = purrr::map_lgl(
+      solution,
+      function(x,y) stringr::str_remove(x, ".csv") %in% y$version,
+      solutions
+    ))
+  
+  newsolutions <- allsolutions |>
+    dplyr::filter(old == FALSE) |>
+    dplyr::select(-old) |>
+    tidyr::unite("path", solutionpath, solution, sep = "/") |>
+    dplyr::mutate(solutions = purrr::map(path, readr::read_csv, col_types = "ccdcccccdccdcccdd")) |>
+    dplyr::select(-path) |>
     tidyr::unnest(solutions)
   
   if (base::file.exists(course_paths$databases$solutions)){
@@ -51,8 +67,6 @@ update_solutions <- function(course_paths){
   } else {
     solutions <- newsolutions
   }
-  
-  solutions$solutions <- NULL
   
   base::save(solutions, file = course_paths$databases$solutions)
 }
