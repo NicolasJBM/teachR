@@ -34,7 +34,8 @@ Imports:
   classR,
   editR,
   rhandsontable,
-  cryptography
+  cryptography,
+  rstudioapi
 Remotes:
   NicolasJBM/scholR,
   NicolasJBM/classR,

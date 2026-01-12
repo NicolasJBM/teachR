@@ -15,31 +15,24 @@ course_load_ui <- function(id){
   shiny::div(
     shiny::fluidRow(
       shiny::column(
-        4,
+        6,
         shinyWidgets::textInputIcon(
           ns("encryptkey"), label = NULL,
           placeholder = "Encryption",
           inputType = "password",
           icon = shiny::icon("key"),
-          width = "150px"
+          width = "100%"
         )
       ),
       shiny::column(
-        4,
+        6,
         shiny::actionButton(
           ns("loadcourse"), "Load course", icon = shiny::icon("upload"),
-          style = "background-color:#003366;color:#FFF;width:150px;border:0px;margin-left:10px;"
-        )
-      ),
-      shiny::column(
-        4,
-        shiny::actionButton(
-          ns("updatepackage"), "Update package", icon = shiny::icon("box-archive"),
-          style = "background-color:#006666;color:#FFF;width:150px;border:0px;margin-left:10px;"
+          style = "background-color:#003366;color:#FFF;width:100%;border:0px;"
         )
       )
     ),
-    style = "width: 490px;"
+    style = "width:100%;"
   )
 }
 
