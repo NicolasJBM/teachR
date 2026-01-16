@@ -35,7 +35,7 @@ design_course <- shiny::shinyApp(
       shinydashboard::sidebarMenu(
         
         shinydashboard::menuItem(
-          shiny::span("Writing", title = "Write and translate different types of documents: slides, scripts for videos, pages of textbooks, notes for blogs, tutorials, games, cases, and questions."),
+          shiny::span("Writing", title = "Write and translate different types of documents: slides, scripts for scripts, pages of textbooks, notes for blogs, tutorials, games, cases, and questions."),
           tabName = "writing", icon = shiny::icon("feather")
         ),
         shinydashboard::menuItem(
@@ -135,10 +135,10 @@ design_course <- shiny::shinyApp(
             ),
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("video"), "Videos",
-                title = "A video is the script of a video. What is written as a quote is exported in a .txt file for a prompter. The rest is description of paces and intonations or of visuals."
+                shiny::icon("video"), "Script",
+                title = "A script for a video. What is written as a quote is exported in a .txt file for a prompter. The rest is description of paces and intonations or of visuals."
               ),
-              editR::edit_ui("editvideos")
+              editR::edit_ui("editscripts")
             ),
             shiny::tabPanel(
               title = shiny::span(
@@ -260,6 +260,8 @@ design_course <- shiny::shinyApp(
           teachR::course_load_ui("loadcourse"),
           shiny::tags$hr(),
           shiny::uiOutput("selecttree"),
+          shiny::uiOutput("selectpath"),
+          shiny::uiOutput("selectintake"),
           shiny::tags$hr(),
           shiny::fluidRow(
             shiny::column(
@@ -347,7 +349,11 @@ design_course <- shiny::shinyApp(
     courses <- shiny::reactive({
       pathfile <- base::paste0(base::path.package("teachR"), "/app/mainpath.txt")
       if (base::file.exists(pathfile)) {
-        path <- base::readLines(pathfile)[1]
+        path <- tibble::tibble(line = base::readLines(pathfile)) |>
+          dplyr::mutate(exists = purrr::map_lgl(line, dir.exists)) |>
+          dplyr::filter(exists == TRUE) |>
+          dplyr::slice_head(n = 1) |> dplyr::select(line) |>
+          base::unlist() |> base::as.character()  
         base::setwd(path)
         tibble::tibble(
           name = base::list.dirs(path, full.names = FALSE, recursive = FALSE),
@@ -394,7 +400,80 @@ design_course <- shiny::shinyApp(
         teachR::set_course_paths(course_folder())
       } else base::list(NA)
     })
-
+    
+    # Load course databases and select contents
+    course_data <- shiny::reactive({
+      teachR::course_load_server("loadcourse", course_paths)
+    })
+    
+    intakes <- shiny::reactive({
+      shiny::req(!base::is.logical(course_data()$intakes))
+      course_data()$intakes |>
+        dplyr::select(intake, path, tree) |>
+        base::unique()
+    })
+    
+    output$selecttree <- shiny::renderUI({
+      shiny::req(!base::is.null(intakes()))
+      shiny::req(base::nrow(intakes()) > 0)
+      shinyWidgets::pickerInput(
+        inputId = "slcttree",
+        label = "Tree:", 
+        choices = base::unique(intakes()$tree),
+        width = "100%"
+      )
+    })
+    
+    output$selectpath <- shiny::renderUI({
+      shiny::req(!base::is.null(intakes()))
+      shiny::req(base::nrow(intakes()) > 0)
+      shiny::req(!base::is.null(input$slcttree))
+      preslctintakes <- intakes() |>
+        dplyr::filter(tree == input$slcttree)
+      shinyWidgets::pickerInput(
+        inputId = "slctpath",
+        label = "Path:", 
+        choices = base::unique(preslctintakes$path),
+        width = "100%"
+      )
+    })
+    
+    output$selectintake <- shiny::renderUI({
+      shiny::req(!base::is.null(intakes()))
+      shiny::req(base::nrow(intakes()) > 0)
+      shiny::req(!base::is.null(input$slctpath))
+      preslctintakes <- intakes() |>
+        dplyr::filter(path == input$slctpath)
+      shinyWidgets::pickerInput(
+        inputId = "slctintake",
+        label = "Intake:", 
+        choices = base::unique(intakes()$intake),
+        width = "100%"
+      )
+    })
+    
+    jstree <- shiny::reactive({
+      shiny::req(!base::is.null(input$slcttree))
+      treefile <- base::paste0(input$slcttree, ".RData")
+      shiny::req(treefile %in% base::names(course_data()$jstrees))
+      course_data()$jstrees[[treefile]]
+    })
+    
+    tbltree <- shiny::reactive({
+      shiny::req(!base::is.null(input$slcttree))
+      treefile <- base::paste0(input$slcttree, ".RData")
+      shiny::req(treefile %in% base::names(course_data()$tbltrees))
+      course_data()$tbltrees[[treefile]]
+    })
+    
+    shiny::observe({
+      shiny::req(!base::is.null(jstree()))
+      shiny::req(!base::is.null(tbltree()))
+      jstree()
+      tbltree()
+    })
+    
+    
     # Update course databases
     shiny::observeEvent(input$updatedoctagtree, {
       if (base::length(course_paths()) != 2){
@@ -458,23 +537,13 @@ design_course <- shiny::shinyApp(
         )
       }
     })
-    
-
-    # Load course databases and select contents
-    course_data <- shiny::reactive({
-      teachR::course_load_server("loadcourse", course_paths)
-    })
-
-    # Select tree
-    intake <- teachR::course_intake_server("coursetree", course_data, course_paths)
-    shiny::observe({ intake() })
 
     teachR::course_update_server("updatecourse", course_paths)
     
     # Document selection #######################################################
 
     # Tree
-    selected_from_tree <- teachR::filter_tree_server("filttree", intake, course_data)
+    selected_from_tree <- teachR::filter_tree_server("filttree", jstree, course_data)
 
     # Tags
     selected_from_tags <- teachR::filter_tags_server("filttags", course_data)
@@ -531,44 +600,44 @@ design_course <- shiny::shinyApp(
     chartR::edit_diagram_server("ediag", course_paths()$subfolders$databases)
 
     # Edit documents ###########################################################
-
-    editR::edit_server(
-      "editpapers", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths, doctype = "Paper"
-    )
-
-    editR::edit_server(
-      "editpages", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths, doctype = "Page"
-    )
-
+    
     editR::edit_server(
       "editpresentations", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths, doctype = "Presentation"
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Presentation"
     )
-
+    
     editR::edit_server(
-      "editvideos", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths, doctype = "Video"
+      "editscripts", filtered = filtered_documents, course_data = course_data,
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Script"
+    )
+    
+    editR::edit_server(
+      "editpages", filtered = filtered_documents, course_data = course_data,
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Page"
+    )
+    
+    editR::edit_server(
+      "editpapers", filtered = filtered_documents, course_data = course_data,
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Paper"
     )
 
     editR::edit_server(
       "editquest", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths, doctype = "Question"
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Question"
     )
 
     # Translate ################################################################
 
     editR::translate_server(
       "translation", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths
     )
 
     # Organize #################################################################
 
     classR::tags_edit_server("edittags", course_data, course_paths)
 
-    classR::trees_edit_server("edittree", course_data, course_paths)
+    classR::trees_edit_server("edittree", tree = input$slcttree, jstree = jstree, course_data, course_paths)
 
     pathR::design_path_server(
       "despath",
@@ -578,14 +647,18 @@ design_course <- shiny::shinyApp(
 
     # Create tests #############################################################
 
-    testR::edit_test_server(
-      "editest", filtered = filtered_documents, course_data = course_data,
-      intake = intake, course_paths = course_paths
-    )
+    #testR::edit_test_server(
+    #  "editest", filtered = filtered_documents, course_data = course_data,
+    #  intake = input$slctintake, course_paths = course_paths
+    #)
 
+    # Define intakes ###########################################################
+    
+    #teachR::course_intake_server("coursetree", input$slctintake, course_data, course_paths)
+    
     # Grade tests ##############################################################
 
-    gradR::grading_server("grading", course_data, course_paths)
+    #gradR::grading_server("grading", course_data, course_paths)
 
     # Feedback #################################################################
 

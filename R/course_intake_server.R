@@ -3,6 +3,7 @@
 #' @author Nicolas Mangin
 #' @description Module facilitating the loading of an intake (with associated trees, paths, and tests).
 #' @param id Character. ID of the module to connect the user interface to the appropriate server side.
+#' @param selected_intake Character. Name of the selected intake.
 #' @param course_data Reactive. Function containing all the course data loaded with the course.
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @return A list containing the intake as a table and a json object.
@@ -39,7 +40,7 @@
 #' @export
 
 
-course_intake_server <- function(id, course_data, course_paths){
+course_intake_server <- function(id, selected_intake, course_data, course_paths){
   
   intake <- NULL
   jstrees <- NULL
@@ -51,40 +52,9 @@ course_intake_server <- function(id, course_data, course_paths){
   ns <- shiny::NS(id)
   shiny::moduleServer(id, function(input, output, session) {
     
-    output$intakepattern <- shiny::renderUI({
-      shiny::req(!base::is.na(course_data()$intakes))
-      shinyWidgets::searchInput(
-          inputId = ns("defintakepattern"),
-          label = "Preselect based on pattern:", 
-          btnSearch = shiny::icon("search"), 
-          btnReset = shiny::icon("remove"),
-          width = "100%"
-        )
-    })
-    
-    output$slctintake <- shiny::renderUI({
-      shiny::req(!base::is.na(course_data()$intakes))
-      shiny::req(!base::is.null(input$defintakepattern))
-      preslctintakes <- stats::na.omit(course_data()$intakes$intake)
-      if (base::nchar(input$defintakepattern) > 0) {
-        preslctintakes <- preslctintakes[stringr::str_detect(preslctintakes, input$defintakepattern)] |>
-          base::sort()
-      }
-      shinyWidgets::pickerInput(
-        inputId = ns("selectintake"),
-        label = "Select an intake:", 
-        choices = preslctintakes,
-        selected = base::character(0),
-        options = base::list(style = "btn-primary"),
-        width = "100%"
-      )
-    })
-    
-    
-    
-    selected_intake <- shiny::reactive({
-      shiny::req(!base::is.null(input$selectintake))
-      intake <- dplyr::filter(course_data()$intakes, intake == input$selectintake)
+    edited_intake <- shiny::reactive({
+      shiny::req(!base::is.null(selected_intake))
+      intake <- dplyr::filter(course_data()$intakes, intake == selected_intake)
       tbltree <- course_data()$tbltrees[[base::paste0(intake$tree[[1]], ".RData")]]
       jstree <- course_data()$jstrees[[base::paste0(intake$tree[[1]], ".RData")]]
       textbook <- classR::trees_structure_textbook(tbltree, intake$tree[1], intake$website[1])
@@ -96,7 +66,7 @@ course_intake_server <- function(id, course_data, course_paths){
       attributes <- dplyr::filter(course_data()$attributes, path == intake$path[1])
       
       students <- course_data()$students |>
-        dplyr::filter(intake == input$selectintake) |>
+        dplyr::filter(intake == selected_intake) |>
         dplyr::select(-intake)
       
       base::list(
@@ -114,7 +84,7 @@ course_intake_server <- function(id, course_data, course_paths){
       )
     })
     
-    shiny::observe({ selected_intake() })
+    shiny::observe({ edited_intake() })
     
     
     
@@ -127,8 +97,6 @@ course_intake_server <- function(id, course_data, course_paths){
         )
       } else {
         
-        intakes <- course_data()$intakes
-        last_intake <- intakes[1,]
         allpaths <- base::unique(course_data()$outcomes$path)
         alltrees <- stringr::str_remove_all(base::names(course_data()$tbltrees), ".RData")
         year <- base::substr(base::Sys.Date(),1,4)
@@ -240,44 +208,44 @@ course_intake_server <- function(id, course_data, course_paths){
     
     
     output$editintake <- shiny::renderUI({
-      shiny::req(!base::is.na(selected_intake()$intake$intake))
+      shiny::req(!base::is.na(edited_intake()$intake$intake))
       
       allpaths <- base::unique(course_data()$outcomes$path)
       alltrees <- stringr::str_remove_all(base::names(course_data()$tbltrees), ".RData")
       
       base::list(
-        shiny::h4(selected_intake()$intake$intake[1]),
+        shiny::h4(edited_intake()$intake$intake[1]),
         shiny::textInput(
           ns("teachers"), "Teachers:",
-          value = selected_intake()$intake$teachers[1], width = "100%"
+          value = edited_intake()$intake$teachers[1], width = "100%"
         ),
         shiny::textInput(
           ns("institution"), "Institution:",
-          value = selected_intake()$intake$institution[1], width = "100%"
+          value = edited_intake()$intake$institution[1], width = "100%"
         ),
         shiny::textInput(
           ns("program"), "Program:",
-          value = selected_intake()$intake$program[1], width = "100%"
+          value = edited_intake()$intake$program[1], width = "100%"
         ),
         shiny::textInput(
           ns("programlevel"), "Program level:",
-          value = selected_intake()$intake$program_level[1], width = "100%"
+          value = edited_intake()$intake$program_level[1], width = "100%"
         ),
         shiny::numericInput(
           ns("year"), "Year:",
-          value = selected_intake()$intake$year[1], width = "100%"
+          value = edited_intake()$intake$year[1], width = "100%"
         ),
         shiny::selectInput(
           ns("path"), "Path:", choices = allpaths,
-          selected = selected_intake()$intake$path[1], width = "100%"
+          selected = edited_intake()$intake$path[1], width = "100%"
         ),
         shiny::selectInput(
           ns("tree"), "Tree:", choices = alltrees,
-          selected = selected_intake()$intake$tree[1], width = "100%"
+          selected = edited_intake()$intake$tree[1], width = "100%"
         ),
         shiny::textInput(
           ns("website"), "Website:",
-          value = selected_intake()$intake$website[1], width = "100%"
+          value = edited_intake()$intake$website[1], width = "100%"
         )
       )
     })
@@ -287,9 +255,9 @@ course_intake_server <- function(id, course_data, course_paths){
     # Save course
     shiny::observeEvent(input$saveintake, {
       other_intakes <- course_data()$intakes |>
-        dplyr::filter(intake != input$selectintake)
+        dplyr::filter(intake != selected_intake)
       edtided <- tibble::tibble(
-        intake = base::as.character(input$selectintake),
+        intake = base::as.character(selected_intake),
         teachers = base::as.character(input$teachers),
         institution = base::as.character(input$institution),
         program = base::as.character(input$program),
@@ -311,8 +279,8 @@ course_intake_server <- function(id, course_data, course_paths){
     
     
     output$students <- rhandsontable::renderRHandsontable({
-      shiny::req(!base::is.na(selected_intake()$students))
-      selected_intake()$students |>
+      shiny::req(!base::is.na(edited_intake()$students))
+      edited_intake()$students |>
         rhandsontable::rhandsontable(rowHeaders = NULL, stretchH = "all") |>
         rhandsontable::hot_context_menu(allowRowEdit = TRUE, allowColEdit = FALSE)
     })
@@ -334,7 +302,7 @@ course_intake_server <- function(id, course_data, course_paths){
       
       file <- base::paste0(
         course_paths()$subfolders$students,
-        "/", selected_intake()$intake$intake, ".csv"
+        "/", edited_intake()$intake$intake, ".csv"
       )
       utils::write.csv(studentlist, file = file, row.names = FALSE)
       
@@ -345,9 +313,6 @@ course_intake_server <- function(id, course_data, course_paths){
       )
     })
     
-    
-    
-    return(selected_intake)
   })
 }
 

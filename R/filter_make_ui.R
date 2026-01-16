@@ -47,8 +47,7 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
     if (variable == "type"){
       varvalues <- varvalues |>
         base::factor(levels = c(
-          "Note", "Slide", "Video", "Page",
-          "Tutorial", "Game", "Case",
+          "Presentation", "Script", "Page", "Paper", 
           "Free", "Statements", "Alternatives",
           "Computation", "Essay", "Problem"
         )) |>

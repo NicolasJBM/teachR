@@ -33,8 +33,6 @@ course_intake_ui <- function(id){
         icon = shiny::icon("wand-magic-sparkles"),
         style = "background-color:#003366;color:#FFF;width:100%;margin-top:10px;margin-bottom:10px;border:0px;"
       ),
-      shiny::uiOutput(ns("intakepattern")),
-      shiny::uiOutput(ns("slctintake")),
       shiny::tags$hr(),
       shiny::actionButton(
         ns("saveintake"), "Save intake", icon = shiny::icon("floppy-disk"),
