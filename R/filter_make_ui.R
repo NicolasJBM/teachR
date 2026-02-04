@@ -67,32 +67,7 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
         width = "100%"
       )
       
-    } else if (vartype == "selection") {
-      
-      if (base::length(varvalues) > 10){
-        filters[[i]] <- shiny::selectInput(
-          inputid,
-          variable,
-          choices = c("",varvalues),
-          selected = "",
-          width = "100%",
-          multiple = FALSE
-        )
-      } else {
-        filters[[i]] <- shinyWidgets::radioGroupButtons(
-          inputId = inputid,
-          label = variable, 
-          choices = varvalues,
-          selected = base::character(0),
-          status = "primary",
-          justified = FALSE,
-          direction = "horizontal",
-          size = "normal",
-          checkIcon = base::list(yes = shiny::icon("check"))
-        )
-      }
-      
-    } else if (vartype == "multiple") {
+    } else if (vartype %in% c("selection", "multiple")) {
       
       if (base::length(varvalues) > 15){
         filters[[i]] <- shiny::selectInput(

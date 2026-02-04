@@ -35,30 +35,30 @@ design_course <- shiny::shinyApp(
       shinydashboard::sidebarMenu(
         
         shinydashboard::menuItem(
-          shiny::span("Writing", title = "Write and translate different types of documents: slides, scripts for scripts, pages of textbooks, notes for blogs, tutorials, games, cases, and questions."),
+          shiny::span("Writing", title = "Write and translate different types of teaching materials: documents like slide presentations, scripts for videos, pages of textbooks, papers for blogs, test questions or supporting functions, templates, diagrams etc. You can also edit the propositions and answers included in questions and relative to the specific document."),
           tabName = "writing", icon = shiny::icon("feather")
         ),
         shinydashboard::menuItem(
-          shiny::span("Organizing", title = "Create and curate tags for documents, classification trees, and learning journeys."),
+          shiny::span("Organizing", title = "Create and curate tags for documents, classification trees, and learning paths."),
           tabName = "organizing", icon = shiny::icon("folder-tree")
         ),
         shinydashboard::menuItem(
-          shiny::span("Testing", title = "Create tests for formative or summative assessments form a question bank."),
+          shiny::span("Testing", title = "Create tests for formative or summative assessments from the question bank."),
           tabName = "testing", icon = shiny::icon("file-circle-question")
         ),
         
         shiny::tags$hr(),
         
         shinydashboard::menuItem(
-          shiny::span("Enrolling", title = "Create intakes, define their properties, and associate them with a tree, a path, and a list of students."),
+          shiny::span("Enrolling", title = "Create intakes, define their properties, and associate them with a tree, a path, as well as an encrypted list of students."),
           tabName = "enrolling", icon = shiny::icon("users")
         ),
         shinydashboard::menuItem(
-          shiny::span("Grading", title = "Check students' answers, grade their work ans send a feedback."),
+          shiny::span("Grading", title = "Check students' answers, grade their work, adapt solutions, check grading consistency and send feedback."),
           tabName = "grading", icon = shiny::icon("file-circle-check")
         ),
         shinydashboard::menuItem(
-          shiny::span("Analyzing", title = "Overview course or student information based on ad-hoc templates."),
+          shiny::span("Analyzing", title = "Analyze teaching materials or students performance."),
           tabName = "analyzing", icon = shiny::icon("heart-pulse")
         )
       )
@@ -105,17 +105,17 @@ design_course <- shiny::shinyApp(
             ),
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("timeline"), "Path",
-                title = "Organize teaching materials in a learning journey for students.",
-              ),
-              pathR::design_path_ui("despath")
-            ),
-            shiny::tabPanel(
-              title = shiny::span(
                 shiny::icon("tags"), "Tags",
                 title = "List and curate tags, organize their respective categories, and batch-edit them in documents."
               ),
               classR::tags_edit_ui("edittags")
+            ),
+            shiny::tabPanel(
+              title = shiny::span(
+                shiny::icon("timeline"), "Path",
+                title = "Organize teaching materials in a learning journey for students.",
+              ),
+              pathR::design_path_ui("despath")
             )
           )
         ),
@@ -135,7 +135,7 @@ design_course <- shiny::shinyApp(
             ),
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("video"), "Script",
+                shiny::icon("video"), "Scripts",
                 title = "A script for a video. What is written as a quote is exported in a .txt file for a prompter. The rest is description of paces and intonations or of visuals."
               ),
               editR::edit_ui("editscripts")
@@ -227,7 +227,7 @@ design_course <- shiny::shinyApp(
     # CONTROLS #################################################################
 
     controlbar = shinydashboardPlus::dashboardControlbar(
-      id = "rightsidebar", width = 600, collapsed = FALSE, overlay = TRUE,
+      id = "rightsidebar", width = 550, collapsed = FALSE, overlay = TRUE,
       shinydashboardPlus::controlbarMenu(
         id = "controlbar",
 
@@ -257,35 +257,35 @@ design_course <- shiny::shinyApp(
               )
             )
           ),
-          teachR::course_load_ui("loadcourse"),
-          shiny::tags$hr(),
-          shiny::uiOutput("selecttree"),
-          shiny::uiOutput("selectpath"),
-          shiny::uiOutput("selectintake"),
-          shiny::tags$hr(),
           shiny::fluidRow(
             shiny::column(
               4,
               shiny::actionButton(
                 "updatedoctagtree", "Update documents", icon = shiny::icon("layer-group"),
-                style = "background-color:#000099;color:#FFF;width:100%;"
+                style = "background-color:#000099;color:#FFF;width:100%;border:0px;"
               )
             ),
             shiny::column(
               4,
               shiny::actionButton(
                 "updatetestsol", "Update tests", icon = shiny::icon("list-check"),
-                style = "background-color:#000099;color:#FFF;width:100%;"
+                style = "background-color:#000099;color:#FFF;width:100%;border:0px;"
               )
             ),
             shiny::column(
               4,
               shiny::actionButton(
                 "updatepaths", "Update paths", icon = shiny::icon("diagram-project"),
-                style = "background-color:#000099;color:#FFF;width:100%;"
+                style = "background-color:#000099;color:#FFF;width:100%;border:0px;"
               )
             )
-          )
+          ),
+          shiny::tags$br(),
+          teachR::course_load_ui("loadcourse"),
+          shiny::tags$hr(),
+          shiny::uiOutput("selecttree"),
+          shiny::uiOutput("selectpath"),
+          shiny::uiOutput("selectintake")
         ),
         
         shinydashboardPlus::controlbarItem(
@@ -344,6 +344,8 @@ design_course <- shiny::shinyApp(
 
     # Course selections ########################################################
 
+    reactval <- shiny::reactiveValues()
+    
     # Select a course
     
     courses <- shiny::reactive({
@@ -425,10 +427,8 @@ design_course <- shiny::shinyApp(
     })
     
     output$selectpath <- shiny::renderUI({
-      shiny::req(!base::is.null(intakes()))
-      shiny::req(base::nrow(intakes()) > 0)
       shiny::req(!base::is.null(input$slcttree))
-      preslctintakes <- intakes() |>
+      preslctintakes <- course_data()$intakes |>
         dplyr::filter(tree == input$slcttree)
       shinyWidgets::pickerInput(
         inputId = "slctpath",
@@ -439,15 +439,14 @@ design_course <- shiny::shinyApp(
     })
     
     output$selectintake <- shiny::renderUI({
-      shiny::req(!base::is.null(intakes()))
-      shiny::req(base::nrow(intakes()) > 0)
       shiny::req(!base::is.null(input$slctpath))
-      preslctintakes <- intakes() |>
+      preslctintakes <- course_data()$intakes |>
         dplyr::filter(path == input$slctpath)
+      reactval$path <- input$slctpath
       shinyWidgets::pickerInput(
         inputId = "slctintake",
         label = "Intake:", 
-        choices = base::unique(intakes()$intake),
+        choices = base::unique(preslctintakes$intake),
         width = "100%"
       )
     })
@@ -466,12 +465,11 @@ design_course <- shiny::shinyApp(
       course_data()$tbltrees[[treefile]]
     })
     
-    shiny::observe({
-      shiny::req(!base::is.null(jstree()))
-      shiny::req(!base::is.null(tbltree()))
-      jstree()
-      tbltree()
-    })
+    #path <- shiny::reactive({
+    #  # Interupted warning happens here for some unknwon reason
+    #  shiny::req(!base::is.null(input$slctpath))
+    #  input$slctpath
+    #})
     
     
     # Update course databases
@@ -544,16 +542,16 @@ design_course <- shiny::shinyApp(
 
     # Tree
     selected_from_tree <- teachR::filter_tree_server("filttree", jstree, course_data)
-
+    
     # Tags
     selected_from_tags <- teachR::filter_tags_server("filttags", course_data)
-
+    
     # Statistics
     #selected_from_stats <- teachR::filter_statistics_server("filtstat", course_data)
 
     # Languages
     selected_from_lang <- teachR::filter_languages_server("filtlang", course_data)
-
+    
     # Intersection of selections
     filtered_documents <- shiny::reactive({
       shiny::req(!base::is.na(course_data()))
@@ -565,7 +563,10 @@ design_course <- shiny::shinyApp(
         dplyr::inner_join(selected_from_tags(), by = "file") |>
         #dplyr::inner_join(selected_from_stats(), by = "file") |>
         dplyr::inner_join(selected_from_lang(), by = "file") |>
-        dplyr::inner_join(course_data()$documents, by = "file")
+        dplyr::inner_join(course_data()$documents, by = "file") |>
+        dplyr::left_join(dplyr::select(tbltree(), file, position), by = "file") |>
+        dplyr::arrange(position) |>
+        dplyr::select(-position)
     })
 
     output$countaftertree <- shiny::renderText({
@@ -635,12 +636,24 @@ design_course <- shiny::shinyApp(
 
     # Organize #################################################################
 
-    classR::tags_edit_server("edittags", course_data, course_paths)
-
-    classR::trees_edit_server("edittree", tree = input$slcttree, jstree = jstree, course_data, course_paths)
-
+    classR::trees_edit_server(
+      "edittree",
+      tree = input$slcttree,
+      jstree = jstree,
+      course_data,
+      course_paths
+    )
+    
+    classR::tags_edit_server(
+      "edittags",
+      course_data,
+      course_paths
+    )
+    
     pathR::design_path_server(
       "despath",
+      selected_path = reactval$path,
+      tbltree = tbltree,
       course_data = course_data,
       course_paths = course_paths
     )

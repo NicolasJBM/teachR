@@ -157,6 +157,7 @@ course_load_server <- function(id, course_paths){
           course_data$activities <- paths$activities
           course_data$actlabels <- paths$actlabels
           course_data$attributes <- paths$attributes
+          course_data$files <- paths$files
         } else {
           course_data$outcomes <- NA
           course_data$connections <- NA

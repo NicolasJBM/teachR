@@ -36,6 +36,7 @@ update_documents <- function(course_paths){
       translations = base::character(0),
       modified = base::character(0),
       title = base::character(0),
+      authors = base::character(0),
       type = base::character(0),
       document = base::character(0)
     )
@@ -119,7 +120,15 @@ update_documents <- function(course_paths){
   documents <- dplyr::left_join(documents, translations, by = "code") |>
     tidyr::replace_na(base::list(translations = "")) |>
     dplyr::select(file, code, language, translations, dplyr::everything()) |>
-    dplyr::select(-path)
+    dplyr::select(-path) |>
+    dplyr::mutate_if(base::is.character, function(x){
+      dplyr::case_when(
+        base::is.na(x) ~ "NA",
+        base::is.null(x) ~ "NA",
+        x == "" ~ "NA",
+        TRUE ~ x
+      )
+    })
   
   if (!("tag_youtube" %in% base::names(documents))) documents$tag_youtube <- base::as.character(NA)
   

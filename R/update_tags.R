@@ -26,6 +26,7 @@ update_tags <- function(course_paths){
   boxcolor <- NULL
   documents <- NULL
   count <- NULL
+  data <- NULL
   
   if (base::file.exists(course_paths$databases$tags)){
     base::load(course_paths$databases$tags)
@@ -49,7 +50,7 @@ update_tags <- function(course_paths){
     tidyr::pivot_longer(
       cols = base::names(usedtags), names_to = "tag", values_to = "value"
     ) |>
-    tidyr::replace_na(base::list(value = "")) |>
+    tidyr::replace_na(base::list(value = "NA")) |>
     dplyr::mutate(value = purrr::map(value, function(x){
       tibble::tibble(value = base::as.character(stringr::str_split(x, pattern = " ", simplify = TRUE)))
     })) |>
@@ -85,7 +86,20 @@ update_tags <- function(course_paths){
     dplyr::arrange(tag, order)
 
   tags <- new_tags |>
-    dplyr::arrange(tag, order)
+    dplyr::arrange(tag, order) |>
+    dplyr::group_by(tag) |>
+    tidyr::nest() |>
+    dplyr::mutate(data = purrr::map(data, function(x){
+      filt <- base::names(base::sort(base::table(x$filter), decreasing = TRUE)[1])
+      col <- base::names(base::sort(base::table(x$boxcolor), decreasing = TRUE)[1])
+      x$filter <- filt
+      x$boxcolor <- col
+      x$icon <- base::replace(x$icon, base::is.na(x$icon), "triangle-exclamation")
+      x$icon <- base::replace(x$icon, x$icon == "", "triangle-exclamation")
+      x
+    })) |>
+    tidyr::unnest(data) |>
+    dplyr::ungroup()
   
   base::save(tags, file = course_paths$databases$tags)
 

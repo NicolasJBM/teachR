@@ -33,7 +33,7 @@ filter_tree_server <- function(id, jstree, course_data){
     folder <- NULL
     
     output$selection_tree <- jsTreeR::renderJstree({
-      shiny::req(base::length(jstree()) == 3)
+      shiny::req(base::length(jstree()) >= 2)
       jsTreeR::jstreeDestroy(session, ns("selection_tree"))
       jsTreeR::jstree(
         nodes = jstree(),
@@ -56,7 +56,7 @@ filter_tree_server <- function(id, jstree, course_data){
     })
     
     selected_from_tree <- shiny::reactive({
-      shiny::req(base::length(jstree()) == 3)
+      shiny::req(base::length(jstree()) >= 2)
       shiny::req(!base::is.na(course_data()$documents))
       if (base::length(input$selection_tree_selected)>0){
         selection <- input$selection_tree_selected

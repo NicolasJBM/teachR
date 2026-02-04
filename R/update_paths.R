@@ -27,7 +27,7 @@ update_paths <- function(course_paths){
   outcomes <- pathfiles |>
     dplyr::mutate(outcomes = purrr::map(
       paths, readxl::read_excel, sheet = "outcomes",
-      col_types = c("text", "numeric", "text", "text")
+      col_types = c("text", "numeric", "text", "text", "text")
     )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(outcomes)
@@ -72,13 +72,22 @@ update_paths <- function(course_paths){
     dplyr::select(-paths) |>
     tidyr::unnest(attributes)
   
+  files <- pathfiles |>
+    dplyr::mutate(files = purrr::map(
+      paths, readxl::read_excel, sheet = "files",
+      col_types = c("text", "text")
+    )) |>
+    dplyr::select(-paths) |>
+    tidyr::unnest(files)
+  
   paths <- base::list(
     outcomes = outcomes,
     connections = connections,
     outlabels = outlabels,
     activities = activities,
     actlabels = actlabels,
-    attributes = attributes
+    attributes = attributes,
+    files = files
   )
   
   base::save(paths, file = base::paste0(course_paths$subfolders$paths, "/paths.RData"))
