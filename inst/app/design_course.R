@@ -115,7 +115,7 @@ design_course <- shiny::shinyApp(
                 shiny::icon("timeline"), "Path",
                 title = "Organize teaching materials in a learning journey for students.",
               ),
-              pathR::design_path_ui("despath")
+              pathR::design_path_ui("defpath")
             )
           )
         ),
@@ -203,15 +203,15 @@ design_course <- shiny::shinyApp(
         # Intake #################################################################
         
         shinydashboard::tabItem(
-          tabName = "enrolling", shiny::tags$br(),
-          teachR::course_intake_ui("coursetree")
+          tabName = "enrolling", shiny::tags$br()#,
+          #teachR::course_intake_ui("coursetree")
         ),
         
         # Grade ################################################################
 
         shinydashboard::tabItem(
-          tabName = "grading", shiny::tags$br(),
-          gradR::grading_ui("grading")
+          tabName = "grading", shiny::tags$br()#,
+          #gradR::grading_ui("grading")
         ),
         
         # Analyze ##############################################################
@@ -307,9 +307,24 @@ design_course <- shiny::shinyApp(
           shiny::tags$br(),
           teachR::course_load_ui("loadcourse"),
           shiny::tags$hr(),
-          shiny::uiOutput("selecttree"),
-          shiny::uiOutput("selectpath"),
-          shiny::uiOutput("selectintake")
+          shiny::selectInput(
+            inputId = "slcttree",
+            label = "Tree:", 
+            choices = NA,
+            width = "100%"
+          ),
+          shiny::selectInput(
+            inputId = "slctpath",
+            label = "Path:", 
+            choices = NA,
+            width = "100%"
+          ),
+          shiny::selectInput(
+            inputId = "slctintake",
+            label = "Intake:", 
+            choices = NA,
+            width = "100%"
+          )
         ),
         
         shinydashboardPlus::controlbarItem(
@@ -367,8 +382,6 @@ design_course <- shiny::shinyApp(
     library("chartR")
 
     # Course selections ########################################################
-
-    reactval <- shiny::reactiveValues()
     
     # Select a course
     
@@ -439,40 +452,41 @@ design_course <- shiny::shinyApp(
         base::unique()
     })
     
-    output$selecttree <- shiny::renderUI({
+    
+    
+    
+    # try input update instead of input UI
+    
+    
+    shiny::observe({
+      shiny::req(!base::is.logical(course_data()$intakes))
       shiny::req(!base::is.null(intakes()))
       shiny::req(base::nrow(intakes()) > 0)
-      shinyWidgets::pickerInput(
-        inputId = "slcttree",
-        label = "Tree:", 
-        choices = base::unique(intakes()$tree),
-        width = "100%"
-      )
+      shiny::updateSelectInput(inputId = "slcttree", choices = base::unique(intakes()$tree))
     })
     
-    output$selectpath <- shiny::renderUI({
+    shiny::observe({
+      shiny::req(!base::is.logical(course_data()$intakes))
       shiny::req(!base::is.null(input$slcttree))
-      preslctintakes <- course_data()$intakes |>
-        dplyr::filter(tree == input$slcttree)
-      shinyWidgets::pickerInput(
-        inputId = "slctpath",
-        label = "Path:", 
-        choices = base::unique(preslctintakes$path),
-        width = "100%"
-      )
+      paths <- course_data()$intakes |>
+        dplyr::filter(tree == input$slcttree) |>
+        dplyr::select(path) |>
+        base::unlist() |>
+        base::as.character() |>
+        base::unique()
+      shiny::updateSelectInput(inputId = "slctpath", choices = paths)
     })
     
-    output$selectintake <- shiny::renderUI({
+    shiny::observe({
+      shiny::req(!base::is.logical(course_data()$intakes))
       shiny::req(!base::is.null(input$slctpath))
-      preslctintakes <- course_data()$intakes |>
-        dplyr::filter(path == input$slctpath)
-      reactval$path <- input$slctpath
-      shinyWidgets::pickerInput(
-        inputId = "slctintake",
-        label = "Intake:", 
-        choices = base::unique(preslctintakes$intake),
-        width = "100%"
-      )
+      intakes <- course_data()$intakes |>
+        dplyr::filter(path == input$slctpath) |>
+        dplyr::select(path) |>
+        base::unlist() |>
+        base::as.character() |>
+        base::unique()
+      shiny::updateSelectInput(inputId = "slctintake", choices = intakes)
     })
     
     jstree <- shiny::reactive({
@@ -488,12 +502,6 @@ design_course <- shiny::shinyApp(
       shiny::req(treefile %in% base::names(course_data()$tbltrees))
       course_data()$tbltrees[[treefile]]
     })
-    
-    #path <- shiny::reactive({
-    #  # Interupted warning happens here for some unknwon reason
-    #  shiny::req(!base::is.null(input$slctpath))
-    #  input$slctpath
-    #})
     
     
     # Update course databases
@@ -799,9 +807,14 @@ design_course <- shiny::shinyApp(
       course_paths
     )
     
+    selected_path <- shiny::reactive({
+      path <- input$slctpath
+      path
+    })
+    
     pathR::design_path_server(
-      "despath",
-      selected_path = reactval$path,
+      id = "defpath",
+      selected_path = selected_path,
       tbltree = tbltree,
       course_data = course_data,
       course_paths = course_paths
@@ -809,10 +822,10 @@ design_course <- shiny::shinyApp(
 
     # Create tests #############################################################
 
-    #testR::edit_test_server(
-    #  "editest", filtered = filtered_documents, course_data = course_data,
-    #  intake = input$slctintake, course_paths = course_paths
-    #)
+    testR::edit_test_server(
+      "editest", filtered = filtered_documents, tbltree = tbltree,
+      course_data = course_data, course_paths = course_paths
+    )
 
     # Define intakes ###########################################################
     

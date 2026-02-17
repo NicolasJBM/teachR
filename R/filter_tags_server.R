@@ -21,6 +21,7 @@ filter_tags_server <- function(id, course_data){
     type <- NULL
     tag_duration <- NULL
     tag_weigth <- NULL
+    tag_week <- NULL
     
     tags <- shiny::reactive({
       course_data()$tags
@@ -61,6 +62,7 @@ filter_tags_server <- function(id, course_data){
       after_common_tags |>
         dplyr::mutate(
           tag_duration = base::as.numeric(stringr::str_replace_all(tag_duration, "NA", "0")),
+          tag_week = base::as.numeric(stringr::str_replace_all(tag_week, "NA", "0")),
           tag_weigth = base::as.numeric(stringr::str_replace_all(tag_weigth, "NA", "0"))
         )
     })

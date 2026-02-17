@@ -28,7 +28,7 @@ filter_prepare_variables <- function(preselection, filter_family, tags){
     filter_variables <- tibble::tibble(
       variable_name = common_tags,
       input_id = base::paste0("slctfilt", common_tags),
-      filter_type = c("pattern","pattern","selection","multiple")
+      filter_type = c("pattern","pattern","multiple","multiple")
     )
     
   } else if (filter_family == "custom_tags") {

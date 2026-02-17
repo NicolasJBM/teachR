@@ -67,7 +67,7 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
         width = "100%"
       )
       
-    } else if (vartype %in% c("selection", "multiple")) {
+    } else if (vartype %in% c("selection")) {
       
       if (base::length(varvalues) > 15){
         filters[[i]] <- shiny::selectInput(
@@ -75,6 +75,30 @@ filter_make_ui <- function(ns, preselection, filter_variables, tags = NA){
           variable,
           choices = c("",varvalues),
           selected = "",
+          width = "100%",
+          multiple = FALSE
+        )
+      } else {
+        filters[[i]] <- shinyWidgets::radioGroupButtons(
+          inputId = inputid, 
+          label = variable,
+          choices = varvalues,
+          selected = base::character(0),
+          status = "success",
+          justified = FALSE,
+          direction = "horizontal",
+          size = "normal",
+          checkIcon = base::list(yes = shiny::icon("check"))
+        )
+      }
+      
+    } else if (vartype %in% c("multiple")) {
+      
+      if (base::length(varvalues) > 15){
+        filters[[i]] <- shinyWidgets::pickerInput(
+          inputid,
+          variable,
+          choices = varvalues,
           width = "100%",
           multiple = TRUE
         )
