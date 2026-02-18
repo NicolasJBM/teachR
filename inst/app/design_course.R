@@ -307,23 +307,59 @@ design_course <- shiny::shinyApp(
           shiny::tags$br(),
           teachR::course_load_ui("loadcourse"),
           shiny::tags$hr(),
-          shiny::selectInput(
-            inputId = "slcttree",
-            label = "Tree:", 
-            choices = NA,
-            width = "100%"
+          shiny::fluidRow(
+            shiny::column(
+              8,
+              shiny::selectInput(
+                inputId = "slcttree",
+                label = "Tree:", 
+                choices = NA,
+                width = "100%"
+              )
+            ),
+            shiny::column(
+              4,
+              shiny::actionButton(
+                "newtree", "New tree", icon = shiny::icon("wand-magic-sparkles"),
+                style = "background-color:#006633;color:#FFF;width:100%;border:0px;margin-left:10px;margin-top:25px;"
+              )
+            )
           ),
-          shiny::selectInput(
-            inputId = "slctpath",
-            label = "Path:", 
-            choices = NA,
-            width = "100%"
+          shiny::fluidRow(
+            shiny::column(
+              8,
+              shiny::selectInput(
+                inputId = "slctpath",
+                label = "Path:", 
+                choices = NA,
+                width = "100%"
+              )
+            ),
+            shiny::column(
+              4,
+              shiny::actionButton(
+                "newpath", "New path", icon = shiny::icon("wand-magic-sparkles"),
+                style = "background-color:#006633;color:#FFF;width:100%;border:0px;margin-left:10px;margin-top:25px;"
+              )
+            )
           ),
-          shiny::selectInput(
-            inputId = "slctintake",
-            label = "Intake:", 
-            choices = NA,
-            width = "100%"
+          shiny::fluidRow(
+            shiny::column(
+              8,
+              shiny::selectInput(
+                inputId = "slctintake",
+                label = "Intake:", 
+                choices = NA,
+                width = "100%"
+              )
+            ),
+            shiny::column(
+              4,
+              shiny::actionButton(
+                "newintake", "New intake", icon = shiny::icon("wand-magic-sparkles"),
+                style = "background-color:#006633;color:#FFF;width:100%;border:0px;margin-left:10px;margin-top:25px;"
+              )
+            )
           )
         ),
         
@@ -452,10 +488,6 @@ design_course <- shiny::shinyApp(
         base::unique()
     })
     
-    
-    
-    
-    # try input update instead of input UI
     
     
     shiny::observe({
@@ -692,6 +724,35 @@ design_course <- shiny::shinyApp(
     })
     
     
+    # Tree, path and intake creation ###########################################
+    
+    shiny::observeEvent(input$newtree, {
+      
+    })
+    
+    shiny::observeEvent(input$createtree, {
+      
+    })
+    
+    
+    
+    shiny::observeEvent(input$newpath, {
+      
+    })
+    
+    shiny::observeEvent(input$createpath, {
+      
+    })
+    
+    
+    
+    shiny::observeEvent(input$newintake, {
+      
+    })
+    
+    shiny::observeEvent(input$createintake, {
+      
+    })
     
     
     
