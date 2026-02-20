@@ -51,7 +51,7 @@ update_paths <- function(course_paths){
   activities <- pathfiles |>
     dplyr::mutate(activities = purrr::map(
       paths, readxl::read_excel, sheet = "activities",
-      col_types = c("text", "numeric", "text", "text", "text", "text","numeric", "text", "text", "text", "text", "text","numeric")
+      col_types = c("text", "numeric", "text", "text", "text", "text","numeric", "text", "text", "text","numeric", "text", "text")
     )) |>
     dplyr::select(-paths) |>
     tidyr::unnest(activities)
@@ -75,10 +75,11 @@ update_paths <- function(course_paths){
   files <- pathfiles |>
     dplyr::mutate(files = purrr::map(
       paths, readxl::read_excel, sheet = "files",
-      col_types = c("text", "text","numeric")
+      col_types = c("text", "text","text")
     )) |>
     dplyr::select(-paths) |>
-    tidyr::unnest(files)
+    tidyr::unnest(files) |>
+    dplyr::mutate(duration = base::as.numeric(duration))
   
   paths <- base::list(
     outcomes = outcomes,

@@ -12,9 +12,6 @@
 #' @importFrom shiny observeEvent
 #' @importFrom shiny reactiveValues
 #' @importFrom shinyalert shinyalert
-#' @importFrom shinybusy remove_modal_spinner
-#' @importFrom shinybusy show_modal_progress_line
-#' @importFrom shinybusy update_modal_progress
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_remove
 #' @importFrom stringr str_replace
@@ -165,6 +162,7 @@ course_load_server <- function(id, course_paths){
           course_data$activities <- NA
           course_data$actlabels <- NA
           course_data$attributes <- NA
+          course_data$files <- NA
         }
         
         if (base::file.exists(course_paths()$databases$students)){
@@ -248,10 +246,6 @@ course_load_server <- function(id, course_paths){
           base::load(course_paths()$databases$item_parameters)
           course_data$item_parameters <- item_parameters
         } else course_data$item_parameters <- NA
-        
-        shinybusy::update_modal_progress(value = 13/13, text = "Course updated")
-        
-        shinybusy::remove_modal_spinner()
         
         shinyalert::shinyalert(
           title = "Course loaded!",
