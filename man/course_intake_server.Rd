@@ -9,7 +9,7 @@ course_intake_server(id, selected_intake, course_data, course_paths)
 \arguments{
 \item{id}{Character. ID of the module to connect the user interface to the appropriate server side.}
 
-\item{selected_intake}{Character. Name of the selected intake.}
+\item{selected_intake}{Reactive. Name of the selected intake.}
 
 \item{course_data}{Reactive. Function containing all the course data loaded with the course.}
 

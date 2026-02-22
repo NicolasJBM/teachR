@@ -17,6 +17,7 @@ update_paths <- function(course_paths){
   
   paths <- NULL
   path <- NULL
+  duration <- NULL
   
   pathfiles <- tibble::tibble(
     path = base::list.files(course_paths$subfolders$paths, pattern = "\\.xlsx", recursive = FALSE, full.names = FALSE),

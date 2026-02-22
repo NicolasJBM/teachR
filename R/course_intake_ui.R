@@ -28,13 +28,6 @@ course_intake_ui <- function(id){
       closable = FALSE,
       icon = shiny::icon("id-card"),
       shiny::actionButton(
-        ns("newintake"),
-        shiny::span("New intake", title = ""),
-        icon = shiny::icon("wand-magic-sparkles"),
-        style = "background-color:#003366;color:#FFF;width:100%;margin-top:10px;margin-bottom:10px;border:0px;"
-      ),
-      shiny::tags$hr(),
-      shiny::actionButton(
         ns("saveintake"), "Save intake", icon = shiny::icon("floppy-disk"),
         style = "background-color:#006600;color:#FFF;
           width:100%;margin-top:25px;"
