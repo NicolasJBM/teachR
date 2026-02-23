@@ -204,14 +204,14 @@ design_course <- shiny::shinyApp(
         
         shinydashboard::tabItem(
           tabName = "enrolling", shiny::tags$br(),
-          teachR::course_intake_ui("editintake")
+          teachR::course_intake_ui("enrolling")
         ),
         
         # Grade ################################################################
 
         shinydashboard::tabItem(
-          tabName = "grading", shiny::tags$br()#,
-          #gradR::grading_ui("grading")
+          tabName = "grading", shiny::tags$br(),
+          gradR::grading_ui("grading")
         ),
         
         # Analyze ##############################################################
@@ -268,7 +268,7 @@ design_course <- shiny::shinyApp(
             shiny::column(
               4,
               shiny::actionButton(
-                "updatetestsol", "Update tests", icon = shiny::icon("list-check"),
+                "updatepackage", "Update package", icon = shiny::icon("boxes-packing"),
                 style = "background-color:#000099;color:#FFF;width:100%;border:0px;"
               )
             ),
@@ -285,14 +285,14 @@ design_course <- shiny::shinyApp(
             shiny::column(
               4,
               shiny::actionButton(
-                "updatepackage", "Update package", icon = shiny::icon("boxes-packing"),
+                "updatetestsol", "Update tests", icon = shiny::icon("list-check"),
                 style = "background-color:#000099;color:#FFF;width:100%;border:0px;margin-top:25px;"
               )
             ),
             shiny::column(
               4,
               shiny::actionButton(
-                "updateresults", "Update results", icon = shiny::icon("medal"),
+                "updateanswers", "Update answers", icon = shiny::icon("medal"),
                 style = "background-color:#000099;color:#FFF;width:100%;border:0px;margin-top:25px;"
               )
             ),
@@ -734,6 +734,126 @@ design_course <- shiny::shinyApp(
       
     })
     
+    shiny::observeEvent(input$newintake, {
+      if (base::length(course_data()$courses) == 1){
+        shinyalert::shinyalert(
+          "Load a course first!",
+          "You need to load a course to create a new intake.",
+          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
+      } else {
+        
+        allpaths <- base::unique(course_data()$outcomes$path)
+        alltrees <- stringr::str_remove_all(base::names(course_data()$tbltrees), ".RData")
+        year <- base::substr(base::Sys.Date(),1,4)
+        
+        last_intake <- course_data()$intakes |>
+          dplyr::filter(intake == selected_intake())
+        
+        shiny::showModal(
+          shiny::modalDialog(
+            style = "background-color:#001F3F;color:#FFF;margin-top:300px;",
+            shiny::textInput(
+              "newintakename", "Save intake as:",
+              value = "new_intake", width = "100%"
+            ),
+            shiny::textInput(
+              "newintaketeachers", "Authors:",
+              value = last_intake$teachers[1], width = "100%"
+            ),
+            shiny::selectizeInput(
+              "newintakeinstitution", "Institution:",
+              choices = base::unique(intakes$institution),
+              selected = last_intake$institution[1],
+              width = "100%", options = base::list(create = TRUE)
+            ),
+            shiny::selectizeInput(
+              "newintakeprogram", "Program:",
+              choices = base::unique(intakes$program),
+              selected = last_intake$program[1],
+              width = "100%", options = base::list(create = TRUE)
+            ),
+            shiny::selectizeInput(
+              "newintakeprogramlevel", "Program level:",
+              choices = base::unique(intakes$program_level),
+              selected = last_intake$program_level[1],
+              width = "100%", options = base::list(create = TRUE)
+            ),
+            shiny::numericInput(
+              "newintakeyear", "Year:", value = year, width = "100%"
+            ),
+            shiny::selectInput(
+              "newintakepath", "Path:", choices = allpaths,
+              selected = last_intake$path[1], width = "100%"
+            ),
+            shiny::selectInput(
+              "newintaketree", "Tree:", choices = alltrees,
+              selected = last_intake$tree[1], width = "100%"
+            ),
+            shiny::textInput(
+              "newintakewebsite", "Website:",
+              value = last_intake$website[1], width = "100%"
+            ),
+            footer = tagList(
+              shiny::modalButton("Cancel"),
+              shiny::actionButton(
+                "makenewintake", "OK",
+                icon = shiny::icon("check"),
+                style = "background-color:#007777;color:#FFF;"
+              )
+            )
+          )
+        )
+      }
+    })
+    
+    shiny::observeEvent(input$makenewintake, {
+      
+      if (input$newintakename %in% course_data()$intakes$intake){
+        
+        shinyalert::shinyalert(
+          "Intake already existing!",
+          "This name has already been attributed to an existing intake. Please rename.",
+          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
+        
+      } else {
+        
+        shiny::removeModal()
+        
+        addintake <- tibble::tibble(
+          intake = input$newintakename,
+          teachers = input$newintaketeachers,
+          institution = input$newintakeinstitution,
+          program = input$newintakeprogram,
+          program_level = input$newintakeprogramlevel,
+          year =  input$newintakeyear,
+          path =  input$newintakepath,
+          tree =  input$newintaketree,
+          website = input$newintakewebsite
+        ) |>
+          dplyr::mutate(year = base::as.character(year))
+        intakes <- dplyr::bind_rows(addintake, course_data()$intakes)
+        base::save(intakes, file = course_paths()$databases$intakes)
+        
+        studentlist <- utils::read.csv(
+          base::paste0(course_paths()$subfolders$students, "/init.csv")
+        )
+        file <- base::paste0(
+          course_paths()$subfolders$students,
+          "/", input$newintakename, ".csv"
+        )
+        utils::write.csv(studentlist, file = file, row.names = FALSE)
+        
+        shinyalert::shinyalert(
+          "Intake created!",
+          "The new intake has been created. Reload the course to enact changes.",
+          type = "success", closeOnEsc = FALSE, closeOnClickOutside = TRUE
+        )
+        
+      }
+    })
+    
     
     
     # Document selection #######################################################
@@ -875,134 +995,11 @@ design_course <- shiny::shinyApp(
       intake
     })
     
-    teachR::course_intake_server("editintake", selected_intake, course_data, course_paths)
-    
-    shiny::observeEvent(input$newintake, {
-      if (base::length(course_data()$courses) == 1){
-        shinyalert::shinyalert(
-          "Load a course first!",
-          "You need to load a course to create a new intake.",
-          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
-        )
-      } else {
-        
-        allpaths <- base::unique(course_data()$outcomes$path)
-        alltrees <- stringr::str_remove_all(base::names(course_data()$tbltrees), ".RData")
-        year <- base::substr(base::Sys.Date(),1,4)
-        
-        last_intake <- course_data()$intakes |>
-          dplyr::filter(intake == selected_intake())
-        
-        shiny::showModal(
-          shiny::modalDialog(
-            style = "background-color:#001F3F;color:#FFF;margin-top:300px;",
-            shiny::textInput(
-              "newintakename", "Save intake as:",
-              value = "new_intake", width = "100%"
-            ),
-            shiny::textInput(
-              "newintaketeachers", "Authors:",
-              value = last_intake$teachers[1], width = "100%"
-            ),
-            shiny::selectizeInput(
-              "newintakeinstitution", "Institution:",
-              choices = base::unique(intakes$institution),
-              selected = last_intake$institution[1],
-              width = "100%", options = base::list(create = TRUE)
-            ),
-            shiny::selectizeInput(
-              "newintakeprogram", "Program:",
-              choices = base::unique(intakes$program),
-              selected = last_intake$program[1],
-              width = "100%", options = base::list(create = TRUE)
-            ),
-            shiny::selectizeInput(
-              "newintakeprogramlevel", "Program level:",
-              choices = base::unique(intakes$program_level),
-              selected = last_intake$program_level[1],
-              width = "100%", options = base::list(create = TRUE)
-            ),
-            shiny::numericInput(
-              "newintakeyear", "Year:", value = year, width = "100%"
-            ),
-            shiny::selectInput(
-              "newintakepath", "Path:", choices = allpaths,
-              selected = last_intake$path[1], width = "100%"
-            ),
-            shiny::selectInput(
-              "newintaketree", "Tree:", choices = alltrees,
-              selected = last_intake$tree[1], width = "100%"
-            ),
-            shiny::textInput(
-              "newintakewebsite", "Website:",
-              value = last_intake$website[1], width = "100%"
-            ),
-            footer = tagList(
-              shiny::modalButton("Cancel"),
-              shiny::actionButton(
-                "makenewintake", "OK",
-                icon = shiny::icon("check"),
-                style = "background-color:#007777;color:#FFF;"
-              )
-            )
-          )
-        )
-      }
-    })
-    
-    shiny::observeEvent(input$makenewintake, {
-      
-      if (input$newintakename %in% course_data()$intakes$intake){
-        
-        shinyalert::shinyalert(
-          "Intake already existing!",
-          "This name has already been attributed to an existing intake. Please rename.",
-          type = "error", closeOnEsc = FALSE, closeOnClickOutside = TRUE
-        )
-        
-      } else {
-        
-        shiny::removeModal()
-        
-        addintake <- tibble::tibble(
-          intake = input$newintakename,
-          teachers = input$newintaketeachers,
-          institution = input$newintakeinstitution,
-          program = input$newintakeprogram,
-          program_level = input$newintakeprogramlevel,
-          year =  input$newintakeyear,
-          path =  input$newintakepath,
-          tree =  input$newintaketree,
-          website = input$newintakewebsite
-        ) |>
-          dplyr::mutate(year = base::as.character(year))
-        intakes <- dplyr::bind_rows(addintake, course_data()$intakes)
-        base::save(intakes, file = course_paths()$databases$intakes)
-        
-        studentlist <- utils::read.csv(
-          base::paste0(course_paths()$subfolders$students, "/init.csv")
-        )
-        file <- base::paste0(
-          course_paths()$subfolders$students,
-          "/", input$newintakename, ".csv"
-        )
-        utils::write.csv(studentlist, file = file, row.names = FALSE)
-        
-        shinyalert::shinyalert(
-          "Intake created!",
-          "The new intake has been created. Reload the course to enact changes.",
-          type = "success", closeOnEsc = FALSE, closeOnClickOutside = TRUE
-        )
-        
-      }
-    })
-    
-    
-    
+    teachR::course_intake_server("enrolling", selected_intake, course_data, course_paths)
     
     # Grade tests ##############################################################
 
-    #gradR::grading_server("grading", course_data, course_paths)
+    gradR::grading_server("grading", selected_intake, course_data, course_paths)
 
     # Feedback #################################################################
 
