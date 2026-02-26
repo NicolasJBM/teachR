@@ -6,17 +6,12 @@
 #' @param course_paths Reactive. Function containing a list of paths to the different folders and databases on local disk.
 #' @return A list of course data.
 #' @importFrom readr read_csv
-#' @importFrom scholR document_data
 #' @importFrom shiny NS
 #' @importFrom shiny moduleServer
 #' @importFrom shiny observeEvent
 #' @importFrom shiny reactiveValues
 #' @importFrom shinyalert shinyalert
-#' @importFrom stringr str_detect
-#' @importFrom stringr str_remove
-#' @importFrom stringr str_replace
-#' @importFrom tools resaveRdaFiles
-#' @importFrom cryptography autokey
+#' @importFrom teachR decrypt_variable
 #' @export
 
 

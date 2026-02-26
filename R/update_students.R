@@ -6,7 +6,7 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom purrr map
-#' @importFrom readr read_csv
+#' @importFrom purrr map_chr
 #' @importFrom tibble tibble
 #' @importFrom tidyr unnest
 #' @export

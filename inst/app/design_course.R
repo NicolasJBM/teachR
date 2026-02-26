@@ -550,27 +550,6 @@ design_course <- shiny::shinyApp(
       }
     })
     
-    shiny::observeEvent(input$updatetestsol, {
-      if (base::length(course_paths()) != 2){
-        shinyalert::shinyalert(
-          title = "Please select a course folder.",
-          text = "You must first select a course folder to perform this action.",
-          type = "error"
-        )
-      } else {
-        shinybusy::show_modal_progress_line(value = 0/20, text = "Updating tests")
-        teachR::update_tests(course_paths())
-        shinybusy::show_modal_progress_line(value = 10/20, text = "Updating solutions")
-        teachR::update_solutions(course_paths())
-        shinybusy::remove_modal_spinner()
-        shinyalert::shinyalert(
-          title = "Tests and solutions updated!",
-          text = "Reload the course to see the changes.",
-          type = "success"
-        )
-      }
-    })
-    
     shiny::observeEvent(input$updatepaths, {
       if (base::length(course_paths()) != 2){
         shinyalert::shinyalert(
@@ -712,6 +691,52 @@ design_course <- shiny::shinyApp(
         
       }
     })
+    
+    
+    
+    shiny::observeEvent(input$updatetestsol, {
+      if (base::length(course_paths()) != 2){
+        shinyalert::shinyalert(
+          title = "Please select a course folder.",
+          text = "You must first select a course folder to perform this action.",
+          type = "error"
+        )
+      } else {
+        shinybusy::show_modal_progress_line(value = 0/20, text = "Updating tests")
+        teachR::update_tests(course_paths())
+        shinybusy::show_modal_progress_line(value = 10/20, text = "Updating solutions")
+        teachR::update_solutions(course_paths())
+        shinybusy::remove_modal_spinner()
+        shinyalert::shinyalert(
+          title = "Tests and solutions updated!",
+          text = "Reload the course to see the changes.",
+          type = "success"
+        )
+      }
+    })
+    
+    
+    shiny::observeEvent(input$updateanswers, {
+      if (base::length(course_paths()) != 2){
+        shinyalert::shinyalert(
+          title = "Please select a course folder.",
+          text = "You must first select a course folder to perform this action.",
+          type = "error"
+        )
+      } else {
+        shinybusy::show_modal_progress_line(value = 0/20, text = "Updating students")
+        teachR::update_students(course_paths())
+        shinybusy::show_modal_progress_line(value = 10/20, text = "Updating answers")
+        teachR::update_answers(course_paths())
+        shinybusy::remove_modal_spinner()
+        shinyalert::shinyalert(
+          title = "Students and answers updated!",
+          text = "Reload the course to see the changes.",
+          type = "success"
+        )
+      }
+    })
+    
     
     
     # Tree, path and intake creation ###########################################
