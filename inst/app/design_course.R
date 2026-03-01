@@ -788,19 +788,19 @@ design_course <- shiny::shinyApp(
             ),
             shiny::selectizeInput(
               "newintakeinstitution", "Institution:",
-              choices = base::unique(intakes$institution),
+              choices = base::unique(course_data()$intakes$institution),
               selected = last_intake$institution[1],
               width = "100%", options = base::list(create = TRUE)
             ),
             shiny::selectizeInput(
               "newintakeprogram", "Program:",
-              choices = base::unique(intakes$program),
+              choices = base::unique(course_data()$intakes$program),
               selected = last_intake$program[1],
               width = "100%", options = base::list(create = TRUE)
             ),
             shiny::selectizeInput(
               "newintakeprogramlevel", "Program level:",
-              choices = base::unique(intakes$program_level),
+              choices = base::unique(course_data()$intakes$program_level),
               selected = last_intake$program_level[1],
               width = "100%", options = base::list(create = TRUE)
             ),
