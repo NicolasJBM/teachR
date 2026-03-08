@@ -1,4 +1,4 @@
-design_course <- shiny::shinyApp(
+develop_course <- shiny::shinyApp(
 
   # INTERFACE ##################################################################
 
