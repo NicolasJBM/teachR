@@ -29,7 +29,7 @@ update_answers <- function(course_paths){
   
   allanswers <- base::list(answernbr)
   for (i in base::seq_len(answernbr)){
-    allanswers[[i]] <- base::list.files(answerspaths[i], full.names = FALSE, recursive = TRUE, include.dirs = FALSE)
+    allanswers[[i]] <- base::list.files(answerspaths[i], full.names = FALSE, recursive = TRUE, include.dirs = FALSE, pattern = "csv$")
   }
   answers <- tibble::tibble(files = allanswers) |>
     dplyr::bind_rows() |>
