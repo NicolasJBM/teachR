@@ -1040,5 +1040,5 @@ develop_course <- shiny::shinyApp(
       teachR::course_clean_root()
       shiny::stopApp()
     })
-  }
+  }, options = base::list(launch.browser = TRUE)
 )
