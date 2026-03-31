@@ -18,6 +18,7 @@ update_answers <- function(course_paths){
   
   files <- NULL
   path <- NULL
+  extension <- NULL
   
   testpath <-  "C:/Users/nicol/Dropbox/5-Education/scholR/financial_analysis_valuation/4_delivering/6_tests" #course_paths$subfolders$tests
   
