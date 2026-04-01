@@ -18,7 +18,7 @@ update_answers <- function(course_paths){
   
   files <- NULL
   path <- NULL
-  extension <- NULL
+  language <- NULL
   
   testpath <-  "C:/Users/nicol/Dropbox/5-Education/scholR/financial_analysis_valuation/4_delivering/6_tests" #course_paths$subfolders$tests
   
@@ -39,8 +39,9 @@ update_answers <- function(course_paths){
     tidyr::unite("path", path, files, sep = "/", remove = FALSE) |>
     dplyr::mutate(answers = purrr::map(path, readr::read_csv, col_types = "cccccd")) |>
     tidyr::unnest(answers) |>
-    tidyr::separate(files, into = c("test","intake","extension"), sep = "-") |>
-    dplyr::select(-path, -extension)
+    tidyr::separate(files, into = c("test","intake","language"), sep = "-") |>
+    dplyr::mutate(language = stringr::str_remove_all(language, ".csv$")) |>
+    dplyr::select(-path)
   
   if (base::file.exists(course_paths$databases$answers)){
     base::file.remove(course_paths$databases$answers)
