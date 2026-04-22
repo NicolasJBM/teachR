@@ -20,7 +20,7 @@ update_answers <- function(course_paths){
   path <- NULL
   language <- NULL
   
-  testpath <-  "C:/Users/nicol/Dropbox/5-Education/scholR/financial_analysis_valuation/4_delivering/6_tests" #course_paths$subfolders$tests
+  testpath <-  course_paths$subfolders$tests
   
   tests <- base::list.dirs(testpath, recursive = FALSE, full.names = FALSE)
   tests <- tests[tests != "archives"]
