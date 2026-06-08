@@ -128,38 +128,17 @@ develop_course <- shiny::shinyApp(
             side = "left", width = "100%",
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("images"), "Presentations",
-                title = "Presentations are a sets of slides constituting a single document in a revealJS format which can be uploaded online."
+                shiny::icon("file-pen"), "Edit",
+                title = "Write and edit a document in the main language."
               ),
-              editR::edit_ui("editpresentations")
+              editR::edit_ui("editdocuments")
             ),
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("video"), "Scripts",
-                title = "A script for a video. What is written as a quote is exported in a .txt file for a prompter. The rest is description of paces and intonations or of visuals."
+                shiny::icon("list-check", "fa-solid"), "Propositions",
+                title = "Edit the database of propositions."
               ),
-              editR::edit_ui("editscripts")
-            ),
-            shiny::tabPanel(
-              title = shiny::span(
-                shiny::icon("book-open"), "Pages",
-                title = "A page is web-page meant to be inserted in a classification tree (in 'prepare') to be published in a textbook. It is not a stand-alone document."
-              ),
-              editR::edit_ui("editpages")
-            ),
-            shiny::tabPanel(
-              title = shiny::span(
-                shiny::icon("newspaper"), "Papers",
-                title = "A paper is a stand-alone webpage which can be inserted in a blog as a post."
-              ),
-              editR::edit_ui("editpapers")
-            ),
-            shiny::tabPanel(
-              title = shiny::span(
-                shiny::icon("circle-question", "fa-solid"), "Questions",
-                title = "A question is a stand-alone question which can be selected in tests in which all questions are independent from each other."
-              ),
-              editR::edit_ui("editquest")
+              editR::edit_ui("editpropositions")
             ),
             shiny::tabPanel(
               title = shiny::span(
@@ -935,41 +914,30 @@ develop_course <- shiny::shinyApp(
 
     bibliogR::search_references_server("filtref", references)
 
-    bibliogR::manage_references_server("manageref", references, base::getwd())
-
-    # Prepare ##################################################################
-
-    editR::code_edit_server("editcode", course_paths)
-
-    chartR::edit_diagram_server("ediag", course_paths()$subfolders$databases)
+    
 
     # Edit documents ###########################################################
     
     editR::edit_server(
-      "editpresentations", filtered = filtered_documents, course_data = course_data,
-      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Presentation"
-    )
-    
-    editR::edit_server(
-      "editscripts", filtered = filtered_documents, course_data = course_data,
-      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Script"
-    )
-    
-    editR::edit_server(
-      "editpages", filtered = filtered_documents, course_data = course_data,
-      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Page"
-    )
-    
-    editR::edit_server(
-      "editpapers", filtered = filtered_documents, course_data = course_data,
-      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Paper"
+      "editdocuments", filtered = filtered_documents, course_data = course_data,
+      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths
     )
 
-    editR::edit_server(
-      "editquest", filtered = filtered_documents, course_data = course_data,
-      tree = input$slcttree, tbltree = tbltree, course_paths = course_paths, doctype = "Question"
-    )
-
+    #editR::propositions_edit_server(
+    #  "editpropositions", 
+    #  filtered = filtered_documents,
+    #  course_data = course_data,
+    #  course_paths = course_paths
+    #)
+    
+    editR::code_edit_server("editcode", course_paths)
+    
+    chartR::edit_diagram_server("ediag", course_paths()$subfolders$databases)
+    
+    bibliogR::manage_references_server("manageref", references, base::getwd())
+    
+    
+    
     # Translate ################################################################
 
     editR::translate_server(

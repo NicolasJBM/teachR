@@ -27,7 +27,7 @@ set_course_paths <- function(project_folder){
       dplyr::mutate(path = base::paste0(project_folder, path))
     databases <- base::split(databases$path, databases$name)
     
-    shiny::addResourcePath("edition", base::as.character(subfolders$edit))
+    shiny::addResourcePath("edition", base::as.character(subfolders$preview))
     
     project_paths <- base::list(
       subfolders = subfolders,
