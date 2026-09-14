@@ -128,24 +128,24 @@ develop_course <- shiny::shinyApp(
             side = "left", width = "100%",
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("file-pen"), "Edit",
+                shiny::icon("file-pen"), "Documents",
                 title = "Write and edit a document in the main language."
               ),
               editR::edit_ui("editdocuments")
             ),
             shiny::tabPanel(
               title = shiny::span(
-                shiny::icon("list-check", "fa-solid"), "Propositions",
-                title = "Edit the database of propositions."
-              ),
-              editR::edit_ui("editpropositions")
-            ),
-            shiny::tabPanel(
-              title = shiny::span(
-                shiny::icon("language", "fa-solid"), "Translate",
+                shiny::icon("language", "fa-solid"), "Translations",
                 title = "Translate a document in different languages."
               ),
               editR::translate_ui("translation")
+            ),
+            shiny::tabPanel(
+              title = shiny::span(
+                shiny::icon("list-check", "fa-solid"), "Propositions",
+                title = "Edit the database of propositions."
+              ),
+              editR::edit_propositions_ui("editpropositions")
             ),
             shiny::tabPanel(
               title = shiny::span(
@@ -644,7 +644,7 @@ develop_course <- shiny::shinyApp(
         
         shinybusy::update_modal_progress(value = 4/6, text = "Save the environment for editing documents")
         
-        base::save.image(file=base::paste0(course_paths()$subfolders$edit, '/data/environment.RData'))
+        base::save.image(file=base::paste0(course_paths()$subfolders$data, '/environment.RData'))
         
         
         shinybusy::update_modal_progress(value = 5/6, text = "Import questions")
@@ -923,12 +923,12 @@ develop_course <- shiny::shinyApp(
       tree = input$slcttree, tbltree = tbltree, course_paths = course_paths
     )
 
-    #editR::propositions_edit_server(
-    #  "editpropositions", 
-    #  filtered = filtered_documents,
-    #  course_data = course_data,
-    #  course_paths = course_paths
-    #)
+    editR::edit_propositions_server(
+      "editpropositions", 
+      filtered = filtered_documents,
+      course_data = course_data,
+      course_paths = course_paths
+    )
     
     editR::code_edit_server("editcode", course_paths)
     
