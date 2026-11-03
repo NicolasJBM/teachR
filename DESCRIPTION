@@ -14,7 +14,6 @@ URL: https://github.com/NicolasJBM/teachR
 License: GPL-3 | file LICENSE
 Depends: R (>= 4.1)
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
   stringr,
   readr,
@@ -40,3 +39,4 @@ Remotes:
   NicolasJBM/scholR,
   NicolasJBM/classR,
   NicolasJBM/editR
+Config/roxygen2/version: 8.1.1

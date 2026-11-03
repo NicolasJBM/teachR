@@ -36,90 +36,112 @@ export(update_tests)
 export(update_trees)
 export(update_views)
 import(shiny)
-importFrom(classR,complete_position)
-importFrom(classR,tbltree_to_jstree)
-importFrom(classR,trees_selected_json_to_tibble)
-importFrom(classR,trees_structure_textbook)
+importFrom(classR,
+  complete_position,
+  tbltree_to_jstree,
+  trees_selected_json_to_tibble,
+  trees_structure_textbook
+)
 importFrom(cryptography,autokey)
-importFrom(dplyr,anti_join)
-importFrom(dplyr,arrange)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,case_when)
-importFrom(dplyr,everything)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,inner_join)
-importFrom(dplyr,left_join)
-importFrom(dplyr,mutate)
-importFrom(dplyr,sample_n)
-importFrom(dplyr,select)
-importFrom(dplyr,starts_with)
-importFrom(dplyr,summarise)
-importFrom(dplyr,ungroup)
-importFrom(jsTreeR,jstree)
-importFrom(jsTreeR,jstreeDestroy)
-importFrom(jsTreeR,jstreeOutput)
-importFrom(jsTreeR,renderJstree)
-importFrom(purrr,map)
-importFrom(purrr,map_chr)
+importFrom(dplyr,
+  anti_join,
+  arrange,
+  bind_rows,
+  case_when,
+  everything,
+  filter,
+  group_by,
+  inner_join,
+  left_join,
+  mutate,
+  sample_n,
+  select,
+  starts_with,
+  summarise,
+  ungroup
+)
+importFrom(jsTreeR,
+  jstree,
+  jstreeDestroy,
+  jstreeOutput,
+  renderJstree
+)
+importFrom(purrr,
+  map,
+  map_chr
+)
 importFrom(readr,read_csv)
-importFrom(rhandsontable,hot_context_menu)
-importFrom(rhandsontable,hot_to_r)
-importFrom(rhandsontable,rHandsontableOutput)
-importFrom(rhandsontable,renderRHandsontable)
+importFrom(rhandsontable,
+  hot_context_menu,
+  hot_to_r,
+  rHandsontableOutput,
+  renderRHandsontable
+)
 importFrom(rstudioapi,navigateToFile)
 importFrom(scholR,document_data)
-importFrom(shiny,NS)
-importFrom(shiny,actionButton)
-importFrom(shiny,addResourcePath)
-importFrom(shiny,checkboxInput)
-importFrom(shiny,column)
-importFrom(shiny,fluidRow)
-importFrom(shiny,icon)
-importFrom(shiny,modalButton)
-importFrom(shiny,modalDialog)
-importFrom(shiny,moduleServer)
-importFrom(shiny,numericInput)
-importFrom(shiny,observe)
-importFrom(shiny,observeEvent)
-importFrom(shiny,reactive)
-importFrom(shiny,reactiveValues)
-importFrom(shiny,removeModal)
-importFrom(shiny,renderUI)
-importFrom(shiny,req)
-importFrom(shiny,runApp)
-importFrom(shiny,selectInput)
-importFrom(shiny,selectizeInput)
-importFrom(shiny,showModal)
-importFrom(shiny,sliderInput)
-importFrom(shiny,span)
-importFrom(shiny,tagList)
-importFrom(shiny,textInput)
-importFrom(shiny,textOutput)
-importFrom(shiny,uiOutput)
-importFrom(shinyWidgets,checkboxGroupButtons)
-importFrom(shinyWidgets,multiInput)
-importFrom(shinyWidgets,pickerInput)
-importFrom(shinyWidgets,prettySwitch)
-importFrom(shinyWidgets,radioGroupButtons)
-importFrom(shinyWidgets,searchInput)
+importFrom(shiny,
+  NS,
+  actionButton,
+  addResourcePath,
+  checkboxInput,
+  column,
+  fluidRow,
+  icon,
+  modalButton,
+  modalDialog,
+  moduleServer,
+  numericInput,
+  observe,
+  observeEvent,
+  reactive,
+  reactiveValues,
+  removeModal,
+  renderUI,
+  req,
+  runApp,
+  selectInput,
+  selectizeInput,
+  showModal,
+  sliderInput,
+  span,
+  tagList,
+  textInput,
+  textOutput,
+  uiOutput
+)
+importFrom(shinyWidgets,
+  checkboxGroupButtons,
+  multiInput,
+  pickerInput,
+  prettySwitch,
+  radioGroupButtons,
+  searchInput
+)
 importFrom(shinyalert,shinyalert)
-importFrom(shinybusy,remove_modal_spinner)
-importFrom(shinybusy,show_modal_progress_line)
-importFrom(shinybusy,show_modal_spinner)
-importFrom(shinybusy,update_modal_progress)
-importFrom(stringr,str_detect)
-importFrom(stringr,str_remove)
-importFrom(stringr,str_remove_all)
-importFrom(stringr,str_replace)
-importFrom(stringr,str_replace_all)
-importFrom(stringr,str_split)
-importFrom(stringr,str_to_lower)
-importFrom(tibble,rowid_to_column)
-importFrom(tibble,tibble)
-importFrom(tidyr,pivot_longer)
-importFrom(tidyr,replace_na)
-importFrom(tidyr,separate)
-importFrom(tidyr,unite)
-importFrom(tidyr,unnest)
+importFrom(shinybusy,
+  remove_modal_spinner,
+  show_modal_progress_line,
+  show_modal_spinner,
+  update_modal_progress
+)
+importFrom(stringr,
+  str_detect,
+  str_remove,
+  str_remove_all,
+  str_replace,
+  str_replace_all,
+  str_split,
+  str_to_lower
+)
+importFrom(tibble,
+  rowid_to_column,
+  tibble
+)
+importFrom(tidyr,
+  pivot_longer,
+  replace_na,
+  separate,
+  unite,
+  unnest
+)
 importFrom(tools,resaveRdaFiles)

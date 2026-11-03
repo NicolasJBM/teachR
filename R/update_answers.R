@@ -37,11 +37,9 @@ update_answers <- function(course_paths){
     dplyr::mutate(path = answerspaths) |>
     tidyr::unnest(files) |>
     tidyr::unite("path", path, files, sep = "/", remove = FALSE) |>
-    dplyr::mutate(answers = purrr::map(path, readr::read_csv, col_types = "cccccd")) |>
+    dplyr::mutate(answers = purrr::map(path, readr::read_csv, col_types = "ccccccccd")) |>
     tidyr::unnest(answers) |>
-    tidyr::separate(files, into = c("test","intake","language"), sep = "-") |>
-    dplyr::mutate(language = stringr::str_remove_all(language, ".csv$")) |>
-    dplyr::select(-path)
+    dplyr::select(-files,-path)
   
   if (base::file.exists(course_paths$databases$answers)){
     base::file.remove(course_paths$databases$answers)
